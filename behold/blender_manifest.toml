@@ -1,0 +1,17 @@
+schema_version = "1.0.0"
+
+id = "behold"
+version = "0.1.0"
+name = "BEHOLD"
+tagline = "Product studio rendering — KeyShot-simple, free"
+maintainer = "wckdboy"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+website = "https://cursor.com/codebase/wckdboy/BEHOLD"
+tags = ["Render", "Lighting", "Material", "Camera"]
+
+[permissions]
+network = "Optional BlenderKit search, login, and material downloads"
