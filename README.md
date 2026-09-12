@@ -11,13 +11,22 @@ Open-source Blender add-on for KeyShot-simple product rendering — free.
 
 Not in this slice: Light Draw modal, deep Shoot tools, CAD/STEP import.
 
+## Build install zip
+
+```bash
+make zip
+# → dist/behold-0.1.0.zip
+```
+
+Or: `bash scripts/build_addon.sh`
+
 ## Install (Blender 4.2+)
 
-1. Download or clone this repo.
-2. Zip the `behold/` folder **or** install as a legacy add-on by linking the folder:
-   - Blender → Edit → Preferences → Add-ons → Install… → select a zip of `behold/`
-   - Or copy `behold/` into your Blender `scripts/addons/` directory and enable **BEHOLD**
-3. Open the 3D Viewport sidebar (`N`) → **BEHOLD** tab.
+1. Build the zip (`make zip`) or download a release zip.
+2. Blender → Edit → Preferences → Add-ons → Install… → select `dist/behold-*.zip`
+3. Enable **BEHOLD**, then open the 3D Viewport sidebar (`N`) → **BEHOLD** tab.
+
+Alternate (dev): copy or symlink `behold/` into your Blender `scripts/addons/` directory.
 
 ### BlenderKit
 
@@ -28,6 +37,17 @@ Enable the official BlenderKit / Blendkit extension, then use **Log In to Blende
 ```bash
 git clone <repo-url>
 # Point Blender at /path/to/repo/behold via preferences or symlink into addons/
+```
+
+
+## Remotes
+
+- **Primary:** GitHub [`wckdboy/BEHOLD`](https://github.com/wckdboy/BEHOLD)
+- **Mirror:** Origin [`wckdboy/BEHOLD`](https://cursor.com/codebase/wckdboy/BEHOLD)
+
+```bash
+git remote add origin https://github.com/wckdboy/BEHOLD.git
+git remote add cursor https://origin.cursor.com/wckdboy/BEHOLD.git
 ```
 
 ## License
