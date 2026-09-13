@@ -120,6 +120,29 @@ class BEHOLDSceneSettings(PropertyGroup):
         max=10000.0,
         subtype="TEMPERATURE",
     )
+    render_quality: EnumProperty(
+        name="Quality",
+        description="Cycles sample / denoise preset for product shots",
+        items=(
+            ("DRAFT", "Draft", "Fast look-dev (32 samples)"),
+            ("PRODUCT", "Product", "Client-ready stills (128 samples)"),
+            ("HERO", "Hero", "Chrome / glass hero shots (512 samples)"),
+        ),
+        default="PRODUCT",
+    )
+    output_directory: StringProperty(
+        name="Output Folder",
+        description="Render folder. Tokens: {angle} {camera} {quality}",
+        default="//behold_out/",
+        subtype="DIR_PATH",
+        maxlen=1024,
+    )
+    main_camera_name: StringProperty(
+        name="Main Camera",
+        description="Bookmarked BEHOLD camera object name",
+        default="",
+        maxlen=128,
+    )
 
 
 CLASSES = (BEHOLDSceneSettings,)
