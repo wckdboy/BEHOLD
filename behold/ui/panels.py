@@ -134,14 +134,45 @@ class BEHOLD_PT_shoot(Panel):
     def draw(self, context: Context):
         layout = self.layout
         settings = context.scene.behold
+        has_camera = context.scene.camera is not None or bool(settings.main_camera_name)
+        has_mesh = any(obj.type == "MESH" for obj in context.selected_objects)
+
+        if not has_camera:
+            box = layout.box()
+            box.label(text="No camera — Build Studio first", icon="ERROR")
 
         col = layout.column(align=True)
+        col.label(text="Look")
         col.prop(settings, "exposure_ev")
         col.prop(settings, "white_balance_kelvin")
         col.prop(settings, "false_color")
         col.operator("behold.apply_exposure", icon="COLOR")
 
         layout.separator()
+        col = layout.column(align=True)
+        col.label(text="Quality")
+        col.prop(settings, "render_quality", text="")
+        col.operator("behold.apply_quality", icon="SETTINGS")
+
+        layout.separator()
+        col = layout.column(align=True)
+        col.label(text="Camera")
+        row = col.row(align=True)
+        row.operator("behold.bookmark_camera", text="Bookmark")
+        row.operator("behold.use_main_camera", text="Use Main")
+        if settings.main_camera_name:
+            col.label(text=f"Main: {settings.main_camera_name}", icon="CAMERA_DATA")
+
+        layout.separator()
+        col = layout.column(align=True)
+        col.label(text="Output")
+        col.prop(settings, "output_directory", text="")
+        col.label(text="Tokens: {angle} {camera} {quality}")
+
+        layout.separator()
+        if not has_mesh:
+            box = layout.box()
+            box.label(text="Select mesh(es) for batch / turntable", icon="INFO")
         layout.operator("behold.render_still", icon="RENDER_STILL")
         layout.operator("behold.batch_angles", icon="CAMERA_DATA")
 
