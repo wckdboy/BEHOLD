@@ -16,7 +16,7 @@ STEPPER_MODULE_CANDIDATES = (
     "stepper",
 )
 
-# Known STEPper / STEPper NEXT import operators.
+# STEPper NEXT uses import_scene.occ_import_step (see Peak-Design/STEPper_NEXT worker.py).
 STEPPER_IMPORT_OPS = (
     "import_scene.occ_import_step",
     "stepper.background_import",
@@ -29,8 +29,7 @@ def find_stepper_module() -> str | None:
         if name in addons:
             return name
     for name in addons:
-        lowered = name.lower()
-        if "stepper" in lowered:
+        if "stepper" in name.lower():
             return name
     return None
 
@@ -45,13 +44,13 @@ def stepper_operator_available() -> str | None:
                 continue
             if getattr(category, name, None) is not None:
                 return op_id
-        except Exception:  # noqa: BLE001 - soft probe only
+        except Exception:  # noqa: BLE001
             continue
     return None
 
 
 def probe_ocp() -> dict[str, Any]:
-    """Try importing OCP. Returns status dict; never raises."""
+    """Try importing OCP. Never raises."""
     try:
         import OCP  # noqa: F401
         from OCP.STEPControl import STEPControl_Reader  # noqa: F401
