@@ -1,17 +1,33 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Still and turntable shoot operators."""
+"""Still and turntable shoot operators (Photographer-depth slice)."""
 
 from __future__ import annotations
 
 import math
+import os
 
 import bpy
 from bpy.types import Context, Operator
 
 
+QUALITY_SAMPLES = {
+    "DRAFT": 32,
+    "PRODUCT": 128,
+    "HERO": 512,
+}
+
+
 def _ensure_camera(context: Context) -> bpy.types.Object | None:
+    settings = context.scene.behold
+    if settings.main_camera_name:
+        bookmarked = bpy.data.objects.get(settings.main_camera_name)
+        if bookmarked is not None and bookmarked.type == "CAMERA":
+            context.scene.camera = bookmarked
+            return bookmarked
+
     if context.scene.camera is not None:
         return context.scene.camera
+
     cam = bpy.data.objects.get("BEHOLD_Camera")
     if cam is not None:
         context.scene.camera = cam
@@ -38,6 +54,49 @@ def apply_exposure(context: Context) -> None:
             pass
 
 
+def apply_render_quality(context: Context) -> int:
+    """Push quality preset to Cycles. Returns sample count."""
+    settings = context.scene.behold
+    quality = settings.render_quality
+    samples = QUALITY_SAMPLES.get(quality, 128)
+
+    scene = context.scene
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = samples
+    scene.cycles.use_denoising = True
+    # Prefer OptiX/OIDN when available; ignore if the build lacks the attr.
+    if hasattr(scene.cycles, "denoiser"):
+        try:
+            scene.cycles.denoiser = "OPENIMAGEDENOISE"
+        except TypeError:
+            pass
+    return samples
+
+
+def resolve_output_dir(context: Context, *, angle: str = "") -> str:
+    """Resolve output folder with {angle} {camera} {quality} tokens."""
+    settings = context.scene.behold
+    cam = context.scene.camera
+    camera_name = cam.name if cam is not None else "camera"
+    template = settings.output_directory.strip() or "//behold_out/"
+    filled = (
+        template.replace("{angle}", angle or "still")
+        .replace("{camera}", camera_name)
+        .replace("{quality}", settings.render_quality.lower())
+    )
+    path = bpy.path.abspath(filled)
+    if not path or path.startswith("//"):
+        path = os.path.join(tempfile_fallback(), "behold_out", angle or "still")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def tempfile_fallback() -> str:
+    import tempfile
+
+    return tempfile.gettempdir()
+
+
 class BEHOLD_OT_apply_exposure(Operator):
     bl_idname = "behold.apply_exposure"
     bl_label = "Apply Exposure"
@@ -50,24 +109,74 @@ class BEHOLD_OT_apply_exposure(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_apply_quality(Operator):
+    bl_idname = "behold.apply_quality"
+    bl_label = "Apply Quality Preset"
+    bl_description = "Push Draft / Product / Hero sample counts to Cycles"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        samples = apply_render_quality(context)
+        quality = context.scene.behold.render_quality
+        self.report({"INFO"}, f"{quality.title()} quality — {samples} samples")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_bookmark_camera(Operator):
+    bl_idname = "behold.bookmark_camera"
+    bl_label = "Bookmark Main Camera"
+    bl_description = "Remember the scene camera as BEHOLD's main camera"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        cam = context.scene.camera
+        if cam is None or cam.type != "CAMERA":
+            self.report({"ERROR"}, "Set a scene camera first (Build Studio)")
+            return {"CANCELLED"}
+        context.scene.behold.main_camera_name = cam.name
+        self.report({"INFO"}, f"Main camera: {cam.name}")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_use_main_camera(Operator):
+    bl_idname = "behold.use_main_camera"
+    bl_label = "Use Main Camera"
+    bl_description = "Make the bookmarked camera the scene camera"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        name = context.scene.behold.main_camera_name
+        if not name:
+            self.report({"ERROR"}, "No main camera bookmarked yet")
+            return {"CANCELLED"}
+        cam = bpy.data.objects.get(name)
+        if cam is None or cam.type != "CAMERA":
+            self.report({"ERROR"}, f"Bookmarked camera “{name}” is missing")
+            return {"CANCELLED"}
+        context.scene.camera = cam
+        self.report({"INFO"}, f"Scene camera → {name}")
+        return {"FINISHED"}
+
+
 class BEHOLD_OT_render_still(Operator):
     bl_idname = "behold.render_still"
     bl_label = "Render Still"
-    bl_description = "Render a still with product-friendly Cycles defaults"
+    bl_description = "Render a still with the active quality preset"
 
     def execute(self, context: Context):
-        if _ensure_camera(context) is None:
+        cam = _ensure_camera(context)
+        if cam is None:
             self.report({"ERROR"}, "No camera — Build Studio first")
             return {"CANCELLED"}
 
         apply_exposure(context)
+        samples = apply_render_quality(context)
         scene = context.scene
-        scene.render.engine = "CYCLES"
-        scene.cycles.samples = max(scene.cycles.samples, 128)
-        scene.cycles.use_denoising = True
         scene.render.image_settings.file_format = "PNG"
+        out_dir = resolve_output_dir(context, angle="still")
+        scene.render.filepath = os.path.join(out_dir, "still.png")
         bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
-        self.report({"INFO"}, "Still render started")
+        self.report({"INFO"}, f"Still started ({samples} samples) → {out_dir}")
         return {"FINISHED"}
 
 
@@ -133,7 +242,7 @@ class BEHOLD_OT_setup_turntable(Operator):
 class BEHOLD_OT_render_turntable(Operator):
     bl_idname = "behold.render_turntable"
     bl_label = "Render Turntable"
-    bl_description = "Render the turntable animation"
+    bl_description = "Render the turntable animation with the active quality preset"
 
     def execute(self, context: Context):
         if bpy.data.objects.get("BEHOLD_TurntablePivot") is None:
@@ -144,14 +253,15 @@ class BEHOLD_OT_render_turntable(Operator):
             return {"CANCELLED"}
 
         apply_exposure(context)
+        samples = apply_render_quality(context)
         scene = context.scene
-        scene.render.engine = "CYCLES"
-        scene.cycles.use_denoising = True
         scene.render.image_settings.file_format = "FFMPEG"
         scene.render.ffmpeg.format = "MPEG4"
         scene.render.ffmpeg.codec = "H264"
+        out_dir = resolve_output_dir(context, angle="turntable")
+        scene.render.filepath = os.path.join(out_dir, "turntable")
         bpy.ops.render.render("INVOKE_DEFAULT", animation=True)
-        self.report({"INFO"}, "Turntable render started")
+        self.report({"INFO"}, f"Turntable started ({samples} samples) → {out_dir}")
         return {"FINISHED"}
 
 
@@ -180,10 +290,12 @@ class BEHOLD_OT_batch_angles(Operator):
             for corner in obj.bound_box
         ]
         center = sum(corners, Vector()) / len(corners)
-        size = max((max(corners) - min(corners)).length * 0.35, 0.5)
-        # Use bounds diagonal for distance.
-        mins = Vector((min(c.x for c in corners), min(c.y for c in corners), min(c.z for c in corners)))
-        maxs = Vector((max(c.x for c in corners), max(c.y for c in corners), max(c.z for c in corners)))
+        mins = Vector(
+            (min(c.x for c in corners), min(c.y for c in corners), min(c.z for c in corners))
+        )
+        maxs = Vector(
+            (max(c.x for c in corners), max(c.y for c in corners), max(c.z for c in corners))
+        )
         extent = max(maxs.x - mins.x, maxs.y - mins.y, maxs.z - mins.z, 0.1)
         distance = extent * 2.4
 
@@ -194,40 +306,36 @@ class BEHOLD_OT_batch_angles(Operator):
         )
 
         apply_exposure(context)
+        samples = apply_render_quality(context)
         scene = context.scene
-        scene.render.engine = "CYCLES"
-        scene.cycles.use_denoising = True
         scene.render.image_settings.file_format = "PNG"
-
-        base = bpy.path.abspath("//behold_angles/")
-        if base.startswith("//") or not base:
-            base = bpy.path.abspath("//")
-            if not base:
-                import tempfile
-                from pathlib import Path
-
-                base = str(Path(tempfile.gettempdir()) / "behold_angles")
-        import os
-
-        os.makedirs(base, exist_ok=True)
 
         original = cam.matrix_world.copy()
         rendered = 0
+        last_dir = ""
         for name, offset in angles:
+            out_dir = resolve_output_dir(context, angle=name)
+            last_dir = out_dir
             cam.location = center + offset
             direction = center - cam.location
             cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
-            scene.render.filepath = os.path.join(base, f"{name}.png")
+            scene.render.filepath = os.path.join(out_dir, f"{name}.png")
             bpy.ops.render.render(write_still=True)
             rendered += 1
 
         cam.matrix_world = original
-        self.report({"INFO"}, f"Rendered {rendered} angles to {base}")
+        self.report(
+            {"INFO"},
+            f"Rendered {rendered} angles ({samples} samples) → {last_dir}",
+        )
         return {"FINISHED"}
 
 
 CLASSES = (
     BEHOLD_OT_apply_exposure,
+    BEHOLD_OT_apply_quality,
+    BEHOLD_OT_bookmark_camera,
+    BEHOLD_OT_use_main_camera,
     BEHOLD_OT_render_still,
     BEHOLD_OT_setup_turntable,
     BEHOLD_OT_render_turntable,
