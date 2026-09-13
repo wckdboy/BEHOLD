@@ -6,10 +6,10 @@ from __future__ import annotations
 bl_info = {
     "name": "BEHOLD",
     "author": "wckdboy",
-    "version": (0, 2, 0),
+    "version": (0, 3, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD",
-    "description": "Product studio, Light Draw, materials, and shoot tools",
+    "description": "Product studio, Light Draw, materials, shoot, and product import",
     "category": "Render",
     "doc_url": "https://cursor.com/codebase/wckdboy/BEHOLD",
 }
@@ -18,6 +18,8 @@ from . import properties
 from . import ui
 from .light_draw import operators as light_draw_ops
 from .materials import blenderkit_bridge, local_rack
+from .cad import operators as cad_ops
+from .product_import import operators as product_ops
 from .shoot import operators as shoot_ops
 from .studio import operators as studio_ops
 
@@ -29,6 +31,8 @@ _MODULES = (
     blenderkit_bridge,
     shoot_ops,
     light_draw_ops,
+    cad_ops,
+    product_ops,
     ui,
 )
 

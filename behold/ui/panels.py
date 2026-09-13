@@ -6,7 +6,21 @@ from __future__ import annotations
 import bpy
 from bpy.types import Context, Panel
 
+from ..cad import detect as cad_detect
+from ..cad import material_assist
 from ..materials import blenderkit_bridge, local_rack
+from ..product_import import formats
+
+
+def _has_selected_mesh(context: Context) -> bool:
+    return any(obj.type == "MESH" for obj in context.selected_objects)
+
+
+def _has_imported_product(context: Context) -> bool:
+    return any(
+        obj.type == "MESH" and material_assist.is_behold_product(obj)
+        for obj in context.scene.objects
+    )
 
 
 class BEHOLD_PT_main(Panel):
@@ -18,10 +32,14 @@ class BEHOLD_PT_main(Panel):
 
     def draw(self, context: Context):
         layout = self.layout
-        has_mesh = any(obj.type == "MESH" for obj in context.selected_objects)
+        has_mesh = _has_selected_mesh(context)
         if not has_mesh:
             box = layout.box()
-            box.label(text="Select a mesh product to begin", icon="INFO")
+            if _has_imported_product(context):
+                box.label(text="Select the imported product to continue", icon="INFO")
+            else:
+                box.label(text="Import a product to begin", icon="INFO")
+                box.operator("behold.import_product", icon="IMPORT")
 
 
 class BEHOLD_PT_studio(Panel):
@@ -35,6 +53,10 @@ class BEHOLD_PT_studio(Panel):
     def draw(self, context: Context):
         layout = self.layout
         settings = context.scene.behold
+        if not _has_selected_mesh(context):
+            box = layout.box()
+            box.label(text="Import or select a product mesh", icon="INFO")
+            box.operator("behold.import_product", icon="IMPORT")
         layout.prop(settings, "studio_backdrop")
         layout.prop(settings, "studio_light_rig")
         layout.prop(settings, "include_shadow_catcher")
@@ -123,6 +145,51 @@ class BEHOLD_PT_light_draw(Panel):
         col.label(text="S — solo · F — false color · Esc — exit")
 
 
+class BEHOLD_PT_import(Panel):
+    bl_label = "Import"
+    bl_idname = "BEHOLD_PT_import"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BEHOLD"
+    bl_parent_id = "BEHOLD_PT_main"
+
+    def draw(self, context: Context):
+        layout = self.layout
+        settings = context.scene.behold
+        cad = cad_detect.cad_status()
+
+        if not _has_selected_mesh(context) and not _has_imported_product(context):
+            empty = layout.box()
+            empty.label(text="No product in the scene yet", icon="INFO")
+            empty.label(text=f"Mesh: {formats.mesh_format_summary()}")
+            empty.label(text=f"CAD: {formats.cad_format_summary()}")
+
+        layout.operator("behold.import_product", icon="IMPORT")
+        col = layout.column(align=True)
+        col.prop(settings, "import_auto_studio")
+        col.prop(settings, "import_auto_material_assist")
+
+        row = layout.row(align=True)
+        row.operator("behold.cad_material_assist", icon="MATERIAL")
+        row.operator("behold.cad_build_studio", icon="OUTLINER_OB_LIGHT")
+
+        box = layout.box()
+        box.label(text="CAD backend", icon="MESH_DATA")
+        box.label(text=cad["label"])
+        for line in cad["detail"].split(". "):
+            if line.strip():
+                box.label(text=line.strip().rstrip(".") + ".")
+        if not cad["can_import"]:
+            box.operator(
+                "wm.url_open",
+                text="Get STEPper NEXT",
+                icon="URL",
+            ).url = cad_detect.STEPPER_INSTALL_URL
+            box.label(text="Mesh formats never need STEPper")
+        else:
+            box.operator("behold.import_step", text="Import STEP / IGES…", icon="FILE_3D")
+
+
 class BEHOLD_PT_shoot(Panel):
     bl_label = "Shoot"
     bl_idname = "BEHOLD_PT_shoot"
@@ -173,6 +240,8 @@ class BEHOLD_PT_shoot(Panel):
         if not has_mesh:
             box = layout.box()
             box.label(text="Select mesh(es) for batch / turntable", icon="INFO")
+            if not _has_imported_product(context):
+                box.operator("behold.import_product", icon="IMPORT")
         layout.operator("behold.render_still", icon="RENDER_STILL")
         layout.operator("behold.batch_angles", icon="CAMERA_DATA")
 
@@ -184,6 +253,7 @@ class BEHOLD_PT_shoot(Panel):
 
 CLASSES = (
     BEHOLD_PT_main,
+    BEHOLD_PT_import,
     BEHOLD_PT_studio,
     BEHOLD_PT_materials,
     BEHOLD_PT_light_draw,

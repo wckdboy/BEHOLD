@@ -143,6 +143,16 @@ class BEHOLDSceneSettings(PropertyGroup):
         default="",
         maxlen=128,
     )
+    import_auto_studio: BoolProperty(
+        name="Build Studio after Import",
+        description="Run Build Studio on meshes created by Import Product",
+        default=True,
+    )
+    import_auto_material_assist: BoolProperty(
+        name="Material Assist after Import",
+        description="Guess a BlenderKit query from the product filename and part names",
+        default=True,
+    )
 
 
 CLASSES = (BEHOLDSceneSettings,)
