@@ -5,11 +5,12 @@ Open-source Blender add-on for KeyShot-simple product rendering — free.
 ## What works (v0.1)
 
 - **Studio** — select mesh(es) → Build Studio (cyclorama / solid / HDRI world, three-point or softbox, auto camera, optional shadow catcher) + light mixer
+- **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, scroll power/size/distance, solo)
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
 - **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
 - **Shoot** — EV / false-color helpers, still render, turntable setup + render
 
-Not in this slice: Light Draw modal, deep Shoot tools, CAD/STEP import.
+Not in this slice: deep Shoot tools, CAD/STEP hybrid import.
 
 ## Build install zip
 
