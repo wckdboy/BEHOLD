@@ -6,6 +6,7 @@ from __future__ import annotations
 import bpy
 from bpy.types import Context, Panel
 
+from ..cad import detect as cad_detect
 from ..materials import blenderkit_bridge, local_rack
 
 
@@ -123,6 +124,36 @@ class BEHOLD_PT_light_draw(Panel):
         col.label(text="S — solo · F — false color · Esc — exit")
 
 
+class BEHOLD_PT_cad(Panel):
+    bl_label = "CAD"
+    bl_idname = "BEHOLD_PT_cad"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BEHOLD"
+    bl_parent_id = "BEHOLD_PT_main"
+
+    def draw(self, context: Context):
+        layout = self.layout
+        status = cad_detect.cad_status()
+        box = layout.box()
+        box.label(text=status["label"], icon="IMPORT")
+        for line in status["detail"].split(". "):
+            if line.strip():
+                box.label(text=line.strip().rstrip(".") + ".")
+
+        if not status["can_import"]:
+            box.operator(
+                "wm.url_open",
+                text="Get STEPper NEXT",
+                icon="URL",
+            ).url = "https://github.com/Peak-Design/STEPper_NEXT/releases"
+            box.label(text="Or install cadquery-ocp in Blender's Python")
+        else:
+            layout.operator("behold.import_step", icon="IMPORT")
+            layout.operator("behold.cad_material_assist", icon="MATERIAL")
+            layout.operator("behold.cad_build_studio", icon="OUTLINER_OB_LIGHT")
+
+
 class BEHOLD_PT_shoot(Panel):
     bl_label = "Shoot"
     bl_idname = "BEHOLD_PT_shoot"
@@ -187,6 +218,7 @@ CLASSES = (
     BEHOLD_PT_studio,
     BEHOLD_PT_materials,
     BEHOLD_PT_light_draw,
+    BEHOLD_PT_cad,
     BEHOLD_PT_shoot,
 )
 
