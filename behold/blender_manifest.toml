@@ -1,13 +1,13 @@
 schema_version = "1.0.0"
 
 id = "behold"
-version = "0.3.0"
+version = "0.4.0"
 name = "BEHOLD"
 tagline = "Product studio rendering — KeyShot-simple, free"
 maintainer = "wckdboy"
 type = "add-on"
 
-blender_version_min = "4.2.0"
+blender_version_min = "5.2.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
 website = "https://cursor.com/codebase/wckdboy/BEHOLD"
