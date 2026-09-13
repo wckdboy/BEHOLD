@@ -16,9 +16,19 @@ from bpy.types import PropertyGroup, Scene
 
 
 class BEHOLDSceneSettings(PropertyGroup):
-    studio_backdrop: EnumProperty(
+    studio_backdrop_tone: EnumProperty(
         name="Backdrop",
-        description="Studio backdrop style",
+        description="First-ship sweep / solid backdrop tone",
+        items=(
+            ("WHITE", "White", "Bright product sweep"),
+            ("GREY", "Grey", "Neutral product sweep"),
+            ("BLACK", "Black", "Dark product sweep"),
+        ),
+        default="WHITE",
+    )
+    studio_backdrop: EnumProperty(
+        name="Backdrop Type",
+        description="Studio backdrop style (Advanced)",
         items=(
             ("CYCLORAMA", "Cyclorama", "Seamless sweep for product shots"),
             ("SOLID", "Solid", "Flat infinite-looking solid color"),
@@ -125,10 +135,11 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Cycles sample / denoise preset for product shots",
         items=(
             ("DRAFT", "Draft", "Fast look-dev (32 samples)"),
+            ("FINAL", "Final", "First-ship client still (256 samples)"),
             ("PRODUCT", "Product", "Client-ready stills (128 samples)"),
             ("HERO", "Hero", "Chrome / glass hero shots (512 samples)"),
         ),
-        default="PRODUCT",
+        default="DRAFT",
     )
     output_directory: StringProperty(
         name="Output Folder",
