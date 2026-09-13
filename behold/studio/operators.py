@@ -10,6 +10,8 @@ import bpy
 from bpy.types import Context, Object, Operator
 from mathutils import Vector
 
+from .tones import backdrop_tone_rgba
+
 
 COLLECTION_NAME = "BEHOLD_Studio"
 PREFIX = "BEHOLD"
@@ -93,7 +95,12 @@ def make_area_light(
     return obj
 
 
-def make_cyclorama(coll: bpy.types.Collection, center: Vector, radius: float) -> Object:
+def make_cyclorama(
+    coll: bpy.types.Collection,
+    center: Vector,
+    radius: float,
+    color: tuple[float, float, float, float] = (0.85, 0.85, 0.87, 1.0),
+) -> Object:
     bpy.ops.mesh.primitive_plane_add(size=1.0, location=(center.x, center.y, center.z))
     floor = bpy.context.active_object
     assert floor is not None
@@ -118,7 +125,7 @@ def make_cyclorama(coll: bpy.types.Collection, center: Vector, radius: float) ->
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes.get("Principled BSDF")
     if bsdf:
-        bsdf.inputs["Base Color"].default_value = (0.85, 0.85, 0.87, 1.0)
+        bsdf.inputs["Base Color"].default_value = color
         bsdf.inputs["Roughness"].default_value = 0.55
     floor.data.materials.clear()
     floor.data.materials.append(mat)
@@ -182,12 +189,13 @@ def build_studio(context: Context) -> str:
 
     color = kelvin_to_rgb(settings.light_temperature)
     key_energy = 250.0 * size * settings.key_power
+    tone = backdrop_tone_rgba(settings)
 
     if settings.studio_backdrop == "CYCLORAMA":
-        make_cyclorama(coll, floor_center, size)
+        make_cyclorama(coll, floor_center, size, color=tone)
         setup_world(context.scene)
     elif settings.studio_backdrop == "SOLID":
-        setup_world(context.scene, color=(0.9, 0.9, 0.92, 1.0), strength=0.35)
+        setup_world(context.scene, color=tone, strength=0.35)
     else:
         setup_world(context.scene, color=(0.01, 0.01, 0.01, 1.0), strength=0.05)
 

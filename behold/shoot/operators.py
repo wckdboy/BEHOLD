@@ -12,6 +12,7 @@ from bpy.types import Context, Operator
 
 QUALITY_SAMPLES = {
     "DRAFT": 32,
+    "FINAL": 256,
     "PRODUCT": 128,
     "HERO": 512,
 }
@@ -112,7 +113,7 @@ class BEHOLD_OT_apply_exposure(Operator):
 class BEHOLD_OT_apply_quality(Operator):
     bl_idname = "behold.apply_quality"
     bl_label = "Apply Quality Preset"
-    bl_description = "Push Draft / Product / Hero sample counts to Cycles"
+    bl_description = "Push Draft / Final / Product / Hero sample counts to Cycles"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: Context):

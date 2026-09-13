@@ -2,17 +2,29 @@
 
 Open-source Blender add-on for KeyShot-simple product rendering — free.
 
-## What works (v0.3)
+Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**.
+
+## What works (v0.3.1)
+
+**First-ship N-panel** (Percival) — three controls, no scroll:
+
+1. **Import** — Import Product file picker only
+2. **Studio** — backdrop White / Grey / Black + **Build**
+3. **Shoot** — Draft / Final, Still, Render
+
+Parked chrome (Materials, Light Draw, mixer, CAD backend, batch, turntable, EV/WB/tokens/bookmark) is in **Advanced**, collapsed closed. Operators stay registered.
+
+Backends already on `main` (v0.3.0):
 
 - **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
 - **Studio** — select mesh(es) → Build Studio (cyclorama / solid / HDRI world, three-point or softbox, auto camera, optional shadow catcher) + light mixer
 - **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, scroll power/size/distance, solo)
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
 - **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
-- **Shoot** — EV / white balance / false color, Draft·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
+- **Shoot** — EV / white balance / false color, Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
 - **CAD** — hybrid STEP/IGES/BREP: detect [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) → else BEHOLD OCP; Material Assist + Studio from Import
 
-Deferred: live tessellation regenerate, defeaturing, full auto-dress grid.
+Deferred: live tessellation regenerate, defeaturing, full auto-dress grid. Multi-light studio / Blender 5.2 LTS is draft [PR #5](https://github.com/wckdboy/BEHOLD/pull/5) — not this release.
 
 ## Import Product
 
@@ -28,7 +40,7 @@ Mesh and 3MF paths **never** require STEPper. CAD files need STEPper NEXT (prefe
 
 After import, BEHOLD can:
 
-1. **Build Studio** around the new mesh(es) (toggle on the operator / Import panel).
+1. **Build Studio** around the new mesh(es) (toggle on the file-browser operator / Advanced).
 2. **Material Assist** — guess a BlenderKit query from the filename, extension, or STEP material names (`housing_aluminum.step` → “brushed aluminum”).
 
 ### STEPper NEXT
@@ -39,19 +51,19 @@ STEPper NEXT is the recommended OpenCASCADE STEP/IGES/BREP importer for Blender.
 
 Once this repo is on GitHub (`wckdboy/BEHOLD`):
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.3.0.zip`).
-2. **Versioned release** — push a tag `v0.3.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.3.1.zip`).
+2. **Versioned release** — push a tag `v0.3.1` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.3.0
-git push origin v0.3.0
+git tag v0.3.1
+git push origin v0.3.1
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.3.0.zip
+# → dist/behold-0.3.1.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
@@ -67,7 +79,7 @@ Alternate (dev): copy or symlink `behold/` into your Blender `scripts/addons/` d
 
 ### BlenderKit
 
-Enable the official BlenderKit / Blendkit extension, then use **Log In to BlenderKit** in the Materials panel. BEHOLD does not re-host BlenderKit assets; your BlenderKit account/plan applies.
+Enable the official BlenderKit / Blendkit extension, then use **Log In to BlenderKit** under **Advanced → Materials**. BEHOLD does not re-host BlenderKit assets; your BlenderKit account/plan applies.
 
 ## Develop
 
