@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "behold"
-version = "0.2.0"
+version = "0.3.0"
 name = "BEHOLD"
 tagline = "Product studio rendering — KeyShot-simple, free"
 maintainer = "wckdboy"
@@ -11,7 +11,7 @@ blender_version_min = "4.2.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
 website = "https://cursor.com/codebase/wckdboy/BEHOLD"
-tags = ["Render", "Lighting", "Material", "Camera"]
+tags = ["Render", "Lighting", "Material", "Camera", "Import-Export"]
 
 [permissions]
 network = "Optional BlenderKit search, login, and material downloads"

@@ -2,33 +2,56 @@
 
 Open-source Blender add-on for KeyShot-simple product rendering — free.
 
-## What works (v0.2)
+## What works (v0.3)
 
+- **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
 - **Studio** — select mesh(es) → Build Studio (cyclorama / solid / HDRI world, three-point or softbox, auto camera, optional shadow catcher) + light mixer
 - **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, scroll power/size/distance, solo)
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
 - **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
 - **Shoot** — EV / white balance / false color, Draft·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
+- **CAD** — hybrid STEP/IGES/BREP: detect [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) → else BEHOLD OCP; Material Assist + Studio from Import
 
-Not in this slice: CAD/STEP hybrid import.
+Deferred: live tessellation regenerate, defeaturing, full auto-dress grid.
+
+## Import Product
+
+Sidebar **BEHOLD → Import** (or File → Import → **BEHOLD Product**):
+
+| Kind | Extensions | Backend |
+| --- | --- | --- |
+| Mesh | `.obj` `.fbx` `.stl` `.glb` `.gltf` | Native Blender 4.2+ (`wm.obj_import`, `import_scene.fbx` / `gltf`, `wm.stl_import`) |
+| 3MF | `.3mf` | Native or add-on importer when present (`wm.threemf_import` / `import_mesh.threemf`) |
+| CAD | `.step` `.stp` `.iges` `.igs` `.brep` `.brp` | [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) if installed, else BEHOLD OCP |
+
+Mesh and 3MF paths **never** require STEPper. CAD files need STEPper NEXT (preferred) or `cadquery-ocp` / `cadquery-ocp-novtk` in Blender's Python.
+
+After import, BEHOLD can:
+
+1. **Build Studio** around the new mesh(es) (toggle on the operator / Import panel).
+2. **Material Assist** — guess a BlenderKit query from the filename, extension, or STEP material names (`housing_aluminum.step` → “brushed aluminum”).
+
+### STEPper NEXT
+
+STEPper NEXT is the recommended OpenCASCADE STEP/IGES/BREP importer for Blender. Install it from **[Peak-Design/STEPper_NEXT](https://github.com/Peak-Design/STEPper_NEXT)** (Releases zip → drag onto Blender, or Preferences → Get Extensions → Install from Disk). Current STEPper NEXT targets **Blender 5.1**. On 4.2–5.0, use BEHOLD's OCP fallback or an older STEPper build if you have one.
 
 ## Download install zip (GitHub Actions)
 
 Once this repo is on GitHub (`wckdboy/BEHOLD`):
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.2.0.zip`).
-2. **Versioned release** — push a tag `v0.2.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.3.0.zip`).
+2. **Versioned release** — push a tag `v0.3.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.3.0
+git push origin v0.3.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.2.0.zip
+# → dist/behold-0.3.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
@@ -51,6 +74,8 @@ Enable the official BlenderKit / Blendkit extension, then use **Log In to Blende
 ```bash
 git clone https://github.com/wckdboy/BEHOLD.git
 # Point Blender at /path/to/repo/behold via preferences or symlink into addons/
+make test
+make zip
 ```
 
 ## Remotes
