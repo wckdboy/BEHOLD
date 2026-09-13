@@ -22,8 +22,8 @@ class AddonLayoutTests(unittest.TestCase):
         init = _read(ADDON / "__init__.py")
         match = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
         self.assertIsNotNone(match)
-        self.assertEqual(match.group(1), "0.3.0")
-        self.assertIn('"version": (0, 3, 0)', init)
+        self.assertEqual(match.group(1), "0.4.0")
+        self.assertIn('"version": (0, 4, 0)', init)
 
     def test_stepper_url_documented(self) -> None:
         readme = _read(ROOT / "README.md")
