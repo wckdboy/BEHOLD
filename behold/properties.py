@@ -94,6 +94,24 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Toggle false-color look for exposure checks",
         default=False,
     )
+    light_draw_mode: EnumProperty(
+        name="Light Draw Mode",
+        description="Placement mode for Light Draw",
+        items=(
+            ("REFLECT", "Reflect", "Place light for a specular highlight under the cursor"),
+            ("DIRECT", "Direct", "Place light along the surface normal"),
+            ("ORBIT", "Orbit", "Orbit the active light around a pinned target"),
+        ),
+        default="REFLECT",
+    )
+    light_draw_distance: FloatProperty(
+        name="Light Distance",
+        description="Distance from surface hit to light in Light Draw",
+        default=2.0,
+        min=0.1,
+        soft_max=20.0,
+        unit="LENGTH",
+    )
 
 
 CLASSES = (BEHOLDSceneSettings,)

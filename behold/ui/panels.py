@@ -91,6 +91,38 @@ class BEHOLD_PT_materials(Panel):
             row.operator("behold.blenderkit_apply", icon="MATERIAL")
 
 
+class BEHOLD_PT_light_draw(Panel):
+    bl_label = "Light Draw"
+    bl_idname = "BEHOLD_PT_light_draw"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BEHOLD"
+    bl_parent_id = "BEHOLD_PT_main"
+
+    def draw(self, context: Context):
+        layout = self.layout
+        settings = context.scene.behold
+
+        has_light = any(obj.type == "LIGHT" for obj in context.scene.objects)
+        if not has_light:
+            box = layout.box()
+            box.label(text="Build Studio first (or add a light)", icon="INFO")
+
+        layout.prop(settings, "light_draw_mode", text="Mode")
+        layout.prop(settings, "light_draw_distance")
+        layout.operator("behold.light_draw", icon="LIGHT_AREA")
+        layout.operator("behold.light_draw_cycle_mode", icon="FILE_REFRESH")
+
+        col = layout.column(align=True)
+        col.label(text="While drawing:")
+        col.label(text="LMB drag — aim")
+        col.label(text="Wheel — power")
+        col.label(text="Shift+Wheel — size")
+        col.label(text="Ctrl+Wheel — distance")
+        col.label(text="1 / 2 / 3 — Reflect / Direct / Orbit")
+        col.label(text="S — solo · F — false color · Esc — exit")
+
+
 class BEHOLD_PT_shoot(Panel):
     bl_label = "Shoot"
     bl_idname = "BEHOLD_PT_shoot"
@@ -121,6 +153,7 @@ CLASSES = (
     BEHOLD_PT_main,
     BEHOLD_PT_studio,
     BEHOLD_PT_materials,
+    BEHOLD_PT_light_draw,
     BEHOLD_PT_shoot,
 )
 

@@ -9,13 +9,14 @@ bl_info = {
     "version": (0, 1, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD",
-    "description": "One-click product studio, materials, and shoot tools",
+    "description": "Product studio, Light Draw, materials, and shoot tools",
     "category": "Render",
     "doc_url": "https://cursor.com/codebase/wckdboy/BEHOLD",
 }
 
 from . import properties
 from . import ui
+from .light_draw import operators as light_draw_ops
 from .materials import blenderkit_bridge, local_rack
 from .shoot import operators as shoot_ops
 from .studio import operators as studio_ops
@@ -27,6 +28,7 @@ _MODULES = (
     local_rack,
     blenderkit_bridge,
     shoot_ops,
+    light_draw_ops,
     ui,
 )
 
