@@ -1,21 +1,49 @@
-name: Build add-on zip
+name: Build Blender add-on zip
 
 on:
   push:
-    branches: [main, "cursor/**"]
+    branches: [main, master, "cursor/**"]
+    tags: ["v*"]
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   zip:
+    name: Build install zip
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Build zip
         run: make zip
+
+      - name: Resolve zip path
+        id: zip
+        run: |
+          set -euo pipefail
+          ZIP="$(ls -1 dist/behold-*.zip | head -n 1)"
+          echo "path=${ZIP}" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "${ZIP}")" >> "$GITHUB_OUTPUT"
+          echo "Built ${ZIP}"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: behold-addon
-          path: dist/behold-*.zip
+          path: ${{ steps.zip.outputs.path }}
           if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.zip.outputs.path }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

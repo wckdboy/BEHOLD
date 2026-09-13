@@ -137,11 +137,13 @@ class BEHOLD_PT_shoot(Panel):
 
         col = layout.column(align=True)
         col.prop(settings, "exposure_ev")
+        col.prop(settings, "white_balance_kelvin")
         col.prop(settings, "false_color")
         col.operator("behold.apply_exposure", icon="COLOR")
 
         layout.separator()
         layout.operator("behold.render_still", icon="RENDER_STILL")
+        layout.operator("behold.batch_angles", icon="CAMERA_DATA")
 
         layout.separator()
         layout.prop(settings, "turntable_frames")

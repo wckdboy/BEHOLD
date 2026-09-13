@@ -112,6 +112,14 @@ class BEHOLDSceneSettings(PropertyGroup):
         soft_max=20.0,
         unit="LENGTH",
     )
+    white_balance_kelvin: FloatProperty(
+        name="White Balance",
+        description="Scene white-balance temperature in Kelvin (view look)",
+        default=6500.0,
+        min=2000.0,
+        max=10000.0,
+        subtype="TEMPERATURE",
+    )
 
 
 CLASSES = (BEHOLDSceneSettings,)

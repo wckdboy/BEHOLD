@@ -22,11 +22,14 @@ def apply_exposure(context: Context) -> None:
     settings = context.scene.behold
     view = context.scene.view_settings
     view.exposure = settings.exposure_ev
+    # Approximate WB via look temperature when available; otherwise leave AgX alone.
+    if hasattr(view, "temperature"):
+        # Blender 4.x+ view settings temperature is relative; map Kelvin offset from D65.
+        view.temperature = (settings.white_balance_kelvin - 6500.0) / 1000.0
     if settings.false_color:
         try:
             view.view_transform = "False Color"
         except TypeError:
-            # Older/custom OCIO configs may lack False Color.
             pass
     else:
         try:
@@ -152,11 +155,83 @@ class BEHOLD_OT_render_turntable(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_batch_angles(Operator):
+    bl_idname = "behold.batch_angles"
+    bl_label = "Batch Product Angles"
+    bl_description = "Render front, three-quarter, and top stills around the selection"
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: Context):
+        targets = [obj for obj in context.selected_objects if obj.type == "MESH"]
+        if not targets:
+            self.report({"ERROR"}, "Select the product mesh(es)")
+            return {"CANCELLED"}
+
+        cam = _ensure_camera(context)
+        if cam is None:
+            self.report({"ERROR"}, "No camera — Build Studio first")
+            return {"CANCELLED"}
+
+        from mathutils import Vector
+
+        corners = [
+            obj.matrix_world @ Vector(corner)
+            for obj in targets
+            for corner in obj.bound_box
+        ]
+        center = sum(corners, Vector()) / len(corners)
+        size = max((max(corners) - min(corners)).length * 0.35, 0.5)
+        # Use bounds diagonal for distance.
+        mins = Vector((min(c.x for c in corners), min(c.y for c in corners), min(c.z for c in corners)))
+        maxs = Vector((max(c.x for c in corners), max(c.y for c in corners), max(c.z for c in corners)))
+        extent = max(maxs.x - mins.x, maxs.y - mins.y, maxs.z - mins.z, 0.1)
+        distance = extent * 2.4
+
+        angles = (
+            ("front", Vector((0.0, -distance, extent * 0.35))),
+            ("three_quarter", Vector((distance * 0.75, -distance * 0.85, extent * 0.45))),
+            ("top", Vector((0.0, -distance * 0.15, distance))),
+        )
+
+        apply_exposure(context)
+        scene = context.scene
+        scene.render.engine = "CYCLES"
+        scene.cycles.use_denoising = True
+        scene.render.image_settings.file_format = "PNG"
+
+        base = bpy.path.abspath("//behold_angles/")
+        if base.startswith("//") or not base:
+            base = bpy.path.abspath("//")
+            if not base:
+                import tempfile
+                from pathlib import Path
+
+                base = str(Path(tempfile.gettempdir()) / "behold_angles")
+        import os
+
+        os.makedirs(base, exist_ok=True)
+
+        original = cam.matrix_world.copy()
+        rendered = 0
+        for name, offset in angles:
+            cam.location = center + offset
+            direction = center - cam.location
+            cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+            scene.render.filepath = os.path.join(base, f"{name}.png")
+            bpy.ops.render.render(write_still=True)
+            rendered += 1
+
+        cam.matrix_world = original
+        self.report({"INFO"}, f"Rendered {rendered} angles to {base}")
+        return {"FINISHED"}
+
+
 CLASSES = (
     BEHOLD_OT_apply_exposure,
     BEHOLD_OT_render_still,
     BEHOLD_OT_setup_turntable,
     BEHOLD_OT_render_turntable,
+    BEHOLD_OT_batch_angles,
 )
 
 
