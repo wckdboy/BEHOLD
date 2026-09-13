@@ -10,6 +10,7 @@ from ..cad import detect as cad_detect
 from ..cad import material_assist
 from ..materials import blenderkit_bridge, local_rack
 from ..product_import import formats
+from ..studio import lights as light_lib
 
 
 def _has_selected_mesh(context: Context) -> bool:
@@ -50,6 +51,7 @@ class BEHOLD_PT_studio(Panel):
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
 
+
     def draw(self, context: Context):
         layout = self.layout
         settings = context.scene.behold
@@ -62,8 +64,30 @@ class BEHOLD_PT_studio(Panel):
         layout.prop(settings, "include_shadow_catcher")
         layout.operator("behold.build_studio", icon="OUTLINER_OB_LIGHT")
 
+        lights = light_lib.iter_behold_lights(context)
+        box = layout.box()
+        box.label(text="Lights")
+        if not lights:
+            box.label(text="No BEHOLD lights yet", icon="ERROR")
+            box.label(text="Build Studio or Add Light")
+        else:
+            active_name = (settings.active_light_name or "").strip()
+            for light in lights:
+                row = box.row(align=True)
+                is_active = light.name == active_name
+                icon = "RADIOBUT_ON" if is_active else "RADIOBUT_OFF"
+                op = row.operator("behold.set_active_light", text="", icon=icon, emboss=False)
+                op.light_name = light.name
+                row.label(text=light_lib.display_light_name(light))
+                row.prop(light.data, "energy", text="")
+                rm = row.operator("behold.remove_light", text="", icon="X")
+                rm.light_name = light.name
+        row = box.row(align=True)
+        row.prop(settings, "new_light_energy", text="New W")
+        row.operator("behold.add_light", text="Add Light", icon="ADD")
+
         col = layout.column(align=True)
-        col.label(text="Light Mixer")
+        col.label(text="Light Mixer (Key / Fill / Rim)")
         col.prop(settings, "key_power")
         col.prop(settings, "fill_ratio")
         col.prop(settings, "rim_ratio")
@@ -82,6 +106,10 @@ class BEHOLD_PT_materials(Panel):
     def draw(self, context: Context):
         layout = self.layout
         settings = context.scene.behold
+
+        if not _has_selected_mesh(context):
+            box = layout.box()
+            box.label(text="Select a mesh to apply materials", icon="INFO")
 
         layout.label(text="Local PBR rack")
         grid = layout.grid_flow(columns=3, align=True)
@@ -121,17 +149,32 @@ class BEHOLD_PT_light_draw(Panel):
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
 
+
     def draw(self, context: Context):
         layout = self.layout
         settings = context.scene.behold
 
-        has_light = any(obj.type == "LIGHT" for obj in context.scene.objects)
-        if not has_light:
+        lights = light_lib.iter_behold_lights(context)
+        if not lights:
             box = layout.box()
-            box.label(text="Build Studio first (or add a light)", icon="INFO")
+            box.label(text="No BEHOLD lights", icon="ERROR")
+            box.label(text="Build Studio or Add Light first")
+            box.operator("behold.add_light", icon="ADD")
+            box.operator("behold.build_studio", icon="OUTLINER_OB_LIGHT")
+        else:
+            active = light_lib.get_active_behold_light(context)
+            box = layout.box()
+            if active is None:
+                box.label(text="No active light selected", icon="INFO")
+            else:
+                box.label(text=f"Active: {light_lib.display_light_name(active)}", icon="LIGHT_AREA")
+                box.prop(active.data, "energy", text="Intensity")
 
+        layout.prop(settings, "light_draw_target", text="Target")
         layout.prop(settings, "light_draw_mode", text="Mode")
         layout.prop(settings, "light_draw_distance")
+        if settings.light_draw_distance < 0.2:
+            layout.label(text="Distance is very small", icon="ERROR")
         layout.operator("behold.light_draw", icon="LIGHT_AREA")
         layout.operator("behold.light_draw_cycle_mode", icon="FILE_REFRESH")
 
@@ -234,6 +277,8 @@ class BEHOLD_PT_shoot(Panel):
         col = layout.column(align=True)
         col.label(text="Output")
         col.prop(settings, "output_directory", text="")
+        if not (settings.output_directory or "").strip():
+            col.label(text="Output folder is empty", icon="ERROR")
         col.label(text="Tokens: {angle} {camera} {quality}")
 
         layout.separator()
