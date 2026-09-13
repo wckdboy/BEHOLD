@@ -2,10 +2,11 @@
 
 Open-source Blender add-on for KeyShot-simple product rendering — free.
 
-## What works (v0.3)
+## What works (v0.4)
 
 - **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
 - **Studio** — select mesh(es) → Build Studio (cyclorama / solid / HDRI world, three-point or softbox, auto camera, optional shadow catcher) + light mixer
+- **Lights** — add multiple BEHOLD lights and set each light’s intensity in the Studio panel
 - **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, scroll power/size/distance, solo)
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
 - **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
@@ -20,7 +21,7 @@ Sidebar **BEHOLD → Import** (or File → Import → **BEHOLD Product**):
 
 | Kind | Extensions | Backend |
 | --- | --- | --- |
-| Mesh | `.obj` `.fbx` `.stl` `.glb` `.gltf` | Native Blender 4.2+ (`wm.obj_import`, `import_scene.fbx` / `gltf`, `wm.stl_import`) |
+| Mesh | `.obj` `.fbx` `.stl` `.glb` `.gltf` | Native Blender 5.2 LTS (`wm.obj_import`, `import_scene.fbx` / `gltf`, `wm.stl_import`) |
 | 3MF | `.3mf` | Native or add-on importer when present (`wm.threemf_import` / `import_mesh.threemf`) |
 | CAD | `.step` `.stp` `.iges` `.igs` `.brep` `.brp` | [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) if installed, else BEHOLD OCP |
 
@@ -39,24 +40,24 @@ STEPper NEXT is the recommended OpenCASCADE STEP/IGES/BREP importer for Blender.
 
 Once this repo is on GitHub (`wckdboy/BEHOLD`):
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.3.0.zip`).
-2. **Versioned release** — push a tag `v0.3.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.4.0.zip`).
+2. **Versioned release** — push a tag `v0.4.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.3.0
-git push origin v0.3.0
+git tag v0.4.0
+git push origin v0.4.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.3.0.zip
+# → dist/behold-0.4.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
 
-## Install (Blender 4.2+)
+## Install (Blender 5.2 LTS)
 
 1. Get `behold-*.zip` (Actions artifact, Release asset, or `make zip`).
 2. Blender → Edit → Preferences → Add-ons → Install… → select the zip  
