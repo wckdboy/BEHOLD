@@ -30,13 +30,14 @@ def apply_post_import(
     meshes = [obj for obj in context.selected_objects if obj.type == "MESH"]
 
     if auto_material_assist and meshes:
-        query = material_assist.suggest_query_for_objects(meshes, filepath)
-        context.scene.behold.blenderkit_query = query
         try:
-            bpy.ops.behold.blenderkit_search()
-            notes.append(f"Material Assist “{query}”")
-        except Exception:  # noqa: BLE001
-            notes.append(f"Material Assist query “{query}”")
+            assist = material_assist.run_material_assist(context, meshes, filepath)
+            if assist.get("ok"):
+                notes.append(assist["message"])
+            else:
+                notes.append(assist.get("message") or "Material Assist skipped")
+        except Exception:  # noqa: BLE001 — import must still finish
+            notes.append("Material Assist failed")
 
     if auto_studio and meshes:
         try:
@@ -112,7 +113,10 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
     )
     auto_material_assist: BoolProperty(
         name="Material Assist",
-        description="Set a BlenderKit query from the filename and imported names",
+        description=(
+            "Apply a local rack look from the filename / part names. "
+            "Searches BlenderKit only when signed in"
+        ),
         default=True,
     )
     deflection: FloatProperty(

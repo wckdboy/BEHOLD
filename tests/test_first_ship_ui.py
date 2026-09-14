@@ -37,10 +37,10 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("BEHOLD_PT_import", self.source)
         self.assertIn("BEHOLD_PT_studio", self.source)
         self.assertIn("BEHOLD_PT_shoot", self.source)
-        self.assertNotIn("BEHOLD_PT_materials", self.source)
-        self.assertNotIn("BEHOLD_PT_light_draw", self.source)
         self.assertIn("BEHOLD_PT_lights", self.source)
         self.assertIn("BEHOLD_PT_cameras", self.source)
+        self.assertIn("BEHOLD_PT_materials", self.source)
+        self.assertNotIn("BEHOLD_PT_light_draw", self.source)
         classes_assign = next(
             node
             for node in self.tree.body
@@ -60,6 +60,7 @@ class FirstShipUiTests(unittest.TestCase):
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_lights",
                 "BEHOLD_PT_cameras",
+                "BEHOLD_PT_materials",
                 "BEHOLD_PT_advanced",
             ],
         )
@@ -123,6 +124,18 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("Light Mixer", body)
         self.assertNotIn("batch_angles", body)
         self.assertNotIn("turntable", body)
+
+    def test_materials_section_has_rack_assist_and_empty_state(self) -> None:
+        body = _func_source(self.source, self.tree, "draw_materials_section")
+        self.assertIn("EMPTY_NO_MESH", body)
+        self.assertIn("behold.apply_local_material", body)
+        self.assertIn("behold.cad_material_assist", body)
+        self.assertIn("behold.import_product", body)
+        self.assertNotIn("blenderkit_login", body)
+        self.assertNotIn("blenderkit_search", body)
+        self.assertNotIn("blenderkit_apply", body)
+        self.assertNotIn("Light Mixer", body)
+        self.assertNotIn("batch_angles", body)
 
     def test_shoot_first_ship_is_draft_final_still_render_and_turntable(self) -> None:
         body = _func_source(self.source, self.tree, "draw_shoot_first_ship")
@@ -199,6 +212,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.5.0", text)
         self.assertIn("0.6.0", text)
         self.assertIn("0.7.0", text)
+        self.assertIn("0.8.0", text)
         self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)
         self.assertIn("Import Product", text)

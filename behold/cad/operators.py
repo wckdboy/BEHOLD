@@ -259,37 +259,18 @@ class BEHOLD_OT_cad_material_assist(Operator):
     bl_idname = "behold.cad_material_assist"
     bl_label = "Material Assist"
     bl_description = (
-        "Suggest BlenderKit queries from imported product names/colors and open search"
+        "Apply a local product look from the filename / STEP hint. "
+        "Searches BlenderKit only when signed in — no account needed for the local path"
     )
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: Context):
         meshes = [obj for obj in context.selected_objects if obj.type == "MESH"]
-        if not meshes:
-            self.report({"ERROR"}, "Select imported mesh(es) first")
+        result = material_assist.run_material_assist(context, meshes)
+        if not result["ok"]:
+            self.report({"ERROR"}, result["message"])
             return {"CANCELLED"}
-
-        source = ""
-        for obj in meshes:
-            value = obj.get("BEHOLD_product_source") or obj.get("BEHOLD_cad_source")
-            if isinstance(value, str):
-                source = value
-                break
-
-        query = material_assist.suggest_query_for_objects(meshes, source)
-        context.scene.behold.blenderkit_query = query
-        material_assist.tag_selection_for_assist(context)
-
-        try:
-            bpy.ops.behold.blenderkit_search()
-        except Exception:  # noqa: BLE001
-            self.report(
-                {"INFO"},
-                f"Suggested “{query}” — enable BlenderKit or use Materials → Search",
-            )
-            return {"FINISHED"}
-
-        self.report({"INFO"}, f"Material Assist → BlenderKit “{query}”")
+        self.report({"INFO"}, result["message"])
         return {"FINISHED"}
 
 

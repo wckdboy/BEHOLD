@@ -2,11 +2,11 @@
 
 **BEHOLD by AMIRITE.studio** — open-source Blender add-on for KeyShot-simple product rendering.
 
-Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_info` / `blender_manifest.toml`) so older 4.x/5.1 builds can load the zip; production lighting, cameras, and turntable are developed and tested against 5.2 LTS.
+Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_info` / `blender_manifest.toml`) so older 4.x/5.1 builds can load the zip; production lighting, cameras, turntable, and materials are developed and tested against 5.2 LTS.
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.7.0)
+## What works (v0.8.0)
 
 **First-ship N-panel** — Import → Studio → Shoot stays the three-click path:
 
@@ -34,7 +34,14 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 - Empty state if there is no camera or product yet (Build Studio / Add Camera / Import)
 - **Play** previews (Setup first if needed). **Advanced**: Linear vs Ease, Bake, Clear, Render
 
-Parked chrome (Materials, mixer, CAD extras, batch, EV/WB/tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered.
+**Materials** (this cut) — product looks without hunting Blender's material UI:
+
+- One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product mesh
+- Empty state if nothing dressable is selected (Import or select a mesh)
+- **Assist** applies a matching local look from the filename / STEP hint — **no BlenderKit account required**
+- If BlenderKit is signed in, Assist still applies the local look and also runs search
+
+Parked chrome (BlenderKit login / search / apply, mixer, CAD extras, batch, EV/WB/tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered.
 
 Backends:
 
@@ -44,14 +51,14 @@ Backends:
 - **Light Draw** — Reflect / Direct / Orbit modal aimed at the **active** light or a **new** light
 - **Cameras** — named BEHOLD product cameras; Build Studio seeds `BEHOLD_Camera` and marks it active; Add Camera / Frame / Clear from the N-panel
 - **Turntable** — `BEHOLD_TurntablePivot` orbits the active camera; Clear drops the pivot only; Bake writes camera loc/rot then removes the pivot
-- **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
-- **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
+- **Materials** — local PBR rack (metal, plastic, rubber, glass, paint) applied from the N-panel; Material Assist finishes with that look
+- **BlenderKit** — optional soft-dependency bridge (login / search / apply in Advanced). Local looks work without an account
 - **Shoot** — EV / white balance / false color, Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
 - **CAD** — first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) for STEP/IGES/BREP on 5.1+/5.2 LTS (`import_scene.occ_import_step`). OCP fallback only if STEPper is missing and OpenCASCADE bindings actually import; otherwise Import fails with the [STEPper Releases](https://github.com/Peak-Design/STEPper_NEXT/releases) URL. Mesh formats stay native. Shared `product_import_dispatch` / `run_product_import`. CI-safe unit-cube STEP fixture; optional Blender smoke (`make smoke-step`) for Import → Build → Draft still.
 
 ## Coming (not this release)
 
-Gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, Materials/BlenderKit redesign, live tessellation regenerate, defeaturing, full auto-dress grid. See [CHECKPOINT.md](CHECKPOINT.md).
+Gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, live tessellation regenerate, defeaturing, per-body auto-dress from STEP material names, full BlenderKit browser. See [CHECKPOINT.md](CHECKPOINT.md).
 
 ## Import Product
 
@@ -68,7 +75,7 @@ Mesh and 3MF paths **never** require STEPper. The Import panel shows **STEPper N
 After import, BEHOLD can:
 
 1. **Build Studio** around the new mesh(es) (toggle on the file-browser operator / Advanced).
-2. **Material Assist** — guess a BlenderKit query from the filename, extension, or STEP material names (`housing_aluminum.step` → “brushed aluminum”).
+2. **Material Assist** — guess a look from the filename, extension, or STEP material names (`housing_aluminum.step` → brushed aluminum → **Metal** on the mesh). Applies the local rack. Searches BlenderKit only if you are signed in.
 
 ### STEPper NEXT
 
@@ -130,21 +137,32 @@ Sidebar **BEHOLD → Shoot**:
 
 Clear / Bake only touch the turntable pivot (and baked camera location / rotation keys). Other objects' animation is left alone.
 
+## Materials
+
+Sidebar **BEHOLD → Materials**:
+
+1. Select the product mesh (not the cyclorama / shadow catcher).
+2. Click **Metal**, **Plastic**, **Rubber**, **Glass**, or **Paint**. A Principled BSDF look lands on the mesh.
+3. Or click **Assist** — BEHOLD maps the filename / STEP hint to that rack and applies it. No BlenderKit account needed.
+4. Empty state if nothing is selected: Import a product or select a mesh.
+
+BlenderKit login / search / apply stay under **Advanced → Materials / BlenderKit**. Assist still searches there when you are signed in; the local look is already on the mesh.
+
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.7.0.zip`).
-2. **Versioned release** — push a tag `v0.7.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.8.0.zip`).
+2. **Versioned release** — push a tag `v0.8.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.7.0
-git push origin v0.7.0
+git tag v0.8.0
+git push origin v0.8.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.7.0.zip
+# → dist/behold-0.8.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
@@ -162,7 +180,7 @@ The zip also loads on **4.2+** when you need it; 5.2 LTS is the production targe
 
 ### BlenderKit
 
-Enable the official BlenderKit / Blendkit extension, then use **Log In to BlenderKit** under **Advanced → Materials**. BEHOLD does not re-host BlenderKit assets; your BlenderKit account/plan applies.
+Local Metal / Plastic / Rubber / Glass / Paint looks **do not** need BlenderKit. Enable the official BlenderKit / Blendkit extension only if you want library search; **Log In to BlenderKit** lives under **Advanced → Materials / BlenderKit**. BEHOLD does not re-host BlenderKit assets; your BlenderKit account/plan applies.
 
 ## Develop
 
