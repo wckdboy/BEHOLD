@@ -56,9 +56,9 @@ class VersionCompareTests(unittest.TestCase):
         self.assertFalse(core.is_newer((0, 10, 0), None))
 
     def test_installed_version_matches_brand(self) -> None:
-        self.assertEqual(brand.VERSION, (0, 12, 0))
-        self.assertEqual(core.installed_version(), (0, 12, 0))
-        self.assertEqual(core.version_string(), "0.12.0")
+        self.assertEqual(brand.VERSION, (0, 13, 0))
+        self.assertEqual(core.installed_version(), (0, 13, 0))
+        self.assertEqual(core.version_string(), "0.13.0")
 
 
 class ReleaseParseTests(unittest.TestCase):

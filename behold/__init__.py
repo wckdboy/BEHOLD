@@ -6,7 +6,7 @@ from __future__ import annotations
 bl_info = {
     "name": "BEHOLD",
     "author": "AMIRITE.studio",
-    "version": (0, 12, 0),
+    "version": (0, 13, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD | Shift+Alt+B pie",
     "description": "Product studio lighting and rendering — BEHOLD by AMIRITE.studio",
@@ -14,6 +14,7 @@ bl_info = {
     "doc_url": "https://github.com/wckdboy/BEHOLD",
 }
 
+from . import previews
 from . import preferences
 from . import properties
 from . import updates
@@ -27,6 +28,7 @@ from .studio import operators as studio_ops
 
 
 _MODULES = (
+    previews,
     properties,
     preferences,
     updates,

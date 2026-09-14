@@ -1,17 +1,23 @@
+<p align="center">
+  <img src="docs/brand/behold_logo.png" alt="BEHOLD by AMIRITE.studio" width="280">
+</p>
+
 # BEHOLD
 
-**BEHOLD by AMIRITE.studio** — open-source Blender add-on for KeyShot-simple product rendering.
+**BEHOLD by AMIRITE.studio** — the best product-render suite for Blender. KeyShot-simple lighting, cameras, and stills, as open source.
+
+Official mark (Blender UI): [`behold/icons/behold_icon.png`](behold/icons/behold_icon.png) · Wordmark: [`docs/brand/behold_logo.png`](docs/brand/behold_logo.png) · also [`behold/icons/behold_logo.png`](behold/icons/behold_logo.png)
 
 Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_info` / `blender_manifest.toml`) so older 4.x/5.1 builds can load the zip; production lighting, cameras, turntable, and materials are developed and tested against 5.2 LTS.
 
-Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
+Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.12.0)
+## What works (v0.13.0)
 
-**First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced**. Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
+**First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
 1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
-2. **Studio** — backdrop White / Grey / Black + **Build** (cyclorama auto-fits the product)
+2. **Studio** — backdrop White / Grey / Black + **Build**, then compact **HDRI** (Load / Reset, strength, Z rotation, optional reflections-only)
 3. **Lights** — inventory + Light Draw
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras
@@ -55,7 +61,7 @@ Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD 
 Backends:
 
 - **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
-- **Studio** — select mesh(es) → **Build Studio**. Cyclorama floor / wall auto-fit the product world AABB (v0.11.0: XY diagonal × margin, wall clears height with headroom). Rebuild replaces the old sweep. Lights sit outside the floor. Optional **Studio Margin** lives in Advanced (default 2.0×). White / Grey / Black first-ship tones + one Build button.
+- **Studio** — select mesh(es) → **Build Studio**. Cyclorama floor / wall auto-fit the product world AABB (v0.11.0: XY diagonal × margin, wall clears height with headroom). Rebuild replaces the old sweep. Lights sit outside the floor. Optional **Studio Margin** lives in Advanced (default 2.0×). White / Grey / Black first-ship tones + one Build button. **HDRI** (v0.13.0): Load an HDR/EXR from disk (OpenHDRI / Poly Haven / BYO), set strength and Z rotation, optional reflections-only + background strength, **Reset** to a solid studio world.
 - **Lights** — named BEHOLD area lights; Build Studio seeds Key / Fill / Rim and marks Key active
 - **Light Draw** — Reflect / Direct / Orbit modal aimed at the **active** light or a **new** light
 - **Cameras** — named BEHOLD product cameras; Build Studio seeds `BEHOLD_Camera` and marks it active; Add Camera / Frame / Clear from the N-panel
@@ -67,7 +73,7 @@ Backends:
 
 ## Coming (not this release)
 
-Gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, live tessellation regenerate, defeaturing, per-body auto-dress from STEP material names, full BlenderKit browser. See [CHECKPOINT.md](CHECKPOINT.md).
+Light shaping / softbox textures, Shot Manager, exposure / false color polish, bake-to-HDRI, gobos / IES, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
 ## Import Product
 
@@ -118,7 +124,14 @@ Sidebar **BEHOLD → Studio**:
 
 1. Select the product mesh(es). Pick **White / Grey / Black**. Click **Build**.
 2. The cyclorama sizes itself from the product world AABB: floor from the XY diagonal (or max width/depth) × **Studio Margin** (default 2.0×), wall from product height × 1.75 headroom. Lights sit outside the sweep. Build replaces any existing `BEHOLD_Cyclorama`.
-3. Empty / error if nothing is selected: **No mesh selected — select the product or Import Product**. Optional **Studio Margin** (1.5–2.5×) is under **Advanced → Studio**. First-ship stays one Build button.
+3. Empty / error if nothing is selected: **No mesh selected — select the product or Import Product**. Optional **Studio Margin** (1.5–2.5×) is under **Advanced → Studio**. First-ship stays one Build button plus the HDRI card below.
+
+**HDRI world** (same Studio section — not a new panel):
+
+1. **Load** an `.hdr` / `.exr` (or still image) from disk — OpenHDRI, Poly Haven, or any file you already have.
+2. Drag **Strength** and **Rotation** (degrees around Z). Reflections on chrome and the visible background update together.
+3. **Reflections only** keeps the HDRI in lighting / reflections and uses **Background** for what the camera sees (`0` hides the environment behind the cyclorama). Works in Cycles and EEVEE.
+4. **Reset** restores a solid studio world. Missing files and bad types report a sentence plus what to do next.
 
 ## Lights
 
@@ -185,7 +198,7 @@ The keymap is registered on the add-on keyconfig for **3D View** (Shift+Alt+B). 
 
 Edit → Preferences → Add-ons → **BEHOLD**:
 
-- Branding line (**BEHOLD** / **by AMIRITE.studio**) plus Docs and Releases links
+- Branding row (official mark + **BEHOLD** / **by AMIRITE.studio**) plus Docs and Releases links
 - **Updates** — **Check for updates**, last-checked status, **Update available: x.y.z** with **Install** / **Open release**. **Check for updates** toggle (default on) asks GitHub at most once a day
 - **Workflow strip** and **3D View header shortcuts** toggles
 - This-scene **Build Studio after Import**, **Material Assist after Import**, and **Quality** (same scene props as Advanced)
@@ -204,19 +217,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.12.0.zip`).
-2. **Versioned release** — push a tag `v0.12.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.13.0.zip`).
+2. **Versioned release** — push a tag `v0.13.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.12.0
-git push origin v0.12.0
+git tag v0.13.0
+git push origin v0.13.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.12.0.zip
+# → dist/behold-0.13.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

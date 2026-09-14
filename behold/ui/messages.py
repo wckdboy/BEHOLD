@@ -29,6 +29,10 @@ NO_CAMERA = EMPTY_NO_CAMERA
 NO_PRODUCT = EMPTY_NO_PRODUCT
 
 NO_FILE_SELECTED = "No file selected — pick a product mesh or CAD file"
+NO_HDRI_FILE = "No HDRI selected — pick an HDR, EXR, or image from disk"
+NO_WORLD = "No world on this scene — Build Studio, then Load HDRI"
+WORLD_RESET = "World reset to solid studio"
+HDRI_LOAD_FAILED = "Could not load that HDRI — pick another .hdr / .exr and try Load HDRI"
 
 NO_LIGHTS_TITLE = "No BEHOLD lights yet"
 NO_LIGHTS_NEXT = "Build Studio or Add Light"
@@ -74,6 +78,8 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_CAMERA,
         NO_PRODUCT,
         NO_FILE_SELECTED,
+        NO_HDRI_FILE,
+        NO_WORLD,
         NO_LIGHTS,
         NO_CAMERAS,
         FRAME_NO_PRODUCT,
@@ -110,7 +116,14 @@ def report_type(message: str) -> str:
     """WARNING for missing-prerequisite copy, ERROR for hard failures."""
     if message in EMPTY_STATE_MESSAGES:
         return WARNING
-    if message.startswith(("File not found:", "Unsupported file type:")):
+    if message.startswith(
+        (
+            "File not found:",
+            "Unsupported file type:",
+            "HDRI file not found:",
+            "Unsupported HDRI:",
+        )
+    ):
         return WARNING
     return ERROR
 
@@ -151,6 +164,21 @@ def unsupported_file_message(ext: str) -> str:
         f"Unsupported file type: {shown} — "
         "use OBJ, FBX, STL, GLB, 3MF, or STEP/IGES"
     )
+
+
+def hdri_file_not_found(filepath: str) -> str:
+    name = os.path.basename(filepath) or filepath or "that HDRI"
+    return f"HDRI file not found: {name} — choose an existing .hdr / .exr"
+
+
+def unsupported_hdri_message(ext: str) -> str:
+    shown = (ext or "").strip() or "this file"
+    return f"Unsupported HDRI: {shown} — use HDR, EXR, or a still image"
+
+
+def hdri_loaded_message(filepath: str) -> str:
+    name = os.path.basename(filepath) or filepath or "HDRI"
+    return f"HDRI loaded: {name}"
 
 
 def update_failure_report(copy: dict[str, str]) -> str:

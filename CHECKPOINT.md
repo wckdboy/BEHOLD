@@ -12,14 +12,15 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.11.0 |
-| **This branch / after merge** | **0.12.0** |
+| **Version on `main` (before this cut)** | 0.12.0 |
+| **This branch / after merge** | **0.13.0** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.12.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-0.13.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
+- **Brand + HDRI world (0.13.0)** — official mark (`behold/icons/behold_icon.png`) loaded with `bpy.utils.previews` on register: N-panel hero, main header, preferences branding, pie / header trigger. Wordmark at `docs/brand/behold_logo.png` (and `behold/icons/behold_logo.png`). Studio compact HDRI: Load (HDR/EXR/OpenHDRI disk file) into the world environment texture, strength, Z rotation (degrees), optional **Reflections only** + camera **Background** strength (Light Path mix, Cycles/EEVEE), **Reset world** to solid studio. Build Studio keeps a loaded HDRI. Errors share `behold/ui/messages.py`. Leveling path: [ROADMAP.md](ROADMAP.md).
 - **Workflow order (0.12.0)** — N-panel child order is **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (`bl_order` + `CLASSES`). Shoot is last so dressing lights/materials/cameras does not require scrolling past Shoot and back. Flow strip stays Import → Studio → Dress → Shoot; Dress Next runs **Material Assist**.
 - **Clear errors (0.12.0)** — primary operators share empty-state copy: short sentence + next step (e.g. “No mesh selected — select the product or Import Product”). Missing-prerequisite reports use `WARNING`; hard failures stay `ERROR`. Constants in `behold/ui/messages.py`. Update check/install copy stays in `behold/updates/core.py` (`describe_failure`).
 - **Cyclorama auto-fit (0.11.0)** — Build Studio sizes the sweep from the product world AABB: floor = max(width, depth, XY diagonal) × margin (default 2.0×, also ≥ 0.75 × height); wall = height × 1.75 headroom (also ≥ 0.4 × floor). Lights / catcher use `rig_size` so they stay outside the floor. Rebuild drops leftover `BEHOLD_Cyclorama` / catcher meshes. Optional **Studio Margin** in Advanced; first-ship stays White / Grey / Black + Build.
@@ -29,7 +30,7 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 - **Preferences (0.9.0 / 0.10.0)** — branding, Docs / Releases links, flow-strip and header toggles, this-scene auto-studio / Assist / quality. **0.10.0** adds Check for updates / last-checked / Install from the release zip.
 - **Import Product** — mesh + CAD. `.obj` `.fbx` `.stl` `.glb`/`.gltf` `.3mf` via native Blender importers (5.2 kwargs hardened). STEP/IGES/BREP via **STEPper NEXT first-class** (`import_scene.occ_import_step` with `filepath` + `override_file`); OCP only if STEPper is missing and bindings actually import. Missing CAD backend fails loudly with the STEPper Releases URL. Optional Build Studio + Material Assist from the filename. Shared `product_import_dispatch` / `run_product_import`.
 - **Import panel (0.7.0)** — **Import Product** picker plus one CAD backend line: **STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT** (opens Releases). Auto-studio, Material Assist, and the full CAD box stay in Advanced. STEPper's own import dialog is not embedded.
-- **Studio** — cyclorama / solid / HDRI, three-point or softbox, auto camera, optional shadow catcher, White / Grey / Black first-ship backdrop tones, light mixer (key / fill / rim / temperature). Cyclorama auto-fits product bounds on Build (0.11.0).
+- **Studio** — cyclorama / solid / HDRI world (0.13.0 load / rotate / strength / reflections-only), three-point or softbox, auto camera, optional shadow catcher, White / Grey / Black first-ship backdrop tones, light mixer (key / fill / rim / temperature). Cyclorama auto-fits product bounds on Build (0.11.0).
 - **Lights (0.4.0)** — add / remove / set active BEHOLD studio lights; per-light energy; empty-state UX; Build Studio seeds the rig and marks Key active.
 - **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, wheel power/size/distance, solo). **Aim Active vs New** against the multi-light inventory.
 - **Cameras (0.5.0)** — add / remove / set active / frame / clear BEHOLD product cameras; 85 mm full-frame defaults; frames selected mesh or product bounds (studio sweep excluded); active camera is the Shoot still + main-camera bookmark. Build Studio still seeds `BEHOLD_Camera`.
@@ -44,10 +45,10 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 ## First-ship chrome (Percival)
 
-N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy — not a new backend lane.
+N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI — not a new mega-panel.
 
 1. **Import** — **Import Product** file picker + one CAD backend line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**). Auto-studio, Material Assist toggle, and the full CAD box stay in Advanced. Do not embed STEPper's import dialog.
-2. **Studio** — backdrop **White / Grey / Black** + one **Build** button. No light mixer. Cyclorama auto-fits; **Studio Margin** stays in Advanced.
+2. **Studio** — backdrop **White / Grey / Black** + one **Build** button, then a compact **HDRI** card (Load / Reset, strength, Z rotation, optional reflections-only). No light mixer. Cyclorama auto-fits; **Studio Margin** stays in Advanced.
 3. **Lights** — inventory + Light Draw Active / New. Not a Light Wrangler clone; native Blender chrome.
 4. **Materials (0.8.0)** — local rack + Assist. Empty state if no product mesh is selected. Not a BlenderKit browser. Flow-strip **Dress** Next = Assist.
 5. **Cameras** — inventory + Add / Frame / Clear. Not Blender's Properties camera dump; native BEHOLD chrome.
@@ -59,12 +60,17 @@ Backend operators stay registered. Pie / header / preferences do not replace the
 
 ## Coming / In flight
 
+Leveling path (HDRI is shipped; not KeyShot/Light Wrangler parity): **[ROADMAP.md](ROADMAP.md)**.
+
 Not this PR:
 
+- Light shaping / softbox textures.
+- Shot Manager (KeyShot Studios-style named looks).
+- Physical exposure / false color polish (EV / false color stay on Advanced).
 - Gobos, IES library streaming, scrims.
 - Bake-to-HDRI.
 - Light / shadow linking UI.
-- False-color variants beyond what Shoot already has.
+- Full Light Wrangler viewport HDRI gizmo parity.
 - Full BlenderKit browser / apply-from-search-results (login/search/apply hooks stay; no in-panel library).
 - Live tessellation regenerate (OCP / STEPper deflection without re-picking the file).
 - Defeaturing (fillet/chamfer/hole suppress before tessellate).
@@ -76,6 +82,7 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ### 2026-09-14
 
+- v**0.13.0** Brand + HDRI world: official mark via `bpy.utils.previews` (hero, preferences, pie/header); wordmark in README / `docs/brand/`. Studio compact HDRI load / strength / Z rotation / reflections-only + Reset world. [ROADMAP.md](ROADMAP.md) lists the leveling path. Tests in `tests/test_hdri_world.py` and `tests/test_brand_icons.py`. Install zip `behold-0.13.0.zip`.
 - v**0.12.0** Workflow order + clear errors: N-panel **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (Shoot last, `bl_order`). Flow-strip Dress Next = Material Assist. Shared empty-state / operator copy in `behold/ui/messages.py` (sentence + next step; `WARNING` vs `ERROR`). Tests in `tests/test_messages.py`. Install zip `behold-0.12.0.zip`.
 - v**0.11.0** Cyclorama auto-fit: Build Studio sizes floor / wall / lights from the product world AABB (XY diagonal × margin, wall clears height with headroom). Rebuild replaces leftover sweeps. Optional Studio Margin in Advanced (default 2.0×). First-ship stays White / Grey / Black + Build. N-panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced (flow strip Import → Studio → Dress → Shoot). Tests in `tests/test_studio_fit.py`. Install zip `behold-0.11.0.zip`.
 - v**0.10.0** Easy update: GitHub Releases check (public API, no token), preferences Check for updates + last-checked + Install / Open release, session-dismissible N-panel notice, optional daily auto-check (default on). Installs `behold-*.zip` via 5.2 Install from Disk then asks to restart Blender. Tests in `tests/test_updates.py`. Install zip `behold-0.10.0.zip`.
@@ -101,8 +108,8 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ## Operating notes
 
-- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, cameras, shoot operators, turntable rig, STEP vertical smoke, STEPper NEXT first-class import, local material apply, GitHub update check / zip install).
-- **Percival** owns panel chrome (what the N-panel shows, what stays collapsed in Advanced).
+- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, HDRI world nodes, lights, cameras, shoot operators, turntable rig, STEP vertical smoke, STEPper NEXT first-class import, local material apply, GitHub update check / zip install).
+- **Percival** owns panel chrome (what the N-panel shows, what stays collapsed in Advanced, official mark placement, compact Studio HDRI card).
 - First-ship Import / Studio / Shoot must stay skinny even if extra operators remain registered. Import may show one CAD backend line; auto-studio / Material Assist toggle / full CAD box stay in Advanced. Turntable on Shoot is one compact row; bake / ease / render stay in Advanced.
 - Prefer parking controls in `BEHOLD_PT_advanced` over deleting them.
 - Lights, Materials, and Cameras sit between Studio and Shoot. Park BlenderKit chrome in Advanced — do not dump a library browser on Materials.

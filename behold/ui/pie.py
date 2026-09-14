@@ -6,8 +6,9 @@ from __future__ import annotations
 import bpy
 from bpy.types import Context, Menu, UILayout
 
-from ..preferences import get_prefs
 from ..brand import PIE_KEY, PIE_MENU_ID
+from ..preferences import get_prefs
+from ..previews import mark_icon_kwargs
 
 _keymaps: list[tuple] = []
 
@@ -24,7 +25,10 @@ class BEHOLD_MT_pie(Menu):
         pie.operator("behold.import_product", text="Import", icon="IMPORT")
         pie.operator("behold.render_still", text="Still", icon="RENDER_STILL")
         pie.operator("behold.light_draw", text="Light Draw", icon="LIGHT_AREA")
-        pie.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
+        build_icon = mark_icon_kwargs()
+        if "icon_value" not in build_icon:
+            build_icon = {"icon": "OUTLINER_OB_LIGHT"}
+        pie.operator("behold.build_studio", text="Build Studio", **build_icon)
         pie.operator(
             "behold.setup_turntable",
             text="Turntable Setup",
@@ -38,7 +42,7 @@ def draw_view3d_header(self, context: Context) -> None:
         return
     layout: UILayout = self.layout
     row = layout.row(align=True)
-    pie = row.operator("wm.call_menu_pie", text="", icon="RENDER_STILL")
+    pie = row.operator("wm.call_menu_pie", text="", **mark_icon_kwargs())
     pie.name = PIE_MENU_ID
     row.operator("behold.import_product", text="", icon="IMPORT")
     row.operator("behold.build_studio", text="", icon="OUTLINER_OB_LIGHT")

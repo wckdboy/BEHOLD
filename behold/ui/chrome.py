@@ -5,10 +5,11 @@ from __future__ import annotations
 
 from bpy.types import Context, UILayout
 
-from ..brand import HERO_ICON, PRODUCT_CREDIT, PRODUCT_NAME
+from ..brand import PRODUCT_CREDIT, PRODUCT_NAME
 from ..cad import material_assist
 from ..materials.presets import is_dressable_mesh_name
 from ..preferences import get_prefs
+from ..previews import draw_mark_label
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
 from ..updates.core import (
@@ -32,7 +33,7 @@ from .flow import (
 
 def draw_hero(layout: UILayout) -> None:
     box = layout.box()
-    box.label(text=PRODUCT_NAME, icon=HERO_ICON)
+    draw_mark_label(box, PRODUCT_NAME)
     box.label(text=PRODUCT_CREDIT)
 
 

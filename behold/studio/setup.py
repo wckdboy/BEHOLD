@@ -17,6 +17,7 @@ from .fit import (
     fit_from_aabb,
 )
 from .tones import backdrop_tone_rgba, kelvin_to_rgb
+from .world_apply import reapply_hdri_if_loaded, setup_solid_world
 from ..materials.presets import EMPTY_NO_MESH
 
 PREFIX = light_lib.PREFIX
@@ -126,17 +127,7 @@ def setup_world(
     color: tuple[float, float, float, float] = (0.02, 0.02, 0.025, 1.0),
     strength: float = 0.2,
 ) -> None:
-    world = scene.world or bpy.data.worlds.new(f"{PREFIX}_World")
-    scene.world = world
-    world.use_nodes = True
-    nodes = world.node_tree.nodes
-    links = world.node_tree.links
-    nodes.clear()
-    bg = nodes.new("ShaderNodeBackground")
-    bg.inputs["Color"].default_value = color
-    bg.inputs["Strength"].default_value = strength
-    out = nodes.new("ShaderNodeOutputWorld")
-    links.new(bg.outputs["Background"], out.inputs["Surface"])
+    setup_solid_world(scene, color=color, strength=strength)
 
 
 def _activate_key_light(context: Context) -> None:
@@ -256,6 +247,7 @@ def build_studio(context: Context) -> str:
     except TypeError:
         pass
 
+    reapply_hdri_if_loaded(context)
     return f"Studio built for {len(targets)} object(s)"
 
 
