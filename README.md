@@ -6,13 +6,17 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.8.0)
+## What works (v0.9.0)
 
-**First-ship N-panel** — Import → Studio → Shoot stays the three-click path:
+**First-ship N-panel** — Import → Studio → Shoot stays the three-click path. The BEHOLD tab now has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip that checks off as the scene fills in:
 
 1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
 2. **Studio** — backdrop White / Grey / Black + **Build**
 3. **Shoot** — Draft / Final, Still, Render, compact **Turntable** (seconds + Setup + Play)
+
+Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath.
+
+**Faster actions** — pie menu + 3D View header (see [Pie and header](#pie-and-header) below).
 
 **Lights** — native multi-light inventory plus Light Draw:
 
@@ -34,7 +38,7 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 - Empty state if there is no camera or product yet (Build Studio / Add Camera / Import)
 - **Play** previews (Setup first if needed). **Advanced**: Linear vs Ease, Bake, Clear, Render
 
-**Materials** (this cut) — product looks without hunting Blender's material UI:
+**Materials** — product looks without hunting Blender's material UI:
 
 - One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product mesh
 - Empty state if nothing dressable is selected (Import or select a mesh)
@@ -148,21 +152,45 @@ Sidebar **BEHOLD → Materials**:
 
 BlenderKit login / search / apply stay under **Advanced → Materials / BlenderKit**. Assist still searches there when you are signed in; the local look is already on the mesh.
 
+## Pie and header
+
+**3D Viewport pie** (`Shift+Alt+B`) — `wm.call_menu_pie` → `BEHOLD_MT_pie`:
+
+| Direction | Action |
+| --- | --- |
+| West | Import Product |
+| East | Still |
+| South | Light Draw |
+| North | Build Studio |
+| North-west | Turntable Setup |
+
+The keymap is registered on the add-on keyconfig for **3D View** (Shift+Alt+B). Rebind in Blender Preferences → Keymap if it collides.
+
+**3D View header** — icon cluster on the viewport header: pie, Import, Build Studio, Still (the three-click path). Toggle it off under add-on preferences if you want a stock header.
+
+## Preferences
+
+Edit → Preferences → Add-ons → **BEHOLD**:
+
+- Branding line (**BEHOLD** / **by AMIRITE.studio**) plus Docs and Releases links
+- **Workflow strip** and **3D View header shortcuts** toggles
+- This-scene **Build Studio after Import**, **Material Assist after Import**, and **Quality** (same scene props as Advanced)
+
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.8.0.zip`).
-2. **Versioned release** — push a tag `v0.8.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.9.0.zip`).
+2. **Versioned release** — push a tag `v0.9.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.8.0
-git push origin v0.8.0
+git tag v0.9.0
+git push origin v0.9.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.8.0.zip
+# → dist/behold-0.9.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
