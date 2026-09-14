@@ -12,7 +12,9 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.14.0)
+## What works (v0.15.0)
+
+**0.15.0 is test hardening + N-panel draw-pass cache only** — same artist path as 0.14.0 (Shot Manager already on `main`). This zip does not change Shots.
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
@@ -235,19 +237,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.14.0.zip`).
-2. **Versioned release** — push a tag `v0.14.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.15.0.zip`).
+2. **Versioned release** — push a tag `v0.15.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.14.0
-git push origin v0.14.0
+git tag v0.15.0
+git push origin v0.15.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.14.0.zip
+# → dist/behold-0.15.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

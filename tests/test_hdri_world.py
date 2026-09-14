@@ -76,11 +76,15 @@ class HdriSpecTests(unittest.TestCase):
         bad = world.classify_hdri_filepath("look.blend")
         self.assertIsNotNone(bad)
         self.assertEqual(bad.kind, "unsupported")
+        self.assertEqual(bad.detail, ".blend")
         missing = world.classify_hdri_filepath("/tmp/no-such-studio.hdr")
         self.assertIsNotNone(missing)
         self.assertEqual(missing.kind, "missing")
         self.assertTrue(world.is_blender_relative("//studio.hdr"))
         self.assertIsNone(world.existing_filepath("//studio.hdr"))
+        rel = world.classify_hdri_filepath("//studio.hdr")
+        self.assertIsNotNone(rel)
+        self.assertEqual(rel.kind, "missing")
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "studio.hdr"
             path.write_bytes(b"#dummy")
@@ -88,6 +92,48 @@ class HdriSpecTests(unittest.TestCase):
             resolved = world.existing_filepath(str(path))
             self.assertIsNotNone(resolved)
             self.assertTrue(str(resolved).endswith("studio.hdr"))
+            via_resolved = world.classify_hdri_filepath(
+                "/nope/missing.hdr",
+                resolved=str(path),
+            )
+            self.assertIsNone(via_resolved)
+            still_bad = world.classify_hdri_filepath(
+                "look.blend",
+                resolved=str(path),
+            )
+            self.assertIsNotNone(still_bad)
+            self.assertEqual(still_bad.kind, "unsupported")
+
+    def test_all_hdri_extensions_and_filter_glob(self) -> None:
+        self.assertTrue(world.is_hdri_extension("studio.HDR"))
+        self.assertTrue(world.is_hdri_extension("studio.JPEG"))
+        self.assertEqual(world.hdri_extension("a.TIFF"), ".tiff")
+        self.assertFalse(world.is_hdri_extension("a.blend"))
+        self.assertFalse(world.is_hdri_extension(""))
+        glob = world.HDRI_FILTER_GLOB.lower()
+        with tempfile.TemporaryDirectory() as tmp:
+            for ext in sorted(world.HDRI_EXTENSIONS):
+                self.assertIn(f"*{ext}", glob, ext)
+                path = Path(tmp) / f"env{ext}"
+                path.write_bytes(b"#dummy")
+                self.assertIsNone(world.classify_hdri_filepath(str(path)), ext)
+
+    def test_rotation_edge_values(self) -> None:
+        self.assertEqual(world.rotation_radians_z(0.0), (0.0, 0.0, 0.0))
+        self.assertAlmostEqual(world.rotation_radians_z(360.0)[2], math.tau)
+        self.assertAlmostEqual(world.rotation_radians_z(-90.0)[2], -math.pi / 2.0)
+        self.assertAlmostEqual(world.degrees_to_radians(0.0), 0.0)
+
+    def test_graph_keys_are_unique(self) -> None:
+        for reflections in (False, True):
+            nodes = world.hdri_nodes(reflections_only=reflections)
+            keys = [spec.key for spec in nodes]
+            names = [spec.name for spec in nodes]
+            self.assertEqual(len(keys), len(set(keys)), keys)
+            self.assertEqual(len(names), len(set(names)), names)
+            for link in world.hdri_links(reflections_only=reflections):
+                self.assertIn(link.from_key, keys)
+                self.assertIn(link.to_key, keys)
 
 
 class HdriWiringTests(unittest.TestCase):

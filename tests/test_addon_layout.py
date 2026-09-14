@@ -22,12 +22,12 @@ class AddonLayoutTests(unittest.TestCase):
         init = _read(ADDON / "__init__.py")
         match = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
         self.assertIsNotNone(match)
-        self.assertEqual(match.group(1), "0.14.0")
-        self.assertIn('"version": (0, 14, 0)', init)
+        self.assertEqual(match.group(1), "0.15.0")
+        self.assertIn('"version": (0, 15, 0)', init)
         self.assertIn('"blender": (4, 2, 0)', init)
         self.assertIn('blender_version_min = "4.2.0"', manifest)
         self.assertIn("AMIRITE.studio", init)
-        self.assertIn("VERSION = (0, 14, 0)", _read(ADDON / "brand.py"))
+        self.assertIn("VERSION = (0, 15, 0)", _read(ADDON / "brand.py"))
 
     def test_stepper_url_documented(self) -> None:
         readme = _read(ROOT / "README.md")
@@ -46,6 +46,7 @@ class AddonLayoutTests(unittest.TestCase):
         self.assertIn("0.12.0", readme)
         self.assertIn("0.13.0", readme)
         self.assertIn("0.14.0", readme)
+        self.assertIn("0.15.0", readme)
         self.assertIn("Shot Manager", readme)
         self.assertIn("docs/brand/behold_logo.png", readme)
         self.assertIn("behold/icons/behold_icon.png", readme)
@@ -75,6 +76,34 @@ class AddonLayoutTests(unittest.TestCase):
         for path in files:
             source = _read(path)
             ast.parse(source, filename=str(path))
+
+    def test_unit_tests_stay_offline(self) -> None:
+        banned_roots = {"urllib", "http", "requests"}
+        for path in (ROOT / "tests").rglob("*.py"):
+            tree = ast.parse(_read(path), filename=str(path))
+            for node in ast.walk(tree):
+                names: list[str] = []
+                if isinstance(node, ast.Import):
+                    names.extend(alias.name for alias in node.names)
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    names.append(node.module)
+                for name in names:
+                    root = name.split(".", 1)[0]
+                    self.assertNotIn(
+                        root,
+                        banned_roots,
+                        f"{path.name} imports {name}",
+                    )
+
+    def test_shot_manager_stays_the_014_shoot_card(self) -> None:
+        """0.14.0 Shot Manager is on main; this cut must not grow a Shots panel."""
+        self.assertTrue((ADDON / "shoot" / "shots.py").is_file())
+        self.assertTrue((ADDON / "shoot" / "shots_apply.py").is_file())
+        panels = _read(ADDON / "ui" / "panels.py")
+        self.assertIn("draw_shots_compact", panels)
+        self.assertNotIn("BEHOLD_PT_shots", panels)
+        names = {path.name for path in ADDON.rglob("*.py")}
+        self.assertNotIn("shot_manager.py", names)
 
     def test_import_product_operator_id(self) -> None:
         source = _read(ADDON / "product_import" / "operators.py")

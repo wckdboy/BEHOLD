@@ -60,6 +60,21 @@ class MeshFailureMessageTests(unittest.TestCase):
             invoke.format_empty_mesh_import_message("wm.obj_import"),
         )
 
+    def test_file_not_found_and_unsupported_copy(self) -> None:
+        missing = invoke.format_file_not_found_message("/tmp/gone.obj")
+        self.assertIn("gone.obj", missing)
+        self.assertIn("existing", missing.lower())
+        unknown = invoke.format_unsupported_file_message(".pdf")
+        self.assertIn(".pdf", unknown)
+        self.assertIn("STEP", unknown)
+        self.assertIn("OBJ", unknown)
+        empty = invoke.format_unsupported_file_message("")
+        self.assertIn("this file", empty)
+        self.assertEqual(
+            invoke.format_file_not_found_message(""),
+            "File not found: that file — choose an existing product file",
+        )
+
 
 class NativeWiringTests(unittest.TestCase):
     def test_native_reports_which_operator_failed(self) -> None:

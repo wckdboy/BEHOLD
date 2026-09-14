@@ -6,6 +6,8 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.15.0 Test hardening + perf** — regression tests and N-panel draw-once
+  cache only. No new artist chrome. Does not change Shot Manager.
 - **0.14.0 Shot Manager** — named camera + quality + HDRI + backdrop +
   output presets on Shoot. Save / recall “hero chrome” vs “pack shot”
   without duplicating the .blend. Not a full editorial suite.

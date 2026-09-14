@@ -12,14 +12,15 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.13.0 |
-| **This branch / after merge** | **0.14.0** |
+| **Version on `main` (before this cut)** | 0.14.0 |
+| **This branch / after merge** | **0.15.0** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.14.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-0.15.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
+- **Test hardening + draw-pass cache (0.15.0)** — no new artist features. Regression coverage for HDRI path/graph helpers, cyclorama fit edge cases (NaN headroom/extents, bevel, XY floor edge), update semver compare (`v`/`rc`/`+build`/four-part), and Import Product dispatch (every registered extension, dotted names, unknown). N-panel draw: `cad_status()` (addon_utils / bl_ext walk) and scene product/studio/look/camera flags run **once per UI pass** (`behold/draw_cache.py`, `cad_status_for_draw`, `scene_snap_from_context`) instead of once per sibling panel. Turntable empty-state uses the snap, not a `product_targets` list. Operators still call fresh `cad_status()` after enable. `make test` stays offline. Does not change Shot Manager (already on `main` as 0.14.0). Tests in `tests/test_draw_cache.py` plus expansions in `test_hdri_world.py`, `test_studio_fit.py`, `test_updates.py`, `test_formats.py`, `test_mesh_invoke.py`.
 - **Shot Manager (0.14.0)** — named shoot presets on Shoot (KeyShot Studios–skinny, not a clone). A Shot stores active/bookmarked camera name, render quality, turntable seconds, HDRI path/strength/rotation (plus reflections-only / background when present), backdrop tone, and output path tokens. **Add** from current, **Apply** restores camera + `scene.behold` + world HDRI without touching the product mesh, inline rename, Delete. Empty state until the first shot. CollectionProperty on the scene — survives save/reload. Tests in `tests/test_shots.py`.
 - **Brand + HDRI world (0.13.0)** — official mark (`behold/icons/behold_icon.png`) loaded with `bpy.utils.previews` on register: N-panel hero, main header, preferences branding, pie / header trigger. Wordmark at `docs/brand/behold_logo.png` (and `behold/icons/behold_logo.png`). Studio compact HDRI: Load (HDR/EXR/OpenHDRI disk file) into the world environment texture, strength, Z rotation (degrees), optional **Reflections only** + camera **Background** strength (Light Path mix, Cycles/EEVEE), **Reset world** to solid studio. Build Studio keeps a loaded HDRI. Errors share `behold/ui/messages.py`. Leveling path: [ROADMAP.md](ROADMAP.md).
 - **Workflow order (0.12.0)** — N-panel child order is **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (`bl_order` + `CLASSES`). Shoot is last so dressing lights/materials/cameras does not require scrolling past Shoot and back. Flow strip stays Import → Studio → Dress → Shoot; Dress Next runs **Material Assist**.
@@ -42,11 +43,11 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 - **BlenderKit** — soft-dependency bridge with login / search / apply hooks (Advanced). Not required to dress a mesh.
 - **Shoot depth** — EV / white balance / false color; Draft · Product · Hero (and Final) sample presets; `{angle}` `{camera}` `{quality}` path tokens; main-camera bookmark; still; batch angles; turntable; **Shot Manager** (0.14.0).
 - **CI zip** — GitHub Actions runs `make test` then builds the install zip; tags `v*` publish a GitHub Release.
-- **Tests** — `make test` (`unittest` under `tests/`, no Blender required). `tests/test_studio_fit.py` covers cyclorama margin math (tiny cube, long bar, tall tower, flat sheet) without bpy. `tests/test_updates.py` covers semver compare, GitHub JSON fixtures, and operator/prefs wiring (no live network). `tests/test_materials.py` covers rack defaults, socket aliases, Assist mapping, and wiring. `tests/test_messages.py` covers shared error / empty-state copy. `tests/test_shots.py` covers shot serialize/apply helpers and Shoot wiring.
+- **Tests** — `make test` (`unittest` under `tests/`, no Blender required, no live network). `tests/test_studio_fit.py` covers cyclorama margin math (tiny cube, long bar, tall tower, flat sheet, NaN/clamp, bevel, XY edge) without bpy. `tests/test_updates.py` covers semver compare edge cases, GitHub JSON fixtures, and operator/prefs wiring (injected urlopen). `tests/test_hdri_world.py` covers path classify / graph spec. `tests/test_formats.py` covers Import Product dispatch. `tests/test_draw_cache.py` covers per-pass memo + scene-flag reducer. `tests/test_materials.py` covers rack defaults, socket aliases, Assist mapping, and wiring. `tests/test_messages.py` covers shared error / empty-state copy. `tests/test_shots.py` covers shot serialize/apply helpers and Shoot wiring.
 
 ## First-ship chrome (Percival)
 
-N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI; **v0.14.0 is compact Shot Manager on Shoot** — not a new mega-panel.
+N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI; **v0.14.0 is compact Shot Manager on Shoot**; v0.15.0 is test/opt only — not a new mega-panel.
 
 1. **Import** — **Import Product** file picker + one CAD backend line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**). Auto-studio, Material Assist toggle, and the full CAD box stay in Advanced. Do not embed STEPper's import dialog.
 2. **Studio** — backdrop **White / Grey / Black** + one **Build** button, then a compact **HDRI** card (Load / Reset, strength, Z rotation, optional reflections-only). No light mixer. Cyclorama auto-fits; **Studio Margin** stays in Advanced.
@@ -82,6 +83,7 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ### 2026-09-14
 
+- v**0.15.0** Test hardening + N-panel draw-pass cache: more HDRI / fit / semver / import-dispatch tests; `cad_status` + scene flags once per redraw; no artist features. Does not change Shot Manager. Install zip `behold-0.15.0.zip`.
 - v**0.14.0** Shot Manager: named presets on Shoot (camera, quality, turntable seconds, HDRI, backdrop tone, output tokens). Add / Apply / rename / Delete; persist on the blend; Apply does not destroy the product mesh. Tests in `tests/test_shots.py`. Install zip `behold-0.14.0.zip`.
 - v**0.13.0** Brand + HDRI world: official mark via `bpy.utils.previews` (hero, preferences, pie/header); wordmark in README / `docs/brand/`. Studio compact HDRI load / strength / Z rotation / reflections-only + Reset world. [ROADMAP.md](ROADMAP.md) lists the leveling path. Tests in `tests/test_hdri_world.py` and `tests/test_brand_icons.py`. Install zip `behold-0.13.0.zip`.
 - v**0.12.0** Workflow order + clear errors: N-panel **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (Shoot last, `bl_order`). Flow-strip Dress Next = Material Assist. Shared empty-state / operator copy in `behold/ui/messages.py` (sentence + next step; `WARNING` vs `ERROR`). Tests in `tests/test_messages.py`. Install zip `behold-0.12.0.zip`.

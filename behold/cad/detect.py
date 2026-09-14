@@ -7,6 +7,12 @@ from typing import Any
 
 import bpy
 
+from ..draw_cache import (
+    CAD_STATUS_KEY,
+    draw_get,
+    invalidate_draw_key,
+    memo_by_fingerprint,
+)
 from . import ocp_core
 from . import stepper_api
 from .stepper_api import (
@@ -128,6 +134,7 @@ def ensure_stepper_enabled() -> dict[str, Any]:
     try:
         bpy.ops.preferences.addon_enable(module=module)
     except Exception as exc:  # noqa: BLE001
+        invalidate_cad_status_cache()
         return {
             "ok": False,
             "installed": True,
@@ -137,6 +144,7 @@ def ensure_stepper_enabled() -> dict[str, Any]:
         }
 
     operator = stepper_operator_available()
+    invalidate_cad_status_cache()
     if operator == STEPPER_OCC_IMPORT_OP:
         return {
             "ok": True,
@@ -210,13 +218,49 @@ def cad_status() -> dict[str, Any]:
     }
 
 
+_CAD_MEMO: dict[str, object] = {}
+
+
+def _enabled_addon_count() -> int:
+    """Cheap fingerprint: enabled add-ons change when STEPper is toggled."""
+    try:
+        return len(bpy.context.preferences.addons.keys())
+    except Exception:  # noqa: BLE001
+        return -1
+
+
+def invalidate_cad_status_cache() -> None:
+    """Drop cached UI CAD status (after enable / import)."""
+    _CAD_MEMO.clear()
+    invalidate_draw_key(CAD_STATUS_KEY)
+
+
+def cad_status_for_draw() -> dict[str, Any]:
+    """``cad_status()`` at most once per N-panel pass (and while addon count holds).
+
+    ``addon_utils.modules()`` + ``bl_ext`` walks are too heavy for every sibling
+    panel redraw. Import and Advanced share one probe. Operators still call
+    ``cad_status()`` directly after ``ensure_stepper_enabled``.
+    """
+
+    def load() -> dict[str, Any]:
+        fingerprint = _enabled_addon_count()
+        if fingerprint < 0:
+            return cad_status()
+        return memo_by_fingerprint(_CAD_MEMO, fingerprint, cad_status)
+
+    return draw_get(CAD_STATUS_KEY, load)
+
+
 __all__ = (
     "STEPPER_IMPORT_OPS",
     "STEPPER_INSTALL_URL",
     "STEPPER_MODULE_CANDIDATES",
     "STEPPER_OCC_IMPORT_OP",
     "cad_status",
+    "cad_status_for_draw",
     "ensure_stepper_enabled",
+    "invalidate_cad_status_cache",
     "find_enabled_stepper_module",
     "find_stepper_module",
     "import_panel_copy",

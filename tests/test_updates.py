@@ -46,6 +46,17 @@ class VersionCompareTests(unittest.TestCase):
         self.assertEqual(core.parse_version("v0.11.0-rc.1"), (0, 11, 0))
         self.assertIsNone(core.parse_version(""))
         self.assertIsNone(core.parse_version("latest"))
+        self.assertEqual(core.parse_version("V0.15.0"), (0, 15, 0))
+        self.assertEqual(core.parse_version("  0.15.0  "), (0, 15, 0))
+        self.assertEqual(core.parse_version("0_15_0"), (0, 15, 0))
+        self.assertEqual(core.parse_version("0.15.0-beta.2"), (0, 15, 0))
+        self.assertEqual(core.parse_version("0.15.0rc1"), (0, 15))
+        self.assertEqual(core.parse_version("0.15.0+build.5"), (0, 15))
+        self.assertEqual(core.parse_version("0.15.0.1"), (0, 15, 0, 1))
+        self.assertEqual(core.parse_version("v0"), (0,))
+        self.assertIsNone(core.parse_version("v"))
+        self.assertIsNone(core.parse_version(".1.2"))
+        self.assertIsNone(core.parse_version(None))
 
     def test_is_newer_pads_missing_patch(self) -> None:
         self.assertTrue(core.is_newer((0, 10, 0), (0, 9, 0)))
@@ -54,11 +65,22 @@ class VersionCompareTests(unittest.TestCase):
         self.assertFalse(core.is_newer((0, 9, 0), (0, 10, 0)))
         self.assertFalse(core.is_newer(None, (0, 10, 0)))
         self.assertFalse(core.is_newer((0, 10, 0), None))
+        self.assertTrue(core.is_newer((0, 15), (0, 14, 9)))
+        self.assertTrue(core.is_newer((0, 15, 0, 1), (0, 15, 0)))
+        self.assertFalse(core.is_newer((0, 15, 0), (0, 15, 0, 0)))
+        self.assertTrue(core.is_newer((1, 0), (0, 99, 99)))
+        self.assertFalse(core.is_newer((0,), (0, 0, 0)))
+        self.assertFalse(core.is_newer((), (0, 15, 0)))
+
+    def test_version_string_and_empty_tuple(self) -> None:
+        self.assertEqual(core.version_string((0, 15, 0)), "0.15.0")
+        self.assertEqual(core.version_string((0, 15)), "0.15")
+        self.assertEqual(core.version_string(()), "?")
 
     def test_installed_version_matches_brand(self) -> None:
-        self.assertEqual(brand.VERSION, (0, 14, 0))
-        self.assertEqual(core.installed_version(), (0, 14, 0))
-        self.assertEqual(core.version_string(), "0.14.0")
+        self.assertEqual(brand.VERSION, (0, 15, 0))
+        self.assertEqual(core.installed_version(), (0, 15, 0))
+        self.assertEqual(core.version_string(), "0.15.0")
 
 
 class ReleaseParseTests(unittest.TestCase):
