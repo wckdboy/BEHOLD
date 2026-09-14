@@ -86,6 +86,12 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(messages.report_type(messages.UPDATE_CHECK_OFFLINE), "WARNING")
         self.assertEqual(messages.report_type(messages.NO_COMPOSITOR), "WARNING")
         self.assertEqual(messages.report_type(messages.LOOK_COMPOSITOR_BUSY), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_LINKING_API), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_LINKING_ENGINE), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_SHADOW_API), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_SELECTION), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_PRODUCT_TO_SOLO), "WARNING")
+        self.assertEqual(messages.report_type(messages.LINKING_FAILED), "ERROR")
         self.assertEqual(messages.report_set(messages.NO_MESH_SELECTED), {"WARNING"})
         self.assertEqual(
             messages.report_type(messages.file_not_found_message("/tmp/gone.step")),
@@ -136,6 +142,10 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.reset_world", studio)
         self.assertIn("behold.bake_hdri", studio)
         self.assertIn("behold.apply_light_preset", studio)
+        self.assertIn("behold.link_selected", studio)
+        self.assertIn("behold.exclude_selected", studio)
+        self.assertIn("behold.unlink_selected", studio)
+        self.assertIn("behold.solo_product_link", studio)
         self.assertIn("EMPTY_NO_MESH", setup)
         self.assertIn("BUILD_NEEDS_MESH = EMPTY_NO_MESH", setup)
         self.assertIn("report_set", studio)

@@ -79,6 +79,10 @@ class MultiLightWiringTests(unittest.TestCase):
             "behold.remove_light",
             "behold.set_active_light",
             "behold.apply_light_preset",
+            "behold.link_selected",
+            "behold.exclude_selected",
+            "behold.unlink_selected",
+            "behold.solo_product_link",
         ):
             self.assertIn(f'bl_idname = "{bl_id}"', source)
 
@@ -88,6 +92,7 @@ class MultiLightWiringTests(unittest.TestCase):
         self.assertIn("new_light_energy", source)
         self.assertIn("light_draw_target", source)
         self.assertIn("light_shape_preset", source)
+        self.assertIn("light_linking_kind", source)
         self.assertIn('("ACTIVE", "Active"', source)
         self.assertIn('("NEW", "New"', source)
 

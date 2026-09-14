@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape presets."""
+"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape presets, linking."""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ from bpy.types import Context, Operator
 from bpy_extras.io_utils import ImportHelper
 
 from . import bake_apply
+from . import light_linking
+from . import light_linking_apply
 from . import light_presets
 from . import light_shape
 from . import lights as light_lib
@@ -195,6 +197,99 @@ class BEHOLD_OT_bake_hdri(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_link_selected(Operator):
+    bl_idname = "behold.link_selected"
+    bl_label = "Link Selected"
+    bl_description = (
+        "Cycle include / exclude on selected objects for the active BEHOLD light "
+        "(Cycles light linking). Same idea as Light Wrangler L, against the selection"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    kind: EnumProperty(
+        name="Kind",
+        description="Light linking (receivers) or shadow linking (blockers)",
+        items=light_linking.kind_enum_items(),
+        default=light_linking.DEFAULT_KIND,
+    )
+
+    def execute(self, context: Context):
+        result = light_linking_apply.link_selected(context, kind=self.kind)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_exclude_selected(Operator):
+    bl_idname = "behold.exclude_selected"
+    bl_label = "Exclude Selected"
+    bl_description = (
+        "Exclude selected objects from the active BEHOLD light "
+        "(Cycles light linking / shadow linking)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    kind: EnumProperty(
+        name="Kind",
+        description="Light linking (receivers) or shadow linking (blockers)",
+        items=light_linking.kind_enum_items(),
+        default=light_linking.DEFAULT_KIND,
+    )
+
+    def execute(self, context: Context):
+        result = light_linking_apply.exclude_selected(context, kind=self.kind)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_unlink_selected(Operator):
+    bl_idname = "behold.unlink_selected"
+    bl_label = "Unlink"
+    bl_description = (
+        "Remove selected objects from the active BEHOLD light's linking collection. "
+        "With nothing selected, clear linking on that light"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    kind: EnumProperty(
+        name="Kind",
+        description="Light linking (receivers) or shadow linking (blockers)",
+        items=light_linking.kind_enum_items(),
+        default=light_linking.DEFAULT_KIND,
+    )
+
+    def execute(self, context: Context):
+        result = light_linking_apply.unlink_selected(context, kind=self.kind)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_solo_product_link(Operator):
+    bl_idname = "behold.solo_product_link"
+    bl_label = "Solo product"
+    bl_description = (
+        "Only the product receives this light (and casts its shadows when "
+        "shadow linking is available). Cyclorama stays unlit"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = light_linking_apply.solo_product(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
 CLASSES = (
     BEHOLD_OT_build_studio,
     BEHOLD_OT_refresh_lights,
@@ -202,6 +297,10 @@ CLASSES = (
     BEHOLD_OT_remove_light,
     BEHOLD_OT_set_active_light,
     BEHOLD_OT_apply_light_preset,
+    BEHOLD_OT_link_selected,
+    BEHOLD_OT_exclude_selected,
+    BEHOLD_OT_unlink_selected,
+    BEHOLD_OT_solo_product_link,
     BEHOLD_OT_load_hdri,
     BEHOLD_OT_reset_world,
     BEHOLD_OT_bake_hdri,
