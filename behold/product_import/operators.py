@@ -117,7 +117,10 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
     )
     deflection: FloatProperty(
         name="CAD Deflection",
-        description="OCP tessellation deflection for STEP/IGES/BREP (ignored for mesh)",
+        description=(
+            "OCP tessellation deflection for STEP/IGES/BREP (ignored for mesh). "
+            "Passed to STEPper as lin_deflection_len only when that RNA prop exists"
+        ),
         default=0.001,
         min=0.00001,
         soft_max=0.05,

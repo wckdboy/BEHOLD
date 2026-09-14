@@ -53,9 +53,10 @@ def probe_ocp() -> dict[str, Any]:
         "available": False,
         "label": "OCP not installed",
         "detail": (
-            "Install STEPper NEXT from github.com/Peak-Design/STEPper_NEXT "
-            "(Blender 5.1+) or add cadquery-ocp / cadquery-ocp-novtk into "
-            f"Blender's Python. ({type(_OCP_IMPORT_ERROR).__name__})"
+            "Install STEPper NEXT from "
+            "https://github.com/Peak-Design/STEPper_NEXT/releases "
+            "(Blender 5.1+/5.2 LTS) or add cadquery-ocp / cadquery-ocp-novtk "
+            f"into Blender's Python. ({type(_OCP_IMPORT_ERROR).__name__})"
         ),
     }
 

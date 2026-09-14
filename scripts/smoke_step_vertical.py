@@ -85,6 +85,7 @@ def main() -> None:
     _register_behold()
 
     from behold.cad import detect
+    from behold.cad.stepper_api import missing_cad_backend_message
     from behold.product_import.formats import product_import_dispatch
     from behold.product_import.operators import run_product_import
     from behold.shoot import operators as shoot_ops
@@ -95,11 +96,7 @@ def main() -> None:
 
     status = detect.cad_status()
     if not status.get("can_import"):
-        _die(
-            2,
-            "no CAD backend. Install STEPper NEXT or cadquery-ocp / "
-            f"cadquery-ocp-novtk in Blender's Python. ({status.get('detail')})",
-        )
+        _die(2, missing_cad_backend_message())
 
     context = bpy.context
     result = run_product_import(

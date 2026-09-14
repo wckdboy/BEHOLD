@@ -3,8 +3,7 @@
 
 from __future__ import annotations
 
-import os
-from typing import Any
+from typing import Any, Never
 
 import bpy
 from bpy.props import FloatProperty, StringProperty
@@ -13,7 +12,9 @@ from bpy_extras.io_utils import ImportHelper
 
 from . import detect
 from . import material_assist
+from . import ocp_core
 from . import ocp_import
+from . import stepper_api
 
 
 def _new_meshes_since(before: set[int]) -> list:
@@ -32,49 +33,80 @@ def _select_meshes(context: Context, meshes: list) -> None:
         context.view_layer.objects.active = meshes[0]
 
 
-def _invoke_stepper_import(filepath: str, preferred_op: str | None) -> bool:
-    """Call STEPper's import operator with a filepath when possible."""
-    candidates: list[str] = []
-    if preferred_op:
-        candidates.append(preferred_op)
-    candidates.extend(detect.STEPPER_IMPORT_OPS)
+def _operator_from_id(op_id: str):
+    path, name = op_id.split(".", 1)
+    return getattr(getattr(bpy.ops, path), name)
 
+
+def _rna_property_ids(op) -> frozenset[str] | None:
+    try:
+        rna = op.get_rna_type()
+        return frozenset(prop.identifier for prop in rna.properties)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _tag_imported_meshes(meshes: list, abs_path: str, backend: str) -> None:
+    for obj in meshes:
+        obj["BEHOLD_cad_source"] = abs_path
+        obj["BEHOLD_cad_backend"] = backend
+        obj["BEHOLD_product_source"] = abs_path
+        obj["BEHOLD_product_backend"] = backend
+
+
+def invoke_stepper_occ_import(
+    filepath: str,
+    *,
+    lin_deflection_len: float | None = None,
+) -> dict[str, Any]:
+    """Call ``import_scene.occ_import_step`` with filepath + override_file.
+
+    Does not INVOKE (no STEPper dialog) and does not use background_import.
+    """
     abs_path = bpy.path.abspath(filepath)
-    directory = os.path.dirname(abs_path)
-    basename = os.path.basename(abs_path)
+    try:
+        op = _operator_from_id(stepper_api.STEPPER_OCC_IMPORT_OP)
+    except AttributeError:
+        return {
+            "ok": False,
+            "message": stepper_api.stepper_operator_failed_message(
+                f"{stepper_api.STEPPER_OCC_IMPORT_OP} is not registered"
+            ),
+        }
 
-    for op_id in candidates:
-        try:
-            path, name = op_id.split(".", 1)
-            op = getattr(getattr(bpy.ops, path), name)
-        except AttributeError:
-            continue
+    known_props = _rna_property_ids(op)
+    quality = stepper_api.DEFAULT_QUALITY_PRESET
+    if known_props is not None and "quality_preset" not in known_props:
+        quality = None
 
-        attempts = (
-            {"filepath": abs_path},
-            {"filepath": abs_path, "override_file": basename},
-            {
-                "filepath": abs_path,
-                "directory": directory,
-                "files": [{"name": basename}],
-            },
-        )
-        for kwargs in attempts:
-            try:
-                result = op("EXEC_DEFAULT", **kwargs)
-                if "FINISHED" in result or "RUNNING_MODAL" in result:
-                    return True
-            except TypeError:
-                continue
-            except Exception:  # noqa: BLE001
-                continue
+    errors: list[str] = []
+    for kwargs in stepper_api.stepper_occ_import_attempts(
+        abs_path,
+        known_props=known_props,
+        quality_preset=quality,
+        lin_deflection_len=lin_deflection_len,
+    ):
         try:
-            result = op("INVOKE_DEFAULT")
-            if "FINISHED" in result or "RUNNING_MODAL" in result:
-                return True
-        except Exception:  # noqa: BLE001
+            result = op("EXEC_DEFAULT", **kwargs)
+        except TypeError as exc:
+            errors.append(f"TypeError ({sorted(kwargs)}): {exc}")
             continue
-    return False
+        except Exception as exc:  # noqa: BLE001
+            return {
+                "ok": False,
+                "message": stepper_api.stepper_operator_failed_message(
+                    f"{type(exc).__name__}: {exc}"
+                ),
+            }
+        if "FINISHED" in result or "RUNNING_MODAL" in result:
+            return {"ok": True, "message": None}
+        errors.append(f"{stepper_api.STEPPER_OCC_IMPORT_OP} returned {set(result)}")
+
+    detail = "; ".join(errors) if errors else "no kwargs pattern succeeded"
+    return {
+        "ok": False,
+        "message": stepper_api.stepper_operator_failed_message(detail),
+    }
 
 
 def import_cad_file(
@@ -83,49 +115,83 @@ def import_cad_file(
     *,
     deflection: float = 0.001,
 ) -> dict[str, Any]:
-    """Hybrid CAD import: STEPper NEXT if present, otherwise BEHOLD OCP."""
+    """Hybrid CAD import: STEPper NEXT first, OCP only if STEPper is missing."""
+    abs_path = bpy.path.abspath(filepath)
+    enabled = detect.ensure_stepper_enabled()
+    if enabled.get("installed") and not enabled.get("ok"):
+        return {
+            "ok": False,
+            "objects": [],
+            "backend": "STEPPER",
+            "message": enabled.get("error")
+            or stepper_api.stepper_enable_failed_message(
+                enabled.get("module") or "stepper_next",
+                "enable failed",
+            ),
+        }
+
     status = detect.cad_status()
+    backend = status["backend"]
     before = {obj.as_pointer() for obj in bpy.data.objects}
 
-    if status["backend"] == "STEPPER":
-        ok = _invoke_stepper_import(filepath, status.get("stepper_operator"))
-        if not ok:
+    if backend == "STEPPER":
+        lin_len = None
+        known = None
+        try:
+            known = _rna_property_ids(
+                _operator_from_id(stepper_api.STEPPER_OCC_IMPORT_OP)
+            )
+        except AttributeError:
+            known = None
+        if known is not None and "lin_deflection_len" in known:
+            lin_len = deflection
+        invoked = invoke_stepper_occ_import(abs_path, lin_deflection_len=lin_len)
+        if not invoked["ok"]:
             return {
                 "ok": False,
                 "objects": [],
                 "backend": "STEPPER",
-                "message": (
-                    "STEPper NEXT is present but its import operator failed — "
-                    "try File → Import in STEPper, or install OCP for BEHOLD's fallback"
-                ),
+                "message": invoked["message"],
             }
         imported = _new_meshes_since(before)
-        abs_path = bpy.path.abspath(filepath)
-        for obj in imported:
-            obj["BEHOLD_cad_source"] = abs_path
-            obj["BEHOLD_cad_backend"] = "STEPPER"
-            obj["BEHOLD_product_source"] = abs_path
-            obj["BEHOLD_product_backend"] = "STEPPER"
-        if imported:
-            _select_meshes(context, imported)
+        if not imported:
+            return {
+                "ok": False,
+                "objects": [],
+                "backend": "STEPPER",
+                "message": stepper_api.stepper_no_mesh_message(),
+            }
+        _tag_imported_meshes(imported, abs_path, "STEPPER")
+        _select_meshes(context, imported)
         return {
             "ok": True,
             "objects": imported,
             "backend": "STEPPER",
-            "message": f"STEPper import finished ({len(imported)} new mesh(es))",
+            "message": f"STEPper NEXT imported {len(imported)} mesh(es)",
         }
 
-    if status["backend"] == "OCP":
+    if backend == "OCP":
+        if not ocp_core.ocp_available():
+            return {
+                "ok": False,
+                "objects": [],
+                "backend": "NONE",
+                "message": stepper_api.missing_cad_backend_message(),
+            }
         result = ocp_import.import_cad_with_ocp(filepath, deflection=deflection)
         result["backend"] = "OCP"
         return result
 
-    return {
-        "ok": False,
-        "objects": [],
-        "backend": "NONE",
-        "message": status["detail"],
-    }
+    if backend == "NONE":
+        return {
+            "ok": False,
+            "objects": [],
+            "backend": "NONE",
+            "message": stepper_api.missing_cad_backend_message(),
+        }
+
+    unreachable: Never = backend
+    raise RuntimeError(f"unhandled CAD backend: {unreachable}")
 
 
 def scene_product_meshes(context: Context) -> list:
@@ -134,6 +200,20 @@ def scene_product_meshes(context: Context) -> list:
         for obj in context.scene.objects
         if obj.type == "MESH" and material_assist.is_behold_product(obj)
     ]
+
+
+class BEHOLD_OT_open_stepper_install(Operator):
+    bl_idname = "behold.open_stepper_install"
+    bl_label = "Install STEPper NEXT"
+    bl_description = (
+        "Open STEPper NEXT GitHub Releases (Blender 5.1+/5.2 LTS extension zip)"
+    )
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: Context):
+        del context
+        bpy.ops.wm.url_open(url=stepper_api.STEPPER_INSTALL_URL)
+        return {"FINISHED"}
 
 
 class BEHOLD_OT_import_step(Operator, ImportHelper):
@@ -153,7 +233,7 @@ class BEHOLD_OT_import_step(Operator, ImportHelper):
         name="Deflection",
         description=(
             "OCP tessellation linear deflection (meters-ish); "
-            "ignored when STEPper handles import"
+            "passed as STEPper lin_deflection_len only when that RNA prop exists"
         ),
         default=0.001,
         min=0.00001,
@@ -244,6 +324,7 @@ class BEHOLD_OT_cad_build_studio(Operator):
 
 
 CLASSES = (
+    BEHOLD_OT_open_stepper_install,
     BEHOLD_OT_import_step,
     BEHOLD_OT_cad_material_assist,
     BEHOLD_OT_cad_build_studio,
