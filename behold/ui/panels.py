@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-Studio chrome (v0.9.0) + workflow order (v0.12.0): branded hero + Import →
+v1.0.0 is first stable — same panel order, no new operators. Studio chrome
+(v0.9.0) + workflow order (v0.12.0): branded hero + Import →
 Studio → Dress → Shoot strip on the main panel; physical child order is
 Import → Studio → Lights → Materials → Cameras → Shoot → Advanced so Shoot
 is last. Easy update (v0.10.0): a dismissible GitHub notice on the main

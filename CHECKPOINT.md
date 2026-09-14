@@ -6,20 +6,21 @@ Living status for BEHOLD by AMIRITE.studio. Update this file when a slice lands 
 
 KeyShot-simple OSS product renders in Blender. Best Blender plugin for product rendering and production workflows under **BEHOLD by AMIRITE.studio**.
 
-Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
+Cadence: one focused feature cut, then a GitHub Release. **v1.0.0 is the first stable product milestone** — docs and version, not a kitchen-sink feature dump.
 
 ## Now
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.24.0 (ground contact polish) |
-| **This branch / after merge** | **0.25.0** |
+| **Version on `main` (before this cut)** | 0.25.0 (catalog resolution presets) |
+| **This branch / after merge** | **1.0.0 — First stable** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.25.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-1.0.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
+- **First stable (1.0.0)** — Product milestone, not a new operator. Version **1.0.0** in `bl_info`, `blender_manifest.toml`, `brand.VERSION`, tests, and `behold-1.0.0.zip`. Artist README: logo (placeholder), **Import → Studio → Shoot** quick start, feature map by panel, STEPper NEXT for CAD, **Check for updates**, Blender **5.2 LTS+** primary (4.2+ load). CHECKPOINT / ROADMAP split **Implemented vs Coming**. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. No gobos / IES library, no logo redo, no live tessellation, no defeaturing. Everything from 0.4.0–0.25.0 is in this zip.
 - **Catalog resolution presets (0.25.0)** — Photographer-class lite on Shoot. Compact **Size** card: **Square 1:1**, **Portrait 4:5**, **Landscape 16:9** compose with **2048²** / **1080p** / **4K**. Size is the long edge (2048 / 1920 / 3840). Maps to `scene.render` RNA (`resolution_x` / `resolution_y` / `resolution_percentage` 100 / square `pixel_aspect_x` `pixel_aspect_y`). Default Square 1:1 at 2048². Landscape + 1080p = 1920×1080; Landscape + 4K = 3840×2160. Live RNA update; **Apply Size** stays in Advanced. Unknown aspect / size reports a sentence + next step (`UNKNOWN_ASPECT`, `UNKNOWN_SIZE`, `NO_RENDER_SETTINGS`). Draft / Final path unchanged. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_resolution.py`. Not gobos / IES / logo.
 - **Ground contact polish (0.24.0)** — Photographer-class lite on Studio. Compact **Catcher** toggle next to **Build** (default on). **Cyclorama** keeps the White / Grey / Black sweep and gets a soft contact disc under the product (`BEHOLD_ContactShadow`, radial transparent material). **Solid / HDRI** (Advanced backdrop type) get an optional `BEHOLD_ShadowCatcher` plane with Cycles `Object.is_shadow_catcher`. EEVEE Draft uses light `use_contact_shadow` plus a Light Path fallback material when catcher RNA is missing. Live RNA update; **Apply Catcher** stays in Advanced. Missing product reports a sentence + next step (`NO_PRODUCT_FOR_CATCHER`). Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_catcher.py`. Not gobos / IES / logo / EEVEE engine changes beyond the catcher.
 - **EEVEE quick look (0.23.0)** — Photographer-class lite on Shoot. **Draft** uses **EEVEE Next** when the build has it (`BLENDER_EEVEE_NEXT` on 4.2–4.5; `BLENDER_EEVEE` on 5.2). **Final** / **Product** / **Hero** stay **Cycles** (256 / 128 / 512 samples, denoising). Compact Shoot caption **Draft = EEVEE · Final = Cycles**. Cheap EEVEE product defaults: shadows on, raytracing / SSR reflections on, 32 TAA samples. Live RNA update; **Apply Quality** stays in Advanced. Missing EEVEE falls back to Cycles Draft samples and reports a sentence + next step (`NO_EEVEE`). Missing Cycles on Final reports `NO_CYCLES`. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_quality.py`. Not gobos / IES / logo.
@@ -57,7 +58,7 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 ## First-ship chrome (Percival)
 
-N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI; v0.14.0 is compact Shot Manager on Shoot; v0.15.0 is test/opt only; v0.16.0 is Lights shape presets; v0.17.0 is compact Look (EV / WB / False Color) on Shoot; v0.18.0 is compact Bake HDRI on Studio; v0.19.0 is compact Batch export on Shoot; v0.20.0 is compositor look presets on the same Shoot Look card; v0.21.0 is compact Linking on Lights; v0.22.0 is compact DoF on Cameras; v0.23.0 is EEVEE Draft / Cycles Final on Shoot; v0.24.0 is Catcher on Studio; **v0.25.0 is catalog Size on Shoot** — not a new mega-panel.
+N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI; v0.14.0 is compact Shot Manager on Shoot; v0.15.0 is test/opt only; v0.16.0 is Lights shape presets; v0.17.0 is compact Look (EV / WB / False Color) on Shoot; v0.18.0 is compact Bake HDRI on Studio; v0.19.0 is compact Batch export on Shoot; v0.20.0 is compositor look presets on the same Shoot Look card; v0.21.0 is compact Linking on Lights; v0.22.0 is compact DoF on Cameras; v0.23.0 is EEVEE Draft / Cycles Final on Shoot; v0.24.0 is Catcher on Studio; v0.25.0 is catalog Size on Shoot; **v1.0.0 is first stable** — same chrome, no new mega-panel.
 
 1. **Import** — **Import Product** file picker + one CAD backend line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**). Auto-studio, Material Assist toggle, and the full CAD box stay in Advanced. Do not embed STEPper's import dialog.
 2. **Studio** — backdrop **White / Grey / Black** + one **Build** button + **Catcher** toggle, compact **HDRI** card (Load / Reset, strength, Z rotation, optional reflections-only), compact **Bake HDRI** (1K/2K, path, Include world, Apply after bake). No light mixer. Cyclorama auto-fits; **Studio Margin** and **Apply Catcher** stay in Advanced.
@@ -72,12 +73,12 @@ Backend operators stay registered. Pie / header / preferences do not replace the
 
 ## Coming / In flight
 
-Leveling path (Shot Manager + light-shaping lite are shipped; not KeyShot/Light Wrangler parity): **[ROADMAP.md](ROADMAP.md)**.
+**Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite. **Coming** after first stable (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
 
-Not this PR:
+Not this PR (and not 1.0.0):
 
-- Gobos, IES library streaming, scrims (lite area presets shipped in 0.16.0).
-- Logo redo.
+- Gobos / IES libraries (window lights, practicals, photometric profiles). Lite area presets shipped in 0.16.0; a library story is still Coming.
+- Logo redo (current wordmark is a placeholder; official mark in the UI stays).
 - EEVEE engine changes beyond the catcher fallback (Draft = EEVEE shipped in 0.23.0).
 - Light / shadow linking changes (lite shipped in 0.21.0).
 - Full Light Wrangler viewport HDRI gizmo parity.
@@ -86,12 +87,13 @@ Not this PR:
 - Defeaturing (fillet/chamfer/hole suppress before tessellate).
 - Per-body auto-dress (each STEP color/name → its own look; Assist still applies one look to the selection).
 
-Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-vertical-smoke`) sketched STEP vertical on pre-0.4 chrome (v0.3.2). Leave PR #7 as historical draft — do not merge it as-is. [PR #11](https://github.com/wckdboy/BEHOLD/pull/11) is the 0.7.0 **smoke-only** fixture/tests/script; **this cut supersedes #11** as the real 0.7.0 (STEPper NEXT first-class + mesh reliability + first-ship Import UX).
+Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-vertical-smoke`) sketched STEP vertical on pre-0.4 chrome (v0.3.2). Leave PR #7 as historical draft — do not merge it as-is. [PR #11](https://github.com/wckdboy/BEHOLD/pull/11) is the 0.7.0 **smoke-only** fixture/tests/script; **0.7.0 supersedes #11** as the real STEPper NEXT first-class + mesh reliability + first-ship Import UX.
 
 ## Change log
 
 ### 2026-09-14
 
+- v**1.0.0** First stable: version bump everywhere (`bl_info` / manifest / brand / tests / `behold-1.0.0.zip`). Artist README (logo placeholder, Import → Studio → Shoot, feature map by panel, STEPper, Check for updates, 5.2 LTS+). CHECKPOINT / ROADMAP Implemented vs Coming for 0.4.0–0.25.0. No new operators. Panel order unchanged.
 - v**0.25.0** Catalog resolution presets: compact Size on Shoot (Square 1:1 / Portrait 4:5 / Landscape 16:9 + 2048² / 1080p / 4K) writing `scene.render` resolution and square pixel aspect. Draft / Final path unchanged. Tests in `tests/test_resolution.py`. Install zip `behold-0.25.0.zip`.
 - v**0.24.0** Ground contact polish: Catcher next to Build (soft contact on cyclorama, optional Cycles shadow-catcher plane + EEVEE fallback for Solid / HDRI). Tests in `tests/test_catcher.py`. Install zip `behold-0.24.0.zip`.
 - v**0.23.0** EEVEE quick look: Draft uses EEVEE Next when available; Final / Product / Hero stay Cycles. Shoot caption Draft = EEVEE · Final = Cycles. Cheap EEVEE shadows / reflections. Tests in `tests/test_quality.py`. Install zip `behold-0.23.0.zip`.

@@ -190,7 +190,7 @@ class FitWiringTests(unittest.TestCase):
     def test_docs_mention_auto_fit(self) -> None:
         readme = _read("README.md")
         checkpoint = _read("CHECKPOINT.md")
-        self.assertIn("0.11.0", readme)
+        self.assertIn("0.11.0", checkpoint)
         self.assertIn("Studio Margin", readme)
         self.assertIn("auto-fit", checkpoint.lower())
         self.assertIn("test_studio_fit.py", checkpoint)
