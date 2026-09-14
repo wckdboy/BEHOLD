@@ -11,7 +11,8 @@ Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
 backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
 shape presets (Apply to active) and v0.21.0 light / shadow linking lite
 (Link Selected / Unlink / Solo product). Cameras is the v0.5.0 product-camera
-kit. Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
+kit plus v0.22.0 product DoF (on/off, f-stop, Focus on product / Focus on
+selected). Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
 compact Look (v0.17.0 / v0.20.0 compositor presets), and compact Batch export
 (v0.19.0).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
@@ -369,11 +370,25 @@ def draw_cameras_section(layout: UILayout, context: Context) -> None:
         rm.camera_name = cam.name
     if active is not None:
         box.label(text=f"Active: {camera_lib.display_camera_name(active)}")
+    draw_cameras_dof(layout, context)
     row = layout.row(align=True)
     row.prop(settings, "new_camera_lens", text="mm")
     row.operator("behold.add_camera", text="Add", icon="ADD")
     row.operator("behold.frame_camera", text="Frame", icon="ZOOM_SELECTED")
     row.operator("behold.clear_cameras", text="Clear", icon="TRASH")
+
+
+def draw_cameras_dof(layout: UILayout, context: Context) -> None:
+    """DoF on/off, product f-stop, Focus on product / Focus on selected."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="DoF", icon="CAMERA_DATA")
+    row = card.row(align=True)
+    row.prop(settings, "dof_enabled", text="DoF", toggle=True)
+    row.prop(settings, "dof_fstop", text="f-stop")
+    row = card.row(align=True)
+    row.operator("behold.focus_product", text="Focus on product")
+    row.operator("behold.focus_selected", text="Focus on selected")
 
 
 def draw_import_parked(layout: UILayout, context: Context) -> None:
@@ -524,6 +539,12 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     row.operator("behold.use_main_camera", text="Use Main")
     if settings.main_camera_name:
         col.label(text=f"Main: {settings.main_camera_name}", icon="CAMERA_DATA")
+    col.prop(settings, "dof_enabled", text="DoF", toggle=True)
+    col.prop(settings, "dof_fstop", text="f-stop")
+    row = col.row(align=True)
+    row.operator("behold.focus_product", text="Focus on product")
+    row.operator("behold.focus_selected", text="Focus on selected")
+    col.operator("behold.apply_camera_dof", icon="CAMERA_DATA")
 
     layout.separator()
     col = layout.column(align=True)

@@ -11,6 +11,7 @@ from bpy.props import IntProperty, StringProperty
 from bpy.types import Context, Operator
 
 from ..studio import cameras as camera_lib
+from ..studio import dof_apply
 from ..ui.messages import (
     FRAME_NO_PRODUCT,
     NO_CAMERA,
@@ -254,6 +255,64 @@ class BEHOLD_OT_frame_camera(Operator):
         camera_lib.frame_behold_camera(context, cam)
         self.report({"INFO"}, f"Framed {cam.name}")
         return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_camera_dof(Operator):
+    bl_idname = "behold.apply_camera_dof"
+    bl_label = "Apply DoF"
+    bl_description = (
+        "Push DoF on/off and f-stop to the active BEHOLD camera (Blender 5.2 Camera.dof)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = dof_apply.apply_dof(context, focus="KEEP")
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+            return {"FINISHED"}
+        self.report(report_set(message), message)
+        return {"CANCELLED"}
+
+
+class BEHOLD_OT_focus_product(Operator):
+    bl_idname = "behold.focus_product"
+    bl_label = "Focus on product"
+    bl_description = (
+        "Enable DoF and set focus distance to the product (studio sweep excluded)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        settings = context.scene.behold
+        settings.dof_enabled = True
+        result = dof_apply.apply_dof(context, use_dof=True, focus="PRODUCT")
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+            return {"FINISHED"}
+        self.report(report_set(message), message)
+        return {"CANCELLED"}
+
+
+class BEHOLD_OT_focus_selected(Operator):
+    bl_idname = "behold.focus_selected"
+    bl_label = "Focus on selected"
+    bl_description = (
+        "Enable DoF and set focus distance to the selected mesh / surface"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        settings = context.scene.behold
+        settings.dof_enabled = True
+        result = dof_apply.apply_dof(context, use_dof=True, focus="SELECTED")
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+            return {"FINISHED"}
+        self.report(report_set(message), message)
+        return {"CANCELLED"}
 
 
 class BEHOLD_OT_clear_cameras(Operator):
@@ -526,6 +585,9 @@ CLASSES = (
     BEHOLD_OT_remove_camera,
     BEHOLD_OT_set_active_camera,
     BEHOLD_OT_frame_camera,
+    BEHOLD_OT_apply_camera_dof,
+    BEHOLD_OT_focus_product,
+    BEHOLD_OT_focus_selected,
     BEHOLD_OT_clear_cameras,
     BEHOLD_OT_add_shot,
     BEHOLD_OT_apply_shot,
