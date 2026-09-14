@@ -30,12 +30,14 @@ from ..ui.messages import (
 )
 from . import batch as batch_lib
 from . import quality as quality_lib
+from . import resolution as resolution_lib
 from . import shots_apply
 from . import turntable as turntable_lib
 from . import turntable_rig
 from .exposure_apply import apply_exposure
 from .looks_apply import apply_look
 from .quality_apply import apply_render_quality
+from .resolution_apply import apply_resolution
 
 
 QUALITY_SAMPLES = quality_lib.QUALITY_SAMPLES
@@ -133,6 +135,25 @@ class BEHOLD_OT_apply_quality(Operator):
         if result.get("fallback"):
             self.report(report_set(message), message)
             return {"FINISHED"}
+        self.report({"INFO"}, message)
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_resolution(Operator):
+    bl_idname = "behold.apply_resolution"
+    bl_label = "Apply Size"
+    bl_description = (
+        "Write Square 1:1 / Portrait 4:5 / Landscape 16:9 and 2048² / 1080p / 4K "
+        "to render resolution (square pixels)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = apply_resolution(context)
+        message = str(result.get("message") or resolution_lib.RESOLUTION_FAILED)
+        if not result.get("ok"):
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
         self.report({"INFO"}, message)
         return {"FINISHED"}
 
@@ -339,6 +360,7 @@ class BEHOLD_OT_render_still(Operator):
 
         apply_exposure(context)
         apply_look(context)
+        apply_resolution(context)
         result = apply_render_quality(context)
         if not result.get("ok"):
             message = str(result.get("message") or quality_lib.QUALITY_FAILED)
@@ -543,6 +565,7 @@ class BEHOLD_OT_render_turntable(Operator):
 
         apply_exposure(context)
         apply_look(context)
+        apply_resolution(context)
         result = apply_render_quality(context)
         if not result.get("ok"):
             message = str(result.get("message") or quality_lib.QUALITY_FAILED)
@@ -597,6 +620,7 @@ CLASSES = (
     BEHOLD_OT_apply_exposure,
     BEHOLD_OT_apply_look,
     BEHOLD_OT_apply_quality,
+    BEHOLD_OT_apply_resolution,
     BEHOLD_OT_bookmark_camera,
     BEHOLD_OT_use_main_camera,
     BEHOLD_OT_add_camera,

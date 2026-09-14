@@ -22,6 +22,11 @@ from .shoot.looks_apply import on_look_update
 from .shoot.quality import DEFAULT_QUALITY as QUALITY_DEFAULT
 from .shoot.quality import quality_enum_items
 from .shoot.quality_apply import on_quality_update
+from .shoot.resolution import DEFAULT_ASPECT as RESOLUTION_ASPECT_DEFAULT
+from .shoot.resolution import DEFAULT_SIZE as RESOLUTION_SIZE_DEFAULT
+from .shoot.resolution import aspect_enum_items as resolution_aspect_enum_items
+from .shoot.resolution import size_enum_items as resolution_size_enum_items
+from .shoot.resolution_apply import on_resolution_update
 from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
 from .studio.bake import resolution_enum_items as bake_resolution_enum_items
 from .studio.catcher_apply import on_catcher_update
@@ -300,6 +305,20 @@ class BEHOLDSceneSettings(PropertyGroup):
         items=quality_enum_items(),
         default=QUALITY_DEFAULT,
         update=on_quality_update,
+    )
+    resolution_aspect: EnumProperty(
+        name="Aspect",
+        description="Catalog still aspect: Square 1:1, Portrait 4:5, Landscape 16:9",
+        items=resolution_aspect_enum_items(),
+        default=RESOLUTION_ASPECT_DEFAULT,
+        update=on_resolution_update,
+    )
+    resolution_size: EnumProperty(
+        name="Size",
+        description="Long-edge pixel size: 2048², 1080p, or 4K",
+        items=resolution_size_enum_items(),
+        default=RESOLUTION_SIZE_DEFAULT,
+        update=on_resolution_update,
     )
     output_directory: StringProperty(
         name="Output Folder",

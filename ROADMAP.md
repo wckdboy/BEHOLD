@@ -6,6 +6,10 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.25.0 Catalog resolution presets** — Square 1:1, Portrait 4:5, Landscape 16:9
+  plus 2048² / 1080p / 4K on Shoot. Size is the long edge; writes
+  `scene.render.resolution_*` at 100% with square pixel aspect. Not gobos,
+  IES, logo, or a custom width/height suite.
 - **0.24.0 Ground contact polish** — Catcher toggle next to Build. Cyclorama
   gets a soft contact shadow under the product; Solid / HDRI get a Cycles
   shadow-catcher plane with an EEVEE-friendly fallback (contact disc + light

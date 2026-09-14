@@ -49,6 +49,14 @@ from ..shoot.quality import (
     QUALITY_FAILED,
     UNKNOWN_QUALITY,
 )
+from ..shoot.resolution import (
+    NO_RENDER_SETTINGS,
+    RESOLUTION_FAILED,
+    UNKNOWN_ASPECT,
+    UNKNOWN_SIZE,
+    unknown_aspect_message,
+    unknown_size_message,
+)
 from ..studio.light_linking import (
     LINKING_FAILED,
     NO_LINKING_API,
@@ -207,6 +215,9 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_EEVEE,
         NO_CYCLES,
         UNKNOWN_QUALITY,
+        NO_RENDER_SETTINGS,
+        UNKNOWN_ASPECT,
+        UNKNOWN_SIZE,
         NO_CATCHER_API,
         NO_STUDIO,
         NO_PRODUCT_FOR_CATCHER,
@@ -242,6 +253,8 @@ def report_type(message: str) -> str:
             "Shot name “",
             "Shot camera “",
             "Batch export ",
+            "Unknown aspect",
+            "Unknown size",
         )
     ):
         return WARNING
@@ -273,6 +286,14 @@ def unknown_light_preset_message(preset_id: str) -> str:
 
 def unknown_look_preset_message(preset_id: str) -> str:
     return unknown_look_message(preset_id)
+
+
+def unknown_aspect_preset_message(aspect_id: str) -> str:
+    return unknown_aspect_message(aspect_id)
+
+
+def unknown_size_preset_message(size_id: str) -> str:
+    return unknown_size_message(size_id)
 
 
 def camera_not_found(name: str) -> str:

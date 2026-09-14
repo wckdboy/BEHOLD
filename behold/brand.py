@@ -12,7 +12,7 @@ PRODUCT_PITCH = (
     "KeyShot-simple product renders in Blender — lighting, cameras, "
     "and stills without the DCC tax."
 )
-VERSION = (0, 24, 0)
+VERSION = (0, 25, 0)
 DOCS_URL = "https://github.com/wckdboy/BEHOLD"
 RELEASES_URL = f"{DOCS_URL}/releases"
 

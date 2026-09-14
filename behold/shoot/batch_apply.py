@@ -17,6 +17,7 @@ from . import shots as shots_lib
 from . import shots_apply
 from .exposure_apply import apply_exposure
 from .looks_apply import apply_look
+from .resolution_apply import apply_resolution
 
 ReportFn = Callable[[str, str], None]
 
@@ -67,6 +68,7 @@ def _render_still(context: Context, job: batch_lib.BatchJob) -> dict[str, Any]:
     apply_quality, resolve_dir = _render_helpers()
     apply_exposure(context)
     apply_look(context)
+    apply_resolution(context)
     result = apply_quality(context)
     if not result.get("ok"):
         return {
