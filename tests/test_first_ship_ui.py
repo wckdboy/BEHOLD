@@ -66,6 +66,7 @@ class FirstShipUiTests(unittest.TestCase):
         )
         flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
         self.assertEqual(tuple(names[1:]), flow.PANEL_BL_IDNAMES)
+        self.assertEqual(flow.PANEL_BL_IDNAMES, flow.N_PANEL_CLASS_ORDER[1:])
 
     def test_main_panel_has_hero_and_flow(self) -> None:
         body = _class_source(self.source, self.tree, "BEHOLD_PT_main")
@@ -73,6 +74,32 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("draw_update_notice", body)
         self.assertIn("draw_flow_strip", body)
         self.assertNotIn("Light Mixer", body)
+
+    def test_child_panels_use_shoot_last_bl_order(self) -> None:
+        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        self.assertEqual(
+            list(flow.N_PANEL_CLASS_ORDER),
+            [
+                "BEHOLD_PT_main",
+                "BEHOLD_PT_import",
+                "BEHOLD_PT_studio",
+                "BEHOLD_PT_lights",
+                "BEHOLD_PT_materials",
+                "BEHOLD_PT_cameras",
+                "BEHOLD_PT_shoot",
+                "BEHOLD_PT_advanced",
+            ],
+        )
+        expected = flow.CHILD_PANEL_BL_ORDER
+        for name, order in expected.items():
+            body = _class_source(self.source, self.tree, name)
+            self.assertIn(f"bl_order = CHILD_PANEL_BL_ORDER[\"{name}\"]", body)
+        self.assertLess(expected["BEHOLD_PT_import"], expected["BEHOLD_PT_studio"])
+        self.assertLess(expected["BEHOLD_PT_studio"], expected["BEHOLD_PT_lights"])
+        self.assertLess(expected["BEHOLD_PT_lights"], expected["BEHOLD_PT_materials"])
+        self.assertLess(expected["BEHOLD_PT_materials"], expected["BEHOLD_PT_cameras"])
+        self.assertLess(expected["BEHOLD_PT_cameras"], expected["BEHOLD_PT_shoot"])
+        self.assertLess(expected["BEHOLD_PT_shoot"], expected["BEHOLD_PT_advanced"])
 
     def test_advanced_defaults_closed(self) -> None:
         advanced = _class_source(self.source, self.tree, "BEHOLD_PT_advanced")
@@ -230,7 +257,9 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.9.0", text)
         self.assertIn("0.10.0", text)
         self.assertIn("0.11.0", text)
+        self.assertIn("0.12.0", text)
         self.assertIn("Check for updates", text)
+        self.assertIn("Lights → Materials → Cameras → Shoot", text)
         self.assertIn("Shift+Alt+B", text)
         self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)

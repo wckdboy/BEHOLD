@@ -17,6 +17,7 @@ from .presets import (
     material_name_for,
     preset_enum_items,
 )
+from ..ui.messages import report_set
 
 
 def dressable_meshes(objects: Iterable[Object]) -> list[Object]:
@@ -123,7 +124,7 @@ class BEHOLD_OT_apply_local_material(Operator):
     def execute(self, context: Context):
         targets = dressable_meshes(context.selected_objects)
         if not targets:
-            self.report({"ERROR"}, EMPTY_NO_MESH)
+            self.report(report_set(EMPTY_NO_MESH), EMPTY_NO_MESH)
             return {"CANCELLED"}
         count = apply_to_objects(targets, self.preset)
         self.report(

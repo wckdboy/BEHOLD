@@ -193,7 +193,7 @@ def clear_turntable(context: Context) -> str:
         if cam is not None and cam.get(turntable_lib.PROP_BAKED):
             clear_baked_camera(context, cam)
             return ""
-        return "No turntable to clear"
+        return turntable_lib.TURNTABLE_NOTHING_TO_CLEAR
 
     cam_name = str(pivot.get(turntable_lib.PROP_CAMERA, "") or "")
     cam = bpy.data.objects.get(cam_name) if cam_name else None
@@ -259,7 +259,7 @@ def bake_turntable(context: Context) -> str:
     """Bake the camera's world loc/rot, then delete the pivot."""
     pivot = get_pivot()
     if pivot is None:
-        return "Run Setup Turntable first"
+        return turntable_lib.TURNTABLE_NO_SETUP
 
     cam_name = str(pivot.get(turntable_lib.PROP_CAMERA, "") or "")
     cam = bpy.data.objects.get(cam_name) if cam_name else None

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any, Never
 
 import bpy
@@ -15,6 +16,12 @@ from . import material_assist
 from . import ocp_core
 from . import ocp_import
 from . import stepper_api
+from ..ui.messages import (
+    NO_FILE_SELECTED,
+    NO_MESH_SELECTED,
+    file_not_found_message,
+    report_set,
+)
 
 
 def _new_meshes_since(before: set[int]) -> list:
@@ -117,6 +124,13 @@ def import_cad_file(
 ) -> dict[str, Any]:
     """Hybrid CAD import: STEPper NEXT first, OCP only if STEPper is missing."""
     abs_path = bpy.path.abspath(filepath)
+    if not abs_path or not os.path.isfile(abs_path):
+        return {
+            "ok": False,
+            "objects": [],
+            "backend": "NONE",
+            "message": file_not_found_message(filepath),
+        }
     enabled = detect.ensure_stepper_enabled()
     if enabled.get("installed") and not enabled.get("ok"):
         return {
@@ -243,12 +257,12 @@ class BEHOLD_OT_import_step(Operator, ImportHelper):
     def execute(self, context: Context):
         filepath = self.filepath
         if not filepath:
-            self.report({"ERROR"}, "No file selected")
+            self.report(report_set(NO_FILE_SELECTED), NO_FILE_SELECTED)
             return {"CANCELLED"}
 
         result = import_cad_file(context, filepath, deflection=self.deflection)
         if not result["ok"]:
-            self.report({"ERROR"}, result["message"])
+            self.report(report_set(result["message"]), result["message"])
             return {"CANCELLED"}
         material_assist.tag_selection_for_assist(context)
         self.report({"INFO"}, result["message"] + " — Material Assist ready")
@@ -268,7 +282,7 @@ class BEHOLD_OT_cad_material_assist(Operator):
         meshes = [obj for obj in context.selected_objects if obj.type == "MESH"]
         result = material_assist.run_material_assist(context, meshes)
         if not result["ok"]:
-            self.report({"ERROR"}, result["message"])
+            self.report(report_set(result["message"]), result["message"])
             return {"CANCELLED"}
         self.report({"INFO"}, result["message"])
         return {"FINISHED"}
@@ -287,7 +301,7 @@ class BEHOLD_OT_cad_build_studio(Operator):
             _select_meshes(context, meshes)
 
         if not meshes:
-            self.report({"ERROR"}, "Select a product mesh or import a file first")
+            self.report(report_set(NO_MESH_SELECTED), NO_MESH_SELECTED)
             return {"CANCELLED"}
 
         try:
@@ -297,7 +311,7 @@ class BEHOLD_OT_cad_build_studio(Operator):
             return {"CANCELLED"}
 
         if "FINISHED" not in result:
-            self.report({"WARNING"}, "Build Studio did not finish")
+            self.report(report_set(NO_MESH_SELECTED), NO_MESH_SELECTED)
             return {"CANCELLED"}
 
         self.report({"INFO"}, "Studio built around imported product")

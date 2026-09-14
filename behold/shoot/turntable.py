@@ -22,7 +22,10 @@ INTERP_LINEAR = "LINEAR"
 INTERP_EASE = "EASE"
 
 EMPTY_NO_CAMERA = "No camera — Build Studio or Add Camera"
-EMPTY_NO_PRODUCT = "No product — Import or Build Studio"
+EMPTY_NO_PRODUCT = "No product — Import Product or Build Studio"
+TURNTABLE_NO_SETUP = "No turntable yet — click Setup on Shoot"
+TURNTABLE_NOTHING_TO_CLEAR = "No turntable to clear — click Setup on Shoot first"
+TURNTABLE_READY_PLAY = "Turntable ready — press Space to play"
 
 
 class TurntablePlan(NamedTuple):

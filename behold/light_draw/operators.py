@@ -11,6 +11,13 @@ from bpy_extras import view3d_utils
 from mathutils import Vector
 
 from . import draw_core as core
+from ..studio import lights as light_lib
+from ..ui.messages import (
+    LIGHT_DRAW_LIGHT_MISSING,
+    LIGHT_DRAW_NEEDS_VIEWPORT,
+    LIGHT_DRAW_NO_LIGHTS,
+    report_set,
+)
 
 MODES = core.MODES
 
@@ -23,7 +30,7 @@ class BEHOLD_OT_light_draw(Operator):
 
     def invoke(self, context: Context, _event: Event):
         if context.space_data is None or not isinstance(context.space_data, SpaceView3D):
-            self.report({"ERROR"}, "Light Draw needs a 3D Viewport")
+            self.report(report_set(LIGHT_DRAW_NEEDS_VIEWPORT), LIGHT_DRAW_NEEDS_VIEWPORT)
             return {"CANCELLED"}
 
         settings = context.scene.behold
@@ -34,22 +41,26 @@ class BEHOLD_OT_light_draw(Operator):
         self._orbit_center: Optional[Vector] = None
         self._orbit_radius = self._distance
         self._dragging = False
+        had_lights = bool(light_lib.iter_behold_lights(context))
         self._light = core.ensure_draw_light(context)
         self._timer = context.window_manager.event_timer_add(0.05, window=context.window)
         context.window_manager.modal_handler_add(self)
-        target = "new" if settings.light_draw_target == "NEW" else "active"
-        self.report(
-            {"INFO"},
-            f"Light Draw ({target}) — LMB drag aim | Wheel power | Shift+Wheel size | "
-            "Ctrl+Wheel distance | 1/2/3 mode | S solo | F false color | Esc exit",
-        )
+        if not had_lights:
+            self.report({"INFO"}, LIGHT_DRAW_NO_LIGHTS)
+        else:
+            target = "new" if settings.light_draw_target == "NEW" else "active"
+            self.report(
+                {"INFO"},
+                f"Light Draw ({target}) — LMB drag aim | Wheel power | Shift+Wheel size | "
+                "Ctrl+Wheel distance | 1/2/3 mode | S solo | F false color | Esc exit",
+            )
         return {"RUNNING_MODAL"}
 
     def modal(self, context: Context, event: Event):
         light = getattr(self, "_light", None)
         if light is None or light.name not in bpy.data.objects:
             self._cleanup(context)
-            self.report({"WARNING"}, "Light Draw cancelled — light missing")
+            self.report(report_set(LIGHT_DRAW_LIGHT_MISSING), LIGHT_DRAW_LIGHT_MISSING)
             return {"CANCELLED"}
 
         settings = context.scene.behold

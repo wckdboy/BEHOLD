@@ -13,6 +13,11 @@ from bpy_extras.io_utils import ImportHelper
 
 from ..cad import material_assist
 from ..cad import operators as cad_ops
+from ..ui.messages import (
+    NO_FILE_SELECTED,
+    report_set,
+    unsupported_file_message,
+)
 from . import formats
 from . import native
 
@@ -68,7 +73,7 @@ def run_product_import(
             "ok": False,
             "objects": [],
             "route": kind,
-            "message": f"Unsupported file type: {ext}",
+            "message": unsupported_file_message(ext),
         }
     if kind == "cad":
         result = cad_ops.import_cad_file(context, filepath, deflection=deflection)
@@ -147,7 +152,7 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
     def execute(self, context: Context):
         filepath = self.filepath
         if not filepath:
-            self.report({"ERROR"}, "No file selected")
+            self.report(report_set(NO_FILE_SELECTED), NO_FILE_SELECTED)
             return {"CANCELLED"}
 
         settings = context.scene.behold
@@ -162,7 +167,7 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
             auto_material_assist=self.auto_material_assist,
         )
         if not result["ok"]:
-            self.report({"ERROR"}, result["message"])
+            self.report(report_set(result["message"]), result["message"])
             return {"CANCELLED"}
         notes = result.get("notes") or []
         suffix = f" — {'; '.join(notes)}" if notes else ""

@@ -8,6 +8,7 @@ from bpy.types import Context, Operator
 
 from ..brand import RELEASES_URL
 from ..preferences import get_prefs
+from ..ui.messages import update_failure_report
 from . import runtime
 from .core import (
     RESTART_MESSAGE,
@@ -73,7 +74,7 @@ class BEHOLD_OT_install_update(Operator):
                 prefs.update_installing = False
                 prefs.update_last_error = copy["line"]
                 prefs.update_error_kind = copy["kind"]
-            self.report({"ERROR"}, f"{copy['line']}. {copy['detail']}")
+            self.report({"ERROR"}, update_failure_report(copy))
             return {"CANCELLED"}
         if prefs is not None:
             prefs.update_installing = True

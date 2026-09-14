@@ -106,7 +106,7 @@ class MultiLightWiringTests(unittest.TestCase):
 
     def test_mixer_empty_state_cancels(self) -> None:
         source = _read("behold/studio/operators.py")
-        self.assertIn("No BEHOLD lights", source)
+        self.assertIn("NO_LIGHTS", source)
         self.assertIn("iter_behold_lights", source)
 
 
