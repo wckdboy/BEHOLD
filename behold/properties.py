@@ -179,7 +179,10 @@ class BEHOLDSceneSettings(PropertyGroup):
     )
     import_auto_material_assist: BoolProperty(
         name="Material Assist after Import",
-        description="Guess a BlenderKit query from the product filename and part names",
+        description=(
+            "Apply a local product look from the filename and part names. "
+            "Searches BlenderKit only when signed in — no account needed locally"
+        ),
         default=True,
     )
     active_light_name: StringProperty(

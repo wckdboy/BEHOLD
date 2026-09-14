@@ -4,8 +4,9 @@
 First-ship chrome: Import / Studio / Shoot stay skinny. Import shows the
 picker plus one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting
 section. Cameras is the v0.5.0 product-camera kit. Shoot carries a compact
-Turntable row (v0.6.0). Parked mixer, CAD box extras, materials, hotkeys,
-batch, and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
+Turntable row (v0.6.0). Materials is the v0.8.0 local-look rack (Assist
+applies without BlenderKit). Parked mixer, CAD box extras, BlenderKit chrome,
+hotkeys, batch, and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from ..cad import detect as cad_detect
 from ..cad import material_assist
 from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
+from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT, empty_state
 from ..product_import import formats
 from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
@@ -165,6 +167,32 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
     col.operator("behold.light_draw", icon="LIGHT_AREA")
 
 
+def draw_materials_section(layout: UILayout, context: Context) -> None:
+    """Local PBR rack + Assist. Empty-state if nothing dressable is selected."""
+    meshes = local_rack.dressable_meshes(context.selected_objects)
+    message = empty_state(has_product_mesh=bool(meshes))
+    if message is not None:
+        empty = layout.box()
+        empty.label(text=EMPTY_NO_MESH, icon="INFO")
+        empty.label(text=EMPTY_NO_MESH_HINT)
+        empty.operator("behold.import_product", icon="IMPORT")
+        return
+
+    grid = layout.grid_flow(columns=3, align=True)
+    for key, data in local_rack.PRESETS.items():
+        op = grid.operator("behold.apply_local_material", text=data["label"])
+        op.preset = key
+
+    row = layout.row(align=True)
+    row.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
+
+    status = blenderkit_bridge.blenderkit_status()
+    if status["installed"] and status["logged_in"]:
+        layout.label(text="BlenderKit signed in — Assist also searches")
+    else:
+        layout.label(text="Local looks — no BlenderKit account needed")
+
+
 def draw_cameras_section(layout: UILayout, context: Context) -> None:
     """Product camera inventory: add / active / frame / delete."""
     settings = context.scene.behold
@@ -265,7 +293,7 @@ def draw_studio_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_materials_parked(layout: UILayout, context: Context) -> None:
-    """Local PBR rack + BlenderKit (parked)."""
+    """BlenderKit chrome (parked). Local rack buttons stay for Advanced users."""
     settings = context.scene.behold
 
     layout.label(text="Local PBR rack")
@@ -273,6 +301,7 @@ def draw_materials_parked(layout: UILayout, context: Context) -> None:
     for key, data in local_rack.PRESETS.items():
         op = grid.operator("behold.apply_local_material", text=data["label"])
         op.preset = key
+    layout.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
 
     layout.separator()
     status = blenderkit_bridge.blenderkit_status()
@@ -287,6 +316,7 @@ def draw_materials_parked(layout: UILayout, context: Context) -> None:
         box.operator("wm.url_open", text="Get BlenderKit", icon="URL").url = (
             "https://www.blenderkit.com/get-blenderkit/"
         )
+        box.label(text="Local looks still apply without an account")
     else:
         if not status["logged_in"]:
             box.operator("behold.blenderkit_login", icon="USER")
@@ -438,6 +468,18 @@ class BEHOLD_PT_cameras(Panel):
         draw_cameras_section(self.layout, context)
 
 
+class BEHOLD_PT_materials(Panel):
+    bl_label = "Materials"
+    bl_idname = "BEHOLD_PT_materials"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BEHOLD"
+    bl_parent_id = "BEHOLD_PT_main"
+
+    def draw(self, context: Context):
+        draw_materials_section(self.layout, context)
+
+
 class BEHOLD_PT_advanced(Panel):
     bl_label = "Advanced"
     bl_idname = "BEHOLD_PT_advanced"
@@ -455,7 +497,7 @@ class BEHOLD_PT_advanced(Panel):
         layout.label(text="Studio")
         draw_studio_parked(layout, context)
         layout.separator()
-        layout.label(text="Materials")
+        layout.label(text="Materials / BlenderKit")
         draw_materials_parked(layout, context)
         layout.separator()
         layout.label(text="Light Draw")
@@ -472,6 +514,7 @@ CLASSES = (
     BEHOLD_PT_shoot,
     BEHOLD_PT_lights,
     BEHOLD_PT_cameras,
+    BEHOLD_PT_materials,
     BEHOLD_PT_advanced,
 )
 

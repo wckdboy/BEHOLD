@@ -67,3 +67,36 @@ def suggest_query_for_path(filepath: str) -> str:
         return hit
     ext = os.path.splitext(filepath)[1].lower()
     return _EXT_HINTS.get(ext, DEFAULT_QUERY)
+
+
+def suggest_query_from_parts(
+    *,
+    custom_hints: list[str] | tuple[str, ...] = (),
+    names: list[str] | tuple[str, ...] = (),
+    material_names: list[str] | tuple[str, ...] = (),
+    filepath: str = "",
+) -> str:
+    """Same ranking as Material Assist, without bpy objects."""
+    for value in custom_hints:
+        if isinstance(value, str) and value.strip():
+            hinted = suggest_query_for_text(value) or value.strip()
+            return hinted
+
+    for name in names:
+        hit = suggest_query_for_text(name)
+        if hit:
+            return hit
+
+    for mat_name in material_names:
+        if not isinstance(mat_name, str) or not mat_name.strip():
+            continue
+        hit = suggest_query_for_text(mat_name)
+        if hit:
+            return hit
+        clean = mat_name.replace("_", " ").strip()
+        if clean and clean.lower() not in {"material", "material.001"}:
+            return clean
+
+    if filepath:
+        return suggest_query_for_path(filepath)
+    return DEFAULT_QUERY

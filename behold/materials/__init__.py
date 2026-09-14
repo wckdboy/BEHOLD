@@ -1,2 +1,2 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Materials package."""
+"""Materials package — local PBR rack and BlenderKit bridge."""
