@@ -9,6 +9,7 @@ from mathutils import Vector
 
 from . import camera_ids
 from . import cameras as camera_lib
+from . import catcher_apply
 from . import lights as light_lib
 from .fit import (
     FILL_OFFSET,
@@ -103,16 +104,6 @@ def make_cyclorama(
     return floor
 
 
-def make_shadow_catcher(coll: bpy.types.Collection, center: Vector, size: float) -> Object:
-    bpy.ops.mesh.primitive_plane_add(size=size, location=(center.x, center.y, center.z))
-    plane = bpy.context.active_object
-    assert plane is not None
-    plane.name = f"{PREFIX}_ShadowCatcher"
-    plane.is_shadow_catcher = True
-    link_exclusive(plane, coll)
-    return plane
-
-
 def frame_camera(coll: bpy.types.Collection, center: Vector, size: float) -> Object:
     return camera_lib.create_product_camera(
         coll,
@@ -181,9 +172,6 @@ def build_studio(context: Context) -> str:
     else:
         setup_world(context.scene, color=(0.01, 0.01, 0.01, 1.0), strength=0.05)
 
-    if settings.include_shadow_catcher and settings.studio_backdrop != "CYCLORAMA":
-        make_shadow_catcher(coll, floor_center, fit.catcher_size)
-
     key_loc = product_center + Vector(fit.scaled_offset(KEY_OFFSET))
     fill_loc = product_center + Vector(fit.scaled_offset(FILL_OFFSET))
     rim_loc = product_center + Vector(fit.scaled_offset(RIM_OFFSET))
@@ -246,6 +234,12 @@ def build_studio(context: Context) -> str:
     except TypeError:
         pass
 
+    catcher_apply.apply_ground_contact(
+        context,
+        coll=coll,
+        floor_center=floor_center,
+        fit=fit,
+    )
     reapply_hdri_if_loaded(context)
     return f"Studio built for {len(targets)} object(s)"
 

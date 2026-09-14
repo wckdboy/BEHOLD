@@ -28,6 +28,9 @@ Advanced. v0.20.0 adds Clean / Catalog / Dramatic compositor presets plus a
 Compositor toggle on the same card (vignette, grain, bloom-safe glare). Compact
 Bake HDRI on Studio (v0.18.0): 1K/2K equirectangular
 EXR/HDR of the light rig, optional world, optional apply as world. Compact
+Catcher on Studio (v0.24.0): toggle next to Build — cyclorama gets a soft
+contact shadow; Solid / HDRI get a Cycles shadow-catcher plane with an
+EEVEE-friendly fallback. Compact
 Batch export on Shoot (v0.19.0): front / ¾ / top plus optional saved shots;
 path tokens stay in the output folder template.
 """
@@ -115,11 +118,13 @@ def draw_import_first_ship(layout: UILayout, context: Context) -> None:
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
-    """Backdrop White / Grey / Black + Build, compact HDRI, compact Bake HDRI."""
+    """Backdrop White / Grey / Black + Build, Catcher, compact HDRI, compact Bake HDRI."""
     settings = context.scene.behold
     card = layout.box()
     card.prop(settings, "studio_backdrop_tone", text="Backdrop", expand=True)
-    card.operator("behold.build_studio", text="Build", icon="OUTLINER_OB_LIGHT")
+    row = card.row(align=True)
+    row.operator("behold.build_studio", text="Build", icon="OUTLINER_OB_LIGHT")
+    row.prop(settings, "include_shadow_catcher", text="Catcher", toggle=True)
     draw_studio_hdri(layout, context)
     draw_studio_bake(layout, context)
 
@@ -442,7 +447,8 @@ def draw_studio_parked(layout: UILayout, context: Context) -> None:
         box.operator("behold.import_product", icon="IMPORT")
     layout.prop(settings, "studio_backdrop")
     layout.prop(settings, "studio_light_rig")
-    layout.prop(settings, "include_shadow_catcher")
+    layout.prop(settings, "include_shadow_catcher", text="Catcher")
+    layout.operator("behold.apply_catcher", icon="SHADERFX")
     layout.prop(settings, "studio_margin")
 
     col = layout.column(align=True)

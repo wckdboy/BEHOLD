@@ -62,6 +62,7 @@ class PresetRackTests(unittest.TestCase):
     def test_studio_meshes_are_not_dressable(self) -> None:
         self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_Cyclorama"))
         self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_ShadowCatcher.001"))
+        self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_ContactShadow"))
         self.assertTrue(presets.is_dressable_mesh_name("housing_aluminum"))
         self.assertTrue(presets.is_dressable_mesh_name("BEHOLD_Camera"))
 

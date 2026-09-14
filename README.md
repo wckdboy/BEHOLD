@@ -12,14 +12,14 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.23.0)
+## What works (v0.24.0)
 
-**0.23.0 is EEVEE quick look** on Shoot: Draft uses EEVEE (Next) when available; Final stays Cycles. Product DoF / focus pick is **0.22.0**. Light & shadow linking lite is **0.21.0**; compositor look pack is **0.20.0**; catalog batch export is **0.19.0**; bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
+**0.24.0 is ground contact polish** on Studio: **Catcher** next to **Build**. Cyclorama gets a soft contact shadow; Solid / HDRI get a Cycles shadow-catcher plane with an EEVEE-friendly fallback. **0.23.0** is EEVEE quick look on Shoot (Draft = EEVEE / Final = Cycles). Product DoF / focus pick is **0.22.0**. Light & shadow linking lite is **0.21.0**; compositor look pack is **0.20.0**; catalog batch export is **0.19.0**; bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
 1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
-2. **Studio** — backdrop White / Grey / Black + **Build**, compact **HDRI** (Load / Reset, strength, Z rotation, optional reflections-only), compact **Bake HDRI** (1K/2K, path, optional world / apply)
+2. **Studio** — backdrop White / Grey / Black + **Build** + **Catcher**, compact **HDRI** (Load / Reset, strength, Z rotation, optional reflections-only), compact **Bake HDRI** (1K/2K, path, optional world / apply)
 3. **Lights** — inventory + Light Draw + **Shape** presets (Softbox / Strip / Octa / Hard / Rim) + **Linking** (Link Selected / Unlink / Solo product)
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras + compact **DoF** (on/off, f-stop, Focus on product / Focus on selected)
@@ -53,6 +53,14 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Final** (and Advanced **Product** / **Hero**) stay **Cycles** — 256 / 128 / 512 samples with denoising. Client stills do not silently stay on EEVEE
 - Caption on the card: **Draft = EEVEE · Final = Cycles**. Live RNA update; **Apply Quality** stays in Advanced
 - If EEVEE Next is missing, Draft falls back to Cycles (32 samples) and reports a sentence plus the next step (`NO_EEVEE`). Missing Cycles on Final reports `NO_CYCLES`
+
+**Catcher (0.24.0)** — believable ground contact after Build Studio, not a second engine panel:
+
+- **Catcher** toggle sits next to **Build** (default on). Rebuild or the live toggle applies it — no hand-placed planes
+- **Cyclorama** keeps the White / Grey / Black sweep and adds a soft contact disc under the product (`BEHOLD_ContactShadow`)
+- **Solid / HDRI** (Advanced backdrop type) get an optional `BEHOLD_ShadowCatcher` plane with Cycles `Object.is_shadow_catcher`
+- EEVEE Draft: light contact-shadow RNA plus a transparent radial material when catcher RNA is missing. Not a new EEVEE engine stack
+- Missing product reports a sentence plus the next step (`NO_PRODUCT_FOR_CATCHER`). **Apply Catcher** stays in Advanced. Not gobos / IES / logo
 
 **Turntable** — one row on Shoot, not a new sidebar section:
 
@@ -99,12 +107,12 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Assist** applies a matching local look from the filename / STEP hint — **no BlenderKit account required**
 - If BlenderKit is signed in, Assist still applies the local look and also runs search
 
-Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render, Apply DoF) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color / compositor looks and Batch export also remain under Advanced → Shoot for people who look there.
+Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, **Apply Catcher**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render, Apply DoF) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color / compositor looks and Batch export also remain under Advanced → Shoot for people who look there.
 
 Backends:
 
 - **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
-- **Studio** — select mesh(es) → **Build Studio**. Cyclorama floor / wall auto-fit the product world AABB (v0.11.0: XY diagonal × margin, wall clears height with headroom). Rebuild replaces the old sweep. Lights sit outside the floor. Optional **Studio Margin** lives in Advanced (default 2.0×). White / Grey / Black first-ship tones + one Build button. **HDRI** (v0.13.0): Load an HDR/EXR from disk (OpenHDRI / Poly Haven / BYO), set strength and Z rotation, optional reflections-only + background strength, **Reset** to a solid studio world. **Bake HDRI** (v0.18.0): 1K/2K equirectangular EXR/HDR of the light rig, optional world, optional apply as world.
+- **Studio** — select mesh(es) → **Build Studio**. Cyclorama floor / wall auto-fit the product world AABB (v0.11.0: XY diagonal × margin, wall clears height with headroom). Rebuild replaces the old sweep. Lights sit outside the floor. Optional **Studio Margin** lives in Advanced (default 2.0×). White / Grey / Black first-ship tones + one Build button + **Catcher** (v0.24.0: soft contact on the cyclorama, or a Cycles catcher plane with EEVEE fallback for Solid / HDRI). **HDRI** (v0.13.0): Load an HDR/EXR from disk (OpenHDRI / Poly Haven / BYO), set strength and Z rotation, optional reflections-only + background strength, **Reset** to a solid studio world. **Bake HDRI** (v0.18.0): 1K/2K equirectangular EXR/HDR of the light rig, optional world, optional apply as world.
 - **Lights** — named BEHOLD area lights; Build Studio seeds Key / Fill / Rim and marks Key active; **Apply** a Softbox / Strip / Octa / Hard / Rim look to the active light; **Link Selected / Unlink / Solo product** against that light (Cycles light linking, optional shadow linking)
 - **Light Draw** — Reflect / Direct / Orbit modal aimed at the **active** light or a **new** light
 - **Cameras** — named BEHOLD product cameras; Build Studio seeds `BEHOLD_Camera` and marks it active; Add Camera / Frame / Clear from the N-panel; **DoF** on/off, f-stop, Focus on product / Focus on selected (`Camera.dof` RNA)
@@ -165,9 +173,9 @@ make smoke-step
 
 Sidebar **BEHOLD → Studio**:
 
-1. Select the product mesh(es). Pick **White / Grey / Black**. Click **Build**.
-2. The cyclorama sizes itself from the product world AABB: floor from the XY diagonal (or max width/depth) × **Studio Margin** (default 2.0×), wall from product height × 1.75 headroom. Lights sit outside the sweep. Build replaces any existing `BEHOLD_Cyclorama`.
-3. Empty / error if nothing is selected: **No mesh selected — select the product or Import Product**. Optional **Studio Margin** (1.5–2.5×) is under **Advanced → Studio**. First-ship stays one Build button plus the HDRI card below.
+1. Select the product mesh(es). Pick **White / Grey / Black**. Click **Build**. **Catcher** (default on) adds ground contact without a manual plane.
+2. The cyclorama sizes itself from the product world AABB: floor from the XY diagonal (or max width/depth) × **Studio Margin** (default 2.0×), wall from product height × 1.75 headroom. Lights sit outside the sweep. Build replaces any existing `BEHOLD_Cyclorama`. On a cyclorama, Catcher places a soft contact disc under the product; Solid / HDRI (Advanced) get a Cycles shadow-catcher plane (EEVEE fallback material if that RNA is missing).
+3. Empty / error if nothing is selected: **No mesh selected — select the product or Import Product**. Optional **Studio Margin** (1.5–2.5×) and **Apply Catcher** live under **Advanced → Studio**. First-ship stays Build + Catcher plus the HDRI card below.
 
 **HDRI world** (same Studio section — not a new panel):
 
@@ -246,7 +254,7 @@ Save two or three (hero chrome vs pack shot vs turntable) and flip without dupli
 
 Sidebar **BEHOLD → Materials**:
 
-1. Select the product mesh (not the cyclorama / shadow catcher).
+1. Select the product mesh (not the cyclorama / shadow catcher / contact disc).
 2. Click **Metal**, **Plastic**, **Rubber**, **Glass**, or **Paint**. A Principled BSDF look lands on the mesh.
 3. Or click **Assist** — BEHOLD maps the filename / STEP hint to that rack and applies it. No BlenderKit account needed.
 4. Empty state if nothing is selected: Import a product or select a mesh.
@@ -292,19 +300,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.23.0.zip`).
-2. **Versioned release** — push a tag `v0.23.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.24.0.zip`).
+2. **Versioned release** — push a tag `v0.24.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.23.0
-git push origin v0.23.0
+git tag v0.24.0
+git push origin v0.24.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.23.0.zip
+# → dist/behold-0.24.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

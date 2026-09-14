@@ -19,7 +19,9 @@ EMPTY_NO_MESH = "No mesh selected — select the product or Import Product"
 EMPTY_NO_MESH_HINT = "Import Product, then select that mesh (not the cyclorama)"
 
 # Studio sweep / catcher — do not dress these as the product.
-STUDIO_SKIP_MESHES = frozenset({"BEHOLD_Cyclorama", "BEHOLD_ShadowCatcher"})
+STUDIO_SKIP_MESHES = frozenset(
+    {"BEHOLD_Cyclorama", "BEHOLD_ShadowCatcher", "BEHOLD_ContactShadow"}
+)
 
 # 4.2+ / 5.2 LTS Principled BSDF. First name is the current Cycles/EEVEE Next
 # identifier; fallbacks cover older RNA still present on some 4.x builds.

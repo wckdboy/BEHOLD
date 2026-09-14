@@ -33,6 +33,7 @@ class CameraIdTests(unittest.TestCase):
     def test_studio_mesh_names(self) -> None:
         self.assertTrue(camera_ids.is_studio_mesh_name("BEHOLD_Cyclorama"))
         self.assertTrue(camera_ids.is_studio_mesh_name("BEHOLD_ShadowCatcher.001"))
+        self.assertTrue(camera_ids.is_studio_mesh_name("BEHOLD_ContactShadow"))
         self.assertFalse(camera_ids.is_studio_mesh_name("housing"))
         self.assertFalse(camera_ids.is_studio_mesh_name("BEHOLD_Camera"))
 

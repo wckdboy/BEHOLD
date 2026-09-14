@@ -9,7 +9,11 @@ from typing import Iterable
 
 PREFIX = "BEHOLD"
 STUDIO_CAMERA_NAME = f"{PREFIX}_Camera"
-STUDIO_MESH_BASES = (f"{PREFIX}_Cyclorama", f"{PREFIX}_ShadowCatcher")
+STUDIO_MESH_BASES = (
+    f"{PREFIX}_Cyclorama",
+    f"{PREFIX}_ShadowCatcher",
+    f"{PREFIX}_ContactShadow",
+)
 
 DEFAULT_LENS_MM = 85.0
 DEFAULT_SENSOR_WIDTH_MM = 36.0

@@ -27,6 +27,14 @@ from ..studio.bake import (
     baked_message,
     path_problem_message as bake_path_problem_message,
 )
+from ..studio.catcher import (
+    CATCHER_FAILED,
+    CATCHER_OFF,
+    NO_CATCHER_API,
+    NO_PRODUCT_FOR_CATCHER,
+    NO_STUDIO,
+    UNKNOWN_BACKDROP,
+)
 from ..studio.dof import (
     DOF_DISABLED,
     DOF_FAILED,
@@ -199,6 +207,10 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_EEVEE,
         NO_CYCLES,
         UNKNOWN_QUALITY,
+        NO_CATCHER_API,
+        NO_STUDIO,
+        NO_PRODUCT_FOR_CATCHER,
+        UNKNOWN_BACKDROP,
     }
 )
 
