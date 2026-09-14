@@ -6,7 +6,7 @@ from __future__ import annotations
 PRODUCT_NAME = "BEHOLD"
 PRODUCT_CREDIT = "by AMIRITE.studio"
 PRODUCT_TAGLINE = "KeyShot-simple product renders"
-VERSION = (0, 10, 0)
+VERSION = (0, 11, 0)
 DOCS_URL = "https://github.com/wckdboy/BEHOLD"
 RELEASES_URL = f"{DOCS_URL}/releases"
 

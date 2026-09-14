@@ -9,7 +9,8 @@ one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting section. Cameras
 is the v0.5.0 product-camera kit. Shoot carries a compact Turntable row
 (v0.6.0). Materials is the v0.8.0 local-look rack (Assist applies without
 BlenderKit). Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch,
-and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
+and turntable extras (plus Studio Margin in 0.11.0) live in
+BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -292,6 +293,7 @@ def draw_studio_parked(layout: UILayout, context: Context) -> None:
     layout.prop(settings, "studio_backdrop")
     layout.prop(settings, "studio_light_rig")
     layout.prop(settings, "include_shadow_catcher")
+    layout.prop(settings, "studio_margin")
 
     col = layout.column(align=True)
     col.label(text="Light Mixer")

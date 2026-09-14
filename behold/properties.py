@@ -50,6 +50,17 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Add a ground plane that catches shadows",
         default=True,
     )
+    studio_margin: FloatProperty(
+        name="Studio Margin",
+        description="Cyclorama floor scale vs product XY diagonal (Build Studio)",
+        default=2.0,
+        min=1.0,
+        max=4.0,
+        soft_min=1.5,
+        soft_max=2.5,
+        step=10,
+        precision=2,
+    )
     key_power: FloatProperty(
         name="Key Power",
         description="Key light strength multiplier",
