@@ -197,7 +197,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("/releases", _read("behold/brand.py"))
         init = _read("behold/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (0, 22, 0)', init)
+        self.assertIn('"version": (0, 23, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
         source = _read("behold/ui/panels.py")

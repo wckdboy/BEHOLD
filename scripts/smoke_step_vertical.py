@@ -127,7 +127,6 @@ def main() -> None:
     out_dir = _smoke_output_dir()
     still = out_dir / "still.png"
     scene = context.scene
-    scene.render.engine = "CYCLES"
     scene.render.resolution_x = 128
     scene.render.resolution_y = 128
     scene.render.resolution_percentage = 100

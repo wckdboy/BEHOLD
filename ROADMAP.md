@@ -6,6 +6,9 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.23.0 EEVEE quick look** — Draft uses EEVEE Next when available; Final /
+  Product / Hero stay Cycles. Shoot caption Draft = EEVEE · Final = Cycles.
+  Cheap product EEVEE shadows / reflections. Not gobos, IES, or logo.
 - **0.22.0 Product DoF / focus pick** — DoF on/off, product f-stop (default f/5.6),
   Focus on product / Focus on selected on the active BEHOLD camera. Maps to
   Blender 5.2 `Camera.dof` (`use_dof` / `aperture_fstop` / `focus_distance`).

@@ -35,6 +35,12 @@ from ..studio.dof import (
     NO_DOF_API,
     UNKNOWN_FOCUS,
 )
+from ..shoot.quality import (
+    NO_CYCLES,
+    NO_EEVEE,
+    QUALITY_FAILED,
+    UNKNOWN_QUALITY,
+)
 from ..studio.light_linking import (
     LINKING_FAILED,
     NO_LINKING_API,
@@ -190,6 +196,9 @@ EMPTY_STATE_MESSAGES = frozenset(
         FOCUS_NO_PRODUCT,
         FOCUS_NO_SELECTION,
         UNKNOWN_FOCUS,
+        NO_EEVEE,
+        NO_CYCLES,
+        UNKNOWN_QUALITY,
     }
 )
 
