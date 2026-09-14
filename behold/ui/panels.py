@@ -2,9 +2,9 @@
 """BEHOLD N-panel UI.
 
 First-ship chrome: Import / Studio / Shoot stay skinny. Lights is the v0.4.0
-lighting section. Cameras is the v0.5.0 product-camera kit. Parked mixer, CAD
-box, materials, hotkeys, batch, and turntable live in BEHOLD_PT_advanced
-(DEFAULT_CLOSED).
+lighting section. Cameras is the v0.5.0 product-camera kit. Shoot carries a
+compact Turntable row (v0.6.0). Parked mixer, CAD box, materials, hotkeys,
+batch, and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ from ..cad import detect as cad_detect
 from ..cad import material_assist
 from ..materials import blenderkit_bridge, local_rack
 from ..product_import import formats
+from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
 
@@ -45,13 +46,47 @@ def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
-    """Draft / Final, Still, Render."""
+    """Draft / Final, Still, Render, compact Turntable row."""
     settings = context.scene.behold
     row = layout.row(align=True)
     row.prop_enum(settings, "render_quality", "DRAFT")
     row.prop_enum(settings, "render_quality", "FINAL")
     layout.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     layout.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
+    layout.separator()
+    draw_turntable_compact(layout, context)
+
+
+def draw_turntable_compact(layout: UILayout, context: Context) -> None:
+    """One row: seconds + Setup + Play. Empty-state if no camera or product."""
+    settings = context.scene.behold
+    cam = camera_lib.resolve_shoot_camera(context)
+    product = camera_lib.product_targets(context)
+    message = turntable_lib.empty_state(
+        has_camera=cam is not None,
+        has_product=bool(product),
+    )
+    if message == turntable_lib.EMPTY_NO_CAMERA:
+        box = layout.box()
+        box.label(text=message, icon="INFO")
+        row = box.row(align=True)
+        row.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
+        row.operator("behold.add_camera", text="Add Camera", icon="ADD")
+        return
+    if message == turntable_lib.EMPTY_NO_PRODUCT:
+        box = layout.box()
+        box.label(text=message, icon="INFO")
+        box.operator("behold.import_product", icon="IMPORT")
+        return
+    if message is not None:
+        box = layout.box()
+        box.label(text=message, icon="INFO")
+        return
+    row = layout.row(align=True)
+    row.label(text="Turntable")
+    row.prop(settings, "turntable_seconds", text="")
+    row.operator("behold.setup_turntable", text="Setup")
+    row.operator("behold.play_turntable", text="Play", icon="PLAY")
 
 
 def draw_lights_section(layout: UILayout, context: Context) -> None:
@@ -241,14 +276,14 @@ def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_parked(layout: UILayout, context: Context) -> None:
-    """EV / WB / tokens / bookmark / batch / turntable (parked)."""
+    """EV / WB / tokens / bookmark / batch / turntable extras (parked)."""
     settings = context.scene.behold
     has_camera = context.scene.camera is not None or bool(settings.main_camera_name)
     has_mesh = any(obj.type == "MESH" for obj in context.selected_objects)
 
     if not has_camera:
         box = layout.box()
-        box.label(text="No camera — Build Studio or Add Camera", icon="ERROR")
+        box.label(text=turntable_lib.EMPTY_NO_CAMERA, icon="ERROR")
 
     col = layout.column(align=True)
     col.label(text="Look")
@@ -281,15 +316,19 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     layout.separator()
     if not has_mesh:
         box = layout.box()
-        box.label(text="Select mesh(es) for batch / turntable", icon="INFO")
+        box.label(text="Select mesh(es) for batch", icon="INFO")
         if not _has_imported_product(context):
             box.operator("behold.import_product", icon="IMPORT")
     layout.operator("behold.batch_angles", icon="CAMERA_DATA")
 
     layout.separator()
-    layout.prop(settings, "turntable_frames")
-    layout.operator("behold.setup_turntable", icon="DRIVER_ROTATIONAL_DIFFERENCE")
-    layout.operator("behold.render_turntable", icon="RENDER_ANIMATION")
+    col = layout.column(align=True)
+    col.label(text="Turntable")
+    col.prop(settings, "turntable_interpolation", text="Spin")
+    row = col.row(align=True)
+    row.operator("behold.bake_turntable", text="Bake")
+    row.operator("behold.clear_turntable", text="Clear")
+    col.operator("behold.render_turntable", icon="RENDER_ANIMATION")
 
 
 class BEHOLD_PT_main(Panel):
