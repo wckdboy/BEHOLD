@@ -11,6 +11,7 @@ import bpy
 from .formats import extension_of, mesh_operator_candidates
 from .invoke import (
     format_empty_mesh_import_message,
+    format_file_not_found_message,
     format_mesh_import_failure,
     format_no_mesh_operator_message,
     mesh_import_kwarg_attempts,
@@ -63,7 +64,11 @@ def import_mesh_file(context, filepath: str) -> dict[str, Any]:
     """Import a mesh interchange file with native Blender operators."""
     abs_path = bpy.path.abspath(filepath)
     if not abs_path or not os.path.isfile(abs_path):
-        return {"ok": False, "objects": [], "message": f"File not found: {filepath}"}
+        return {
+            "ok": False,
+            "objects": [],
+            "message": format_file_not_found_message(filepath),
+        }
 
     ext = extension_of(abs_path)
     candidates = mesh_operator_candidates(abs_path)

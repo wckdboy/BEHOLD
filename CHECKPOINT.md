@@ -12,16 +12,16 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.10.0 |
-| **This branch / after merge** | **0.11.0** |
+| **Version on `main` (before this cut)** | 0.11.0 |
+| **This branch / after merge** | **0.12.0** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.11.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-0.12.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
-Honest inventory of what this cut ships (plus what `main` already had).
-
+- **Workflow order (0.12.0)** — N-panel child order is **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (`bl_order` + `CLASSES`). Shoot is last so dressing lights/materials/cameras does not require scrolling past Shoot and back. Flow strip stays Import → Studio → Dress → Shoot; Dress Next runs **Material Assist**.
+- **Clear errors (0.12.0)** — primary operators share empty-state copy: short sentence + next step (e.g. “No mesh selected — select the product or Import Product”). Missing-prerequisite reports use `WARNING`; hard failures stay `ERROR`. Constants in `behold/ui/messages.py`. Update check/install copy stays in `behold/updates/core.py` (`describe_failure`).
 - **Cyclorama auto-fit (0.11.0)** — Build Studio sizes the sweep from the product world AABB: floor = max(width, depth, XY diagonal) × margin (default 2.0×, also ≥ 0.75 × height); wall = height × 1.75 headroom (also ≥ 0.4 × floor). Lights / catcher use `rig_size` so they stay outside the floor. Rebuild drops leftover `BEHOLD_Cyclorama` / catcher meshes. Optional **Studio Margin** in Advanced; first-ship stays White / Grey / Black + Build.
 - **Easy update (0.10.0)** — public GitHub Releases check for `wckdboy/BEHOLD` (no token). Preferences: **Check for updates**, last-checked status, **Update available: x.y.z** with **Install** / **Open release**. Session-dismissible notice on the main BEHOLD panel. Check/install failures are explicit (what failed + check network / Open release). Auto-check default **on**, at most once per day on a background thread + timer (cancel-safe; toggle to disable). Install downloads `behold-*.zip` to a temp path, then Blender 5.2 `extensions.package_install_files` (Install from Disk, `user_default`, overwrite, enable) with `preferences.addon_install` fallback. Always asks to **restart Blender**. Tests in `tests/test_updates.py` (fixtures, no live network).
 - **Studio chrome (0.9.0)** — branded N-panel hero (**BEHOLD** / **by AMIRITE.studio**), section header icons, box cards, one-CTA empty states. **Import → Studio → Dress → Shoot** strip checks off from scene state (product / studio kit / local look / camera). Next CTA stays on the three-click path.
@@ -40,19 +40,19 @@ Honest inventory of what this cut ships (plus what `main` already had).
 - **BlenderKit** — soft-dependency bridge with login / search / apply hooks (Advanced). Not required to dress a mesh.
 - **Shoot depth** — EV / white balance / false color; Draft · Product · Hero (and Final) sample presets; `{angle}` `{camera}` `{quality}` path tokens; main-camera bookmark; still; batch angles; turntable.
 - **CI zip** — GitHub Actions runs `make test` then builds the install zip; tags `v*` publish a GitHub Release.
-- **Tests** — `make test` (`unittest` under `tests/`, no Blender required). `tests/test_studio_fit.py` covers cyclorama margin math (tiny cube, long bar, tall tower, flat sheet) without bpy. `tests/test_updates.py` covers semver compare, GitHub JSON fixtures, and operator/prefs wiring (no live network). `tests/test_materials.py` covers rack defaults, socket aliases, Assist mapping, and wiring.
+- **Tests** — `make test` (`unittest` under `tests/`, no Blender required). `tests/test_studio_fit.py` covers cyclorama margin math (tiny cube, long bar, tall tower, flat sheet) without bpy. `tests/test_updates.py` covers semver compare, GitHub JSON fixtures, and operator/prefs wiring (no live network). `tests/test_materials.py` covers rack defaults, socket aliases, Assist mapping, and wiring. `tests/test_messages.py` covers shared error / empty-state copy.
 
 ## First-ship chrome (Percival)
 
-N-panel keeps the three-click path skinny. Physical section order is **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** so the flow strip Import → Studio → Dress → Shoot matches scrolling. Turntable is a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome on that layout (hero, flow strip, cards, pie/header) — not a new backend lane.
+N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy — not a new backend lane.
 
 1. **Import** — **Import Product** file picker + one CAD backend line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**). Auto-studio, Material Assist toggle, and the full CAD box stay in Advanced. Do not embed STEPper's import dialog.
 2. **Studio** — backdrop **White / Grey / Black** + one **Build** button. No light mixer. Cyclorama auto-fits; **Studio Margin** stays in Advanced.
 3. **Lights** — inventory + Light Draw Active / New. Not a Light Wrangler clone; native Blender chrome.
-4. **Materials (0.8.0)** — local rack + Assist. Empty state if no product mesh is selected. Not a BlenderKit browser. Dress in the flow strip.
+4. **Materials (0.8.0)** — local rack + Assist. Empty state if no product mesh is selected. Not a BlenderKit browser. Flow-strip **Dress** Next = Assist.
 5. **Cameras** — inventory + Add / Frame / Clear. Not Blender's Properties camera dump; native BEHOLD chrome.
-6. **Shoot** — **Draft / Final**, **Still**, **Render**, compact **Turntable** (seconds + Setup + Play). No batch, EV, WB, path tokens, camera bookmark, bake, or ease on this panel.
-7. **Main shell (0.9.0)** — `BEHOLD_PT_main` draws the hero + flow strip. Child panels keep `draw_header` icons. **0.10.0** adds a dismissible update notice on the main panel when a newer stable zip is cached — not a new first-class section.
+6. **Shoot** — **Draft / Final**, **Still**, **Render**, compact **Turntable** (seconds + Setup + Play). Last first-class section. No batch, EV, WB, path tokens, camera bookmark, bake, or ease on this panel.
+7. **Main shell (0.9.0)** — `BEHOLD_PT_main` draws the hero + flow strip. Child panels keep `draw_header` icons and `bl_order`. **0.10.0** adds a dismissible update notice on the main panel when a newer stable zip is cached — not a new first-class section.
 8. **Advanced** (`BEHOLD_PT_advanced`, `DEFAULT_CLOSED`) — mixer, **Studio Margin**, CAD box, BlenderKit login/search/apply, Light Draw hotkeys, batch, turntable spin / bake / clear / render, Bookmark / Use Main.
 
 Backend operators stay registered. Pie / header / preferences do not replace the N-panel path.
@@ -76,6 +76,7 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ### 2026-09-14
 
+- v**0.12.0** Workflow order + clear errors: N-panel **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (Shoot last, `bl_order`). Flow-strip Dress Next = Material Assist. Shared empty-state / operator copy in `behold/ui/messages.py` (sentence + next step; `WARNING` vs `ERROR`). Tests in `tests/test_messages.py`. Install zip `behold-0.12.0.zip`.
 - v**0.11.0** Cyclorama auto-fit: Build Studio sizes floor / wall / lights from the product world AABB (XY diagonal × margin, wall clears height with headroom). Rebuild replaces leftover sweeps. Optional Studio Margin in Advanced (default 2.0×). First-ship stays White / Grey / Black + Build. N-panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced (flow strip Import → Studio → Dress → Shoot). Tests in `tests/test_studio_fit.py`. Install zip `behold-0.11.0.zip`.
 - v**0.10.0** Easy update: GitHub Releases check (public API, no token), preferences Check for updates + last-checked + Install / Open release, session-dismissible N-panel notice, optional daily auto-check (default on). Installs `behold-*.zip` via 5.2 Install from Disk then asks to restart Blender. Tests in `tests/test_updates.py`. Install zip `behold-0.10.0.zip`.
 - v**0.9.0** Studio chrome / enhanced UX: branded N-panel hero, Import → Studio → Dress → Shoot strip, section icons, box cards, one-CTA empty states. Pie menu `BEHOLD_MT_pie` (**Shift+Alt+B**) + 3D View header shortcuts. Add-on preferences branding / docs / chrome toggles / this-scene quality and auto-studio. Tests in `tests/test_ux_chrome.py`. Install zip `behold-0.9.0.zip`. Native `bpy.types.Panel` / `UILayout` / pie / header only — no HTML overlay.
@@ -104,6 +105,6 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 - **Percival** owns panel chrome (what the N-panel shows, what stays collapsed in Advanced).
 - First-ship Import / Studio / Shoot must stay skinny even if extra operators remain registered. Import may show one CAD backend line; auto-studio / Material Assist toggle / full CAD box stay in Advanced. Turntable on Shoot is one compact row; bake / ease / render stay in Advanced.
 - Prefer parking controls in `BEHOLD_PT_advanced` over deleting them.
-- Lights, Cameras, and Materials are extra first-class sections in shoot-path order (Lights → Materials → Cameras, between Studio and Shoot). Park BlenderKit chrome in Advanced — do not dump a library browser on Materials.
+- Lights, Materials, and Cameras sit between Studio and Shoot. Park BlenderKit chrome in Advanced — do not dump a library browser on Materials.
 - Percival 0.9.0 chrome stays inside Blender's UI toolkit (panels, pie, header, preferences). Do not add HTML/OpenGL overlay skins.
 - Real STEP Import → Build → Render: `blender --background --python scripts/smoke_step_vertical.py` (needs OCP or STEPper).

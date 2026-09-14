@@ -13,6 +13,16 @@ from ..brand import (
     PIE_KEY,
     PIE_MENU_ID,
 )
+from ..materials.presets import PRESETS, material_name_for
+from ..studio.camera_ids import is_studio_mesh_name
+from .messages import (
+    EMPTY_NO_MESH,
+    EMPTY_NO_MESH_HINT,
+    NO_CAMERAS_NEXT,
+    NO_CAMERAS_TITLE,
+    NO_LIGHTS_NEXT,
+    NO_LIGHTS_TITLE,
+)
 
 # Re-exported so chrome tests can load one bpy-free module.
 CHROME_IDS = {
@@ -22,13 +32,6 @@ CHROME_IDS = {
     "pie_key": PIE_KEY,
     "pie_menu_id": PIE_MENU_ID,
 }
-from ..materials.presets import (
-    EMPTY_NO_MESH,
-    EMPTY_NO_MESH_HINT,
-    PRESETS,
-    material_name_for,
-)
-from ..studio.camera_ids import is_studio_mesh_name
 
 FlowStepId = Literal["import", "studio", "dress", "shoot"]
 
@@ -43,6 +46,30 @@ SECTION_ICONS: dict[str, str] = {
 }
 
 LOOK_MATERIAL_NAMES = frozenset(material_name_for(key) for key in PRESETS)
+
+# Physical N-panel order under BEHOLD_PT_main (hero + flow strip stay on top).
+# Import → Studio → Lights → Materials → Cameras → Shoot → Advanced
+N_PANEL_CLASS_ORDER = (
+    "BEHOLD_PT_main",
+    "BEHOLD_PT_import",
+    "BEHOLD_PT_studio",
+    "BEHOLD_PT_lights",
+    "BEHOLD_PT_materials",
+    "BEHOLD_PT_cameras",
+    "BEHOLD_PT_shoot",
+    "BEHOLD_PT_advanced",
+)
+CHILD_PANEL_BL_ORDER: dict[str, int] = {
+    "BEHOLD_PT_import": 10,
+    "BEHOLD_PT_studio": 20,
+    "BEHOLD_PT_lights": 30,
+    "BEHOLD_PT_materials": 40,
+    "BEHOLD_PT_cameras": 50,
+    "BEHOLD_PT_shoot": 60,
+    "BEHOLD_PT_advanced": 70,
+}
+# Same child order without the main shell.
+PANEL_BL_IDNAMES: tuple[str, ...] = N_PANEL_CLASS_ORDER[1:]
 
 
 @dataclass(frozen=True)
@@ -75,29 +102,17 @@ FLOW_STEPS: tuple[FlowStep, ...] = (
     FlowStep("shoot", "Shoot", "RENDER_STILL"),
 )
 
-# Child panels under BEHOLD_PT_main, top-to-bottom. Lights / Cameras are
-# inventory on the shoot path; Dress in the strip is the Materials panel.
-PANEL_BL_IDNAMES: tuple[str, ...] = (
-    "BEHOLD_PT_import",
-    "BEHOLD_PT_studio",
-    "BEHOLD_PT_lights",
-    "BEHOLD_PT_materials",
-    "BEHOLD_PT_cameras",
-    "BEHOLD_PT_shoot",
-    "BEHOLD_PT_advanced",
-)
-
 EMPTY_LIGHTS = EmptyState(
-    title="No BEHOLD lights yet",
-    hint="Build Studio to seed Key, Fill, and Rim",
+    title=NO_LIGHTS_TITLE,
+    hint=NO_LIGHTS_NEXT,
     operator="behold.build_studio",
     operator_text="Build Studio",
     icon="OUTLINER_OB_LIGHT",
 )
 
 EMPTY_CAMERAS = EmptyState(
-    title="No BEHOLD cameras yet",
-    hint="Build Studio to add a framed product camera",
+    title=NO_CAMERAS_TITLE,
+    hint=NO_CAMERAS_NEXT,
     operator="behold.build_studio",
     operator_text="Build Studio",
     icon="OUTLINER_OB_LIGHT",
@@ -142,7 +157,8 @@ def cta_for_step(step_id: FlowStepId) -> FlowCta:
     if step_id == "studio":
         return FlowCta("behold.build_studio", "Build Studio", "OUTLINER_OB_LIGHT")
     if step_id == "dress":
-        return FlowCta("behold.cad_material_assist", "Dress", "MATERIAL")
+        # Dress = Materials section; Next runs Assist on the selected product.
+        return FlowCta("behold.cad_material_assist", "Assist", "MATERIAL")
     if step_id == "shoot":
         return FlowCta("behold.render_still", "Still", "RENDER_STILL")
     unreachable: Never = step_id

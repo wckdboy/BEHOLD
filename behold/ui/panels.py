@@ -1,18 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-Studio chrome (v0.9.0): branded hero + Import → Studio → Dress → Shoot strip
-on the main panel; section header icons; box cards and one-CTA empty states.
-N-panel order (v0.11.0): Import → Studio → Lights → Materials → Cameras →
-Shoot → Advanced. Easy update (v0.10.0): a dismissible GitHub notice on the
-main panel when a newer stable zip is cached. First-ship Import / Studio /
-Shoot stay skinny.
-Import shows the picker plus one CAD backend line (v0.7.0). Lights is the
-v0.4.0 lighting section. Cameras is the v0.5.0 product-camera kit. Shoot
-carries a compact Turntable row (v0.6.0). Materials is the v0.8.0 local-look
-rack (Assist applies without BlenderKit). Parked mixer, CAD box extras,
-BlenderKit chrome, hotkeys, batch, and turntable extras (plus Studio Margin
-in 0.11.0) live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
+Studio chrome (v0.9.0) + workflow order (v0.12.0): branded hero + Import →
+Studio → Dress → Shoot strip on the main panel; physical child order is
+Import → Studio → Lights → Materials → Cameras → Shoot → Advanced so Shoot
+is last. Easy update (v0.10.0): a dismissible GitHub notice on the main
+panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
+Section header icons; box cards and one-CTA empty states. First-ship
+Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
+backend line (v0.7.0). Lights is the v0.4.0 lighting section. Cameras is the
+v0.5.0 product-camera kit. Shoot carries a compact Turntable row (v0.6.0).
+Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
+Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch, and
+turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
+(DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -39,7 +40,14 @@ from .chrome import (
     draw_section_icon,
     draw_update_notice,
 )
-from .flow import EMPTY_CAMERAS, EMPTY_LIGHTS, EMPTY_MATERIALS, SECTION_ICONS
+from .flow import (
+    CHILD_PANEL_BL_ORDER,
+    EMPTY_CAMERAS,
+    EMPTY_LIGHTS,
+    EMPTY_MATERIALS,
+    SECTION_ICONS,
+)
+from .messages import BATCH_NO_MESH, NO_MESH_SELECTED, NO_PRODUCT
 
 
 def _has_selected_mesh(context: Context) -> bool:
@@ -252,7 +260,7 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
 
     if not _has_selected_mesh(context) and not _has_imported_product(context):
         empty = layout.box()
-        empty.label(text="No product in the scene yet", icon="INFO")
+        empty.label(text=NO_PRODUCT, icon="INFO")
         empty.label(text=f"Mesh: {formats.mesh_format_summary()}")
         empty.label(text=f"CAD: {formats.cad_format_summary()}")
         empty.operator("behold.import_product", icon="IMPORT")
@@ -290,7 +298,7 @@ def draw_studio_parked(layout: UILayout, context: Context) -> None:
     settings = context.scene.behold
     if not _has_selected_mesh(context):
         box = layout.box()
-        box.label(text="Import or select a product mesh", icon="INFO")
+        box.label(text=NO_MESH_SELECTED, icon="INFO")
         box.operator("behold.import_product", icon="IMPORT")
     layout.prop(settings, "studio_backdrop")
     layout.prop(settings, "studio_light_rig")
@@ -399,7 +407,7 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     layout.separator()
     if not has_mesh:
         box = layout.box()
-        box.label(text="Select mesh(es) for batch", icon="INFO")
+        box.label(text=BATCH_NO_MESH, icon="INFO")
         if not _has_imported_product(context):
             box.operator("behold.import_product", icon="IMPORT")
     layout.operator("behold.batch_angles", icon="CAMERA_DATA")
@@ -434,6 +442,7 @@ class BEHOLD_PT_import(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_import"]
 
     def draw_header(self, context: Context):
         del context
@@ -450,6 +459,7 @@ class BEHOLD_PT_studio(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_studio"]
 
     def draw_header(self, context: Context):
         del context
@@ -466,6 +476,7 @@ class BEHOLD_PT_shoot(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_shoot"]
 
     def draw_header(self, context: Context):
         del context
@@ -482,6 +493,7 @@ class BEHOLD_PT_lights(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_lights"]
 
     def draw_header(self, context: Context):
         del context
@@ -498,6 +510,7 @@ class BEHOLD_PT_cameras(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_cameras"]
 
     def draw_header(self, context: Context):
         del context
@@ -514,6 +527,7 @@ class BEHOLD_PT_materials(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_materials"]
 
     def draw_header(self, context: Context):
         del context
@@ -530,6 +544,7 @@ class BEHOLD_PT_advanced(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+    bl_order = CHILD_PANEL_BL_ORDER["BEHOLD_PT_advanced"]
     bl_options = {"DEFAULT_CLOSED"}
 
     def draw_header(self, context: Context):

@@ -9,6 +9,13 @@ from bpy.types import Context, Operator
 
 from . import lights as light_lib
 from . import setup as studio_setup
+from ..ui.messages import (
+    NO_LIGHT_TO_REMOVE,
+    NO_LIGHTS,
+    NO_MESH_SELECTED,
+    light_not_found,
+    report_set,
+)
 
 
 class BEHOLD_OT_build_studio(Operator):
@@ -19,8 +26,8 @@ class BEHOLD_OT_build_studio(Operator):
 
     def execute(self, context: Context):
         message = studio_setup.build_studio(context)
-        if message == studio_setup.BUILD_NEEDS_MESH:
-            self.report({"ERROR"}, message)
+        if message in (studio_setup.BUILD_NEEDS_MESH, NO_MESH_SELECTED):
+            self.report(report_set(NO_MESH_SELECTED), NO_MESH_SELECTED)
             return {"CANCELLED"}
         self.report({"INFO"}, message)
         return {"FINISHED"}
@@ -34,7 +41,7 @@ class BEHOLD_OT_refresh_lights(Operator):
 
     def execute(self, context: Context):
         if not light_lib.iter_behold_lights(context):
-            self.report({"ERROR"}, "No BEHOLD lights — Build Studio or Add Light first")
+            self.report(report_set(NO_LIGHTS), NO_LIGHTS)
             return {"CANCELLED"}
         count = studio_setup.refresh_light_mixer(context)
         self.report({"INFO"}, f"Light mixer applied ({count} light(s))")
@@ -65,7 +72,7 @@ class BEHOLD_OT_remove_light(Operator):
         name = (self.light_name or "").strip()
         light = bpy.data.objects.get(name) if name else light_lib.get_active_behold_light(context)
         if light is None or not light_lib.is_behold_light(light):
-            self.report({"ERROR"}, "Pick a BEHOLD light to remove")
+            self.report(report_set(NO_LIGHT_TO_REMOVE), NO_LIGHT_TO_REMOVE)
             return {"CANCELLED"}
         removed = light.name
         light_lib.remove_behold_light(context, light)
@@ -84,7 +91,8 @@ class BEHOLD_OT_set_active_light(Operator):
     def execute(self, context: Context):
         light = bpy.data.objects.get(self.light_name)
         if light is None or not light_lib.is_behold_light(light):
-            self.report({"ERROR"}, f"Light “{self.light_name}” not found")
+            message = light_not_found(self.light_name)
+            self.report(report_set(message), message)
             return {"CANCELLED"}
         light_lib.set_active_behold_light(context, light)
         self.report({"INFO"}, f"Active light: {light.name}")

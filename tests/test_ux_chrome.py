@@ -96,6 +96,7 @@ class FlowStripTests(unittest.TestCase):
             flow.cta_for_step("dress").operator,
             "behold.cad_material_assist",
         )
+        self.assertEqual(flow.cta_for_step("dress").label, "Assist")
 
         ready = flow.flow_completed(
             has_product=True,
@@ -139,8 +140,10 @@ class FlowStripTests(unittest.TestCase):
 
     def test_empty_states_have_one_primary_cta(self) -> None:
         self.assertEqual(flow.EMPTY_LIGHTS.title, "No BEHOLD lights yet")
+        self.assertEqual(flow.EMPTY_LIGHTS.hint, "Build Studio or Add Light")
         self.assertEqual(flow.EMPTY_LIGHTS.operator, "behold.build_studio")
         self.assertEqual(flow.EMPTY_CAMERAS.title, "No BEHOLD cameras yet")
+        self.assertEqual(flow.EMPTY_CAMERAS.hint, "Build Studio or Add Camera")
         self.assertEqual(flow.EMPTY_CAMERAS.operator, "behold.build_studio")
         self.assertEqual(flow.EMPTY_MATERIALS.title, presets.EMPTY_NO_MESH)
         self.assertEqual(flow.EMPTY_MATERIALS.operator, "behold.import_product")
@@ -191,7 +194,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("/releases", _read("behold/brand.py"))
         init = _read("behold/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (0, 11, 0)', init)
+        self.assertIn('"version": (0, 12, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
         source = _read("behold/ui/panels.py")

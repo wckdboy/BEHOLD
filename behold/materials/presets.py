@@ -15,8 +15,8 @@ from typing import Any, Mapping
 DEFAULT_PRESET = "METAL"
 DEFAULT_QUERY = "brushed metal"
 
-EMPTY_NO_MESH = "Select a product mesh"
-EMPTY_NO_MESH_HINT = "Import a product or select a mesh in the viewport"
+EMPTY_NO_MESH = "No mesh selected — select the product or Import Product"
+EMPTY_NO_MESH_HINT = "Import Product, then select that mesh (not the cyclorama)"
 
 # Studio sweep / catcher — do not dress these as the product.
 STUDIO_SKIP_MESHES = frozenset({"BEHOLD_Cyclorama", "BEHOLD_ShadowCatcher"})

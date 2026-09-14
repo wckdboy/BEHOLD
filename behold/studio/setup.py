@@ -17,9 +17,10 @@ from .fit import (
     fit_from_aabb,
 )
 from .tones import backdrop_tone_rgba, kelvin_to_rgb
+from ..materials.presets import EMPTY_NO_MESH
 
 PREFIX = light_lib.PREFIX
-BUILD_NEEDS_MESH = "Select a product mesh, then click Build — or Import Product first"
+BUILD_NEEDS_MESH = EMPTY_NO_MESH
 
 
 def selected_meshes(context: Context) -> list[Object]:

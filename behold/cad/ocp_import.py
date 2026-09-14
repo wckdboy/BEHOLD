@@ -9,6 +9,7 @@ from typing import Any
 import bpy
 
 from . import ocp_core
+from ..product_import.invoke import format_file_not_found_message
 
 
 def import_cad_with_ocp(
@@ -20,7 +21,11 @@ def import_cad_with_ocp(
     """Read a STEP / IGES / BREP file via OCP, tessellate, and create mesh objects."""
     path = bpy.path.abspath(filepath)
     if not path or not os.path.isfile(path):
-        return {"ok": False, "objects": [], "message": f"File not found: {filepath}"}
+        return {
+            "ok": False,
+            "objects": [],
+            "message": format_file_not_found_message(filepath),
+        }
 
     try:
         ocp_core.ensure_ocp()

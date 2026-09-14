@@ -12,6 +12,19 @@ from bpy.types import Context, Operator
 from mathutils import Vector
 
 from ..studio import cameras as camera_lib
+from ..ui.messages import (
+    BATCH_NO_MESH,
+    FRAME_NO_PRODUCT,
+    NO_CAMERA,
+    NO_CAMERA_TO_REMOVE,
+    NO_CAMERAS_TO_CLEAR,
+    NO_MAIN_CAMERA,
+    TURNTABLE_NO_SETUP,
+    TURNTABLE_READY_PLAY,
+    bookmark_camera_missing,
+    camera_not_found,
+    report_set,
+)
 from . import turntable as turntable_lib
 from . import turntable_rig
 
@@ -126,7 +139,7 @@ class BEHOLD_OT_bookmark_camera(Operator):
     def execute(self, context: Context):
         cam = context.scene.camera
         if cam is None or cam.type != "CAMERA":
-            self.report({"ERROR"}, "Set a scene camera first (Build Studio or Add Camera)")
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
             return {"CANCELLED"}
         if camera_lib.is_behold_camera(cam):
             camera_lib.set_active_behold_camera(context, cam)
@@ -145,11 +158,12 @@ class BEHOLD_OT_use_main_camera(Operator):
     def execute(self, context: Context):
         name = context.scene.behold.main_camera_name
         if not name:
-            self.report({"ERROR"}, "No main camera bookmarked yet")
+            self.report(report_set(NO_MAIN_CAMERA), NO_MAIN_CAMERA)
             return {"CANCELLED"}
         cam = bpy.data.objects.get(name)
         if cam is None or cam.type != "CAMERA":
-            self.report({"ERROR"}, f"Bookmarked camera “{name}” is missing")
+            message = bookmark_camera_missing(name)
+            self.report(report_set(message), message)
             return {"CANCELLED"}
         if camera_lib.is_behold_camera(cam):
             camera_lib.set_active_behold_camera(context, cam)
@@ -183,7 +197,7 @@ class BEHOLD_OT_remove_camera(Operator):
         name = (self.camera_name or "").strip()
         cam = bpy.data.objects.get(name) if name else camera_lib.get_active_behold_camera(context)
         if cam is None or not camera_lib.is_behold_camera(cam):
-            self.report({"ERROR"}, "Pick a BEHOLD camera to remove")
+            self.report(report_set(NO_CAMERA_TO_REMOVE), NO_CAMERA_TO_REMOVE)
             return {"CANCELLED"}
         removed = cam.name
         camera_lib.remove_behold_camera(context, cam)
@@ -202,7 +216,8 @@ class BEHOLD_OT_set_active_camera(Operator):
     def execute(self, context: Context):
         cam = bpy.data.objects.get(self.camera_name)
         if cam is None or not camera_lib.is_behold_camera(cam):
-            self.report({"ERROR"}, f"Camera “{self.camera_name}” not found")
+            message = camera_not_found(self.camera_name)
+            self.report(report_set(message), message)
             return {"CANCELLED"}
         camera_lib.set_active_behold_camera(context, cam)
         self.report({"INFO"}, f"Active camera: {cam.name}")
@@ -221,10 +236,10 @@ class BEHOLD_OT_frame_camera(Operator):
         name = (self.camera_name or "").strip()
         cam = bpy.data.objects.get(name) if name else camera_lib.get_active_behold_camera(context)
         if cam is None or not camera_lib.is_behold_camera(cam):
-            self.report({"ERROR"}, "Add a BEHOLD camera first")
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
             return {"CANCELLED"}
         if not camera_lib.product_targets(context):
-            self.report({"ERROR"}, "Select a product mesh or Build Studio")
+            self.report(report_set(FRAME_NO_PRODUCT), FRAME_NO_PRODUCT)
             return {"CANCELLED"}
         camera_lib.frame_behold_camera(context, cam)
         self.report({"INFO"}, f"Framed {cam.name}")
@@ -240,7 +255,7 @@ class BEHOLD_OT_clear_cameras(Operator):
     def execute(self, context: Context):
         count = camera_lib.clear_behold_cameras(context)
         if count == 0:
-            self.report({"WARNING"}, "No BEHOLD cameras to clear")
+            self.report(report_set(NO_CAMERAS_TO_CLEAR), NO_CAMERAS_TO_CLEAR)
             return {"CANCELLED"}
         self.report({"INFO"}, f"Cleared {count} camera(s)")
         return {"FINISHED"}
@@ -254,7 +269,7 @@ class BEHOLD_OT_render_still(Operator):
     def execute(self, context: Context):
         cam = _ensure_camera(context)
         if cam is None:
-            self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
             return {"CANCELLED"}
 
         apply_exposure(context)
@@ -277,7 +292,8 @@ class BEHOLD_OT_setup_turntable(Operator):
     def execute(self, context: Context):
         error, plan = turntable_rig.setup_turntable(context)
         if error or plan is None:
-            self.report({"ERROR"}, error or "Turntable setup failed")
+            message = error or TURNTABLE_NO_SETUP
+            self.report(report_set(message), message)
             return {"CANCELLED"}
         spin = "linear loop" if plan.loop_friendly else "ease"
         self.report(
@@ -296,13 +312,13 @@ class BEHOLD_OT_play_turntable(Operator):
     def execute(self, context: Context):
         error, _plan = turntable_rig.setup_turntable(context)
         if error:
-            self.report({"ERROR"}, error)
+            self.report(report_set(error), error)
             return {"CANCELLED"}
         context.scene.frame_set(context.scene.frame_start)
         try:
             bpy.ops.screen.animation_play()
         except RuntimeError:
-            self.report({"WARNING"}, "Turntable ready — press Space to play")
+            self.report({"INFO"}, TURNTABLE_READY_PLAY)
             return {"FINISHED"}
         self.report({"INFO"}, "Playing turntable")
         return {"FINISHED"}
@@ -317,7 +333,7 @@ class BEHOLD_OT_clear_turntable(Operator):
     def execute(self, context: Context):
         error = turntable_rig.clear_turntable(context)
         if error:
-            self.report({"ERROR"}, error)
+            self.report(report_set(error), error)
             return {"CANCELLED"}
         self.report({"INFO"}, "Turntable cleared")
         return {"FINISHED"}
@@ -332,7 +348,7 @@ class BEHOLD_OT_bake_turntable(Operator):
     def execute(self, context: Context):
         error = turntable_rig.bake_turntable(context)
         if error:
-            self.report({"ERROR"}, error)
+            self.report(report_set(error), error)
             return {"CANCELLED"}
         self.report({"INFO"}, "Turntable baked onto the camera")
         return {"FINISHED"}
@@ -348,10 +364,10 @@ class BEHOLD_OT_render_turntable(Operator):
             context.scene.camera is not None
             and context.scene.camera.get(turntable_lib.PROP_BAKED)
         ):
-            self.report({"ERROR"}, "Run Setup Turntable first")
+            self.report(report_set(TURNTABLE_NO_SETUP), TURNTABLE_NO_SETUP)
             return {"CANCELLED"}
         if _ensure_camera(context) is None:
-            self.report({"ERROR"}, "No camera in the scene")
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
             return {"CANCELLED"}
 
         apply_exposure(context)
@@ -376,12 +392,12 @@ class BEHOLD_OT_batch_angles(Operator):
     def execute(self, context: Context):
         targets = [obj for obj in context.selected_objects if obj.type == "MESH"]
         if not targets:
-            self.report({"ERROR"}, "Select the product mesh(es)")
+            self.report(report_set(BATCH_NO_MESH), BATCH_NO_MESH)
             return {"CANCELLED"}
 
         cam = _ensure_camera(context)
         if cam is None:
-            self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
             return {"CANCELLED"}
 
         corners = [

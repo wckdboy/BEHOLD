@@ -71,7 +71,8 @@ class PresetRackTests(unittest.TestCase):
             presets.EMPTY_NO_MESH,
         )
         self.assertIsNone(presets.empty_state(has_product_mesh=True))
-        self.assertIn("Select", presets.EMPTY_NO_MESH)
+        self.assertIn("Import Product", presets.EMPTY_NO_MESH)
+        self.assertIn("mesh selected", presets.EMPTY_NO_MESH.lower())
 
 
 class SocketAliasTests(unittest.TestCase):

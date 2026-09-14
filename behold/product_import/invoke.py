@@ -61,4 +61,20 @@ def format_no_mesh_operator_message(ext: str, candidates: tuple[str, ...]) -> st
 
 
 def format_empty_mesh_import_message(operator_id: str) -> str:
-    return f"Importer ran but produced no mesh objects ({operator_id})"
+    return (
+        f"Importer ran but produced no mesh objects ({operator_id}) — "
+        "check the file or try OBJ / STL / GLB"
+    )
+
+
+def format_file_not_found_message(filepath: str) -> str:
+    name = os.path.basename(filepath) or filepath or "that file"
+    return f"File not found: {name} — choose an existing product file"
+
+
+def format_unsupported_file_message(ext: str) -> str:
+    shown = (ext or "").strip() or "this file"
+    return (
+        f"Unsupported file type: {shown} — "
+        "use OBJ, FBX, STL, GLB, 3MF, or STEP/IGES"
+    )
