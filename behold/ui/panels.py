@@ -1,19 +1,23 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-First-ship chrome: Import / Studio / Shoot stay skinny. Lights is the v0.4.0
-lighting section. Cameras is the v0.5.0 product-camera kit. Shoot carries a
-compact Turntable row (v0.6.0). Parked mixer, CAD box, materials, hotkeys,
+First-ship chrome: Import / Studio / Shoot stay skinny. Import shows the
+picker plus one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting
+section. Cameras is the v0.5.0 product-camera kit. Shoot carries a compact
+Turntable row (v0.6.0). Parked mixer, CAD box extras, materials, hotkeys,
 batch, and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
+
+from typing import Never
 
 import bpy
 from bpy.types import Context, Panel, UILayout
 
 from ..cad import detect as cad_detect
 from ..cad import material_assist
+from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
 from ..product_import import formats
 from ..shoot import turntable as turntable_lib
@@ -32,10 +36,39 @@ def _has_imported_product(context: Context) -> bool:
     )
 
 
+def draw_cad_status_line(layout: UILayout, cad: dict) -> None:
+    """One CAD backend line + optional Install STEPper NEXT (not STEPper's dialog)."""
+    copy = import_panel_copy(
+        cad["backend"],
+        stepper_needs_enable=bool(cad.get("stepper_needs_enable")),
+    )
+    backend = cad["backend"]
+    if backend == "STEPPER":
+        icon = "CHECKMARK"
+    elif backend == "OCP":
+        icon = "INFO"
+    elif backend == "NONE":
+        icon = "ERROR"
+    else:
+        unreachable: Never = backend
+        raise RuntimeError(f"unhandled CAD backend: {unreachable}")
+    box = layout.box()
+    box.label(text=copy["line"], icon=icon)
+    if copy["detail"]:
+        box.label(text=copy["detail"])
+    if copy["show_install"]:
+        box.operator(
+            "behold.open_stepper_install",
+            text=copy["install_label"],
+            icon="URL",
+        )
+
+
 def draw_import_first_ship(layout: UILayout, context: Context) -> None:
-    """Import Product file picker only."""
+    """Import Product picker plus CAD backend status."""
     del context
     layout.operator("behold.import_product", icon="IMPORT")
+    draw_cad_status_line(layout, cad_detect.cad_status())
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
@@ -193,18 +226,21 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
 
     box = layout.box()
     box.label(text="CAD backend", icon="MESH_DATA")
-    box.label(text=cad["label"])
-    for line in cad["detail"].split(". "):
-        if line.strip():
-            box.label(text=line.strip().rstrip(".") + ".")
-    if not cad["can_import"]:
+    copy = import_panel_copy(
+        cad["backend"],
+        stepper_needs_enable=bool(cad.get("stepper_needs_enable")),
+    )
+    box.label(text=copy["line"])
+    if copy["detail"]:
+        box.label(text=copy["detail"])
+    if copy["show_install"]:
         box.operator(
-            "wm.url_open",
-            text="Get STEPper NEXT",
+            "behold.open_stepper_install",
+            text=copy["install_label"],
             icon="URL",
-        ).url = cad_detect.STEPPER_INSTALL_URL
+        )
         box.label(text="Mesh formats never need STEPper")
-    else:
+    if cad["can_import"]:
         box.operator("behold.import_step", text="Import STEP / IGES…", icon="FILE_3D")
 
 

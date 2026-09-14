@@ -9,6 +9,12 @@ from typing import Any
 import bpy
 
 from .formats import extension_of, mesh_operator_candidates
+from .invoke import (
+    format_empty_mesh_import_message,
+    format_mesh_import_failure,
+    format_no_mesh_operator_message,
+    mesh_import_kwarg_attempts,
+)
 
 
 def operator_available(op_id: str) -> bool:
@@ -22,43 +28,35 @@ def operator_available(op_id: str) -> bool:
         return False
 
 
-def first_available_operator(op_ids: tuple[str, ...]) -> str | None:
-    for op_id in op_ids:
-        if operator_available(op_id):
-            return op_id
-    return None
+def _operator_from_id(op_id: str):
+    path, name = op_id.split(".", 1)
+    return getattr(getattr(bpy.ops, path), name)
 
 
-def invoke_import_operator(op_id: str, filepath: str) -> bool:
-    """Call a Blender import operator with a filepath. Returns True on success."""
+def invoke_import_operator(op_id: str, filepath: str) -> tuple[bool, str | None]:
+    """Call a Blender import operator. Returns (ok, error)."""
     try:
-        path, name = op_id.split(".", 1)
-        op = getattr(getattr(bpy.ops, path), name)
+        op = _operator_from_id(op_id)
     except AttributeError:
-        return False
+        return False, f"{op_id} is not registered"
 
     abs_path = bpy.path.abspath(filepath)
-    directory = os.path.dirname(abs_path)
-    basename = os.path.basename(abs_path)
-    attempts = (
-        {"filepath": abs_path},
-        {
-            "filepath": abs_path,
-            "directory": directory,
-            "files": [{"name": basename}],
-        },
-        {"directory": directory, "files": [{"name": basename}]},
-    )
-    for kwargs in attempts:
+    errors: list[str] = []
+    for kwargs in mesh_import_kwarg_attempts(abs_path):
         try:
             result = op("EXEC_DEFAULT", **kwargs)
-            if "FINISHED" in result or "RUNNING_MODAL" in result:
-                return True
-        except TypeError:
+        except TypeError as exc:
+            errors.append(f"TypeError ({sorted(kwargs)}): {exc}")
             continue
-        except Exception:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"{type(exc).__name__}: {exc}")
             continue
-    return False
+        if "FINISHED" in result or "RUNNING_MODAL" in result:
+            return True, None
+        errors.append(f"returned {set(result)}")
+    if not errors:
+        return False, f"{op_id} did not accept any known filepath kwargs"
+    return False, "; ".join(errors)
 
 
 def import_mesh_file(context, filepath: str) -> dict[str, Any]:
@@ -69,29 +67,33 @@ def import_mesh_file(context, filepath: str) -> dict[str, Any]:
 
     ext = extension_of(abs_path)
     candidates = mesh_operator_candidates(abs_path)
-    available = first_available_operator(candidates)
-    if available is None:
-        if ext == ".3mf":
-            return {
-                "ok": False,
-                "objects": [],
-                "message": (
-                    "This Blender has no 3MF importer. Install a 3MF add-on "
-                    "(File → Import) or export OBJ / STL / GLB instead."
-                ),
-            }
+    available_ops = [op_id for op_id in candidates if operator_available(op_id)]
+    if not available_ops:
         return {
             "ok": False,
             "objects": [],
-            "message": f"No native importer found for {ext or 'this file'}",
+            "message": format_no_mesh_operator_message(ext, candidates),
         }
 
     before = {obj.as_pointer() for obj in bpy.data.objects}
-    if not invoke_import_operator(available, abs_path):
+    errors: list[str] = []
+    used_op: str | None = None
+    for op_id in available_ops:
+        ok, error = invoke_import_operator(op_id, abs_path)
+        if ok:
+            used_op = op_id
+            break
+        errors.append(f"{op_id}: {error}" if error else op_id)
+
+    if used_op is None:
         return {
             "ok": False,
             "objects": [],
-            "message": f"{available} failed to import {os.path.basename(abs_path)}",
+            "message": format_mesh_import_failure(
+                abs_path,
+                operator_id=", ".join(available_ops),
+                errors=errors,
+            ),
         }
 
     imported = [
@@ -103,7 +105,7 @@ def import_mesh_file(context, filepath: str) -> dict[str, Any]:
         return {
             "ok": False,
             "objects": [],
-            "message": f"Importer ran but produced no mesh objects ({available})",
+            "message": format_empty_mesh_import_message(used_op),
         }
 
     bpy.ops.object.select_all(action="DESELECT")
@@ -118,6 +120,6 @@ def import_mesh_file(context, filepath: str) -> dict[str, Any]:
     return {
         "ok": True,
         "objects": imported,
-        "message": f"Imported {len(imported)} mesh(es) via {available} ({names}{extra})",
+        "message": f"Imported {len(imported)} mesh(es) via {used_op} ({names}{extra})",
         "backend": f"NATIVE_{ext.lstrip('.').upper()}",
     }

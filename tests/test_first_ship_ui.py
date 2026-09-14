@@ -73,14 +73,18 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("draw_light_draw_parked", advanced)
         self.assertIn("draw_shoot_parked", advanced)
 
-    def test_import_first_ship_is_picker_only(self) -> None:
+    def test_import_first_ship_is_picker_plus_cad_status(self) -> None:
         body = _func_source(self.source, self.tree, "draw_import_first_ship")
         self.assertIn("behold.import_product", body)
-        self.assertNotIn("CAD backend", body)
+        self.assertIn("draw_cad_status_line", body)
         self.assertNotIn("import_auto_studio", body)
         self.assertNotIn("import_auto_material_assist", body)
-        self.assertNotIn("cad_status", body)
         self.assertNotIn("behold.import_step", body)
+        self.assertNotIn("occ_import_step", body)
+        status = _func_source(self.source, self.tree, "draw_cad_status_line")
+        self.assertIn("import_panel_copy", status)
+        self.assertIn("behold.open_stepper_install", status)
+        self.assertNotIn("import_auto_studio", status)
 
     def test_studio_first_ship_is_tone_and_build(self) -> None:
         body = _func_source(self.source, self.tree, "draw_studio_first_ship")
@@ -194,6 +198,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("AMIRITE.studio", text)
         self.assertIn("0.5.0", text)
         self.assertIn("0.6.0", text)
+        self.assertIn("0.7.0", text)
         self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)
         self.assertIn("Import Product", text)
@@ -205,6 +210,9 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("gobos", text.lower())
         self.assertIn("IES", text)
         self.assertIn("turntable", text.lower())
+        self.assertIn("STEP vertical", text)
+        self.assertIn("STEPper NEXT ready", text)
+        self.assertIn("smoke_step_vertical.py", text)
         self.assertIn("2026-09-14", text)
         self.assertIn("Galahad", text)
         self.assertIn("Percival", text)

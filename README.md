@@ -6,11 +6,11 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.6.0)
+## What works (v0.7.0)
 
 **First-ship N-panel** — Import → Studio → Shoot stays the three-click path:
 
-1. **Import** — Import Product file picker only
+1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
 2. **Studio** — backdrop White / Grey / Black + **Build**
 3. **Shoot** — Draft / Final, Still, Render, compact **Turntable** (seconds + Setup + Play)
 
@@ -27,14 +27,14 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 - List / set active / frame selected-or-product / delete / clear
 - Active camera is the Shoot still camera (and the main-camera bookmark)
 
-**Turntable** (this cut) — one row on Shoot, not a new sidebar section:
+**Turntable** — one row on Shoot, not a new sidebar section:
 
 - Default **6 seconds** at scene fps (**144 frames at 24 fps**) for a 360° linear loop
 - Uses the active BEHOLD / scene camera and the product bounds (studio sweep excluded)
 - Empty state if there is no camera or product yet (Build Studio / Add Camera / Import)
 - **Play** previews (Setup first if needed). **Advanced**: Linear vs Ease, Bake, Clear, Render
 
-Parked chrome (Materials, mixer, CAD backend, batch, EV/WB/tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered.
+Parked chrome (Materials, mixer, CAD extras, batch, EV/WB/tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered.
 
 Backends:
 
@@ -47,11 +47,11 @@ Backends:
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
 - **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
 - **Shoot** — EV / white balance / false color, Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
-- **CAD** — hybrid STEP/IGES/BREP: detect [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) → else BEHOLD OCP; Material Assist + Studio from Import
+- **CAD** — first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) for STEP/IGES/BREP on 5.1+/5.2 LTS (`import_scene.occ_import_step`). OCP fallback only if STEPper is missing and OpenCASCADE bindings actually import; otherwise Import fails with the [STEPper Releases](https://github.com/Peak-Design/STEPper_NEXT/releases) URL. Mesh formats stay native. Shared `product_import_dispatch` / `run_product_import`. CI-safe unit-cube STEP fixture; optional Blender smoke (`make smoke-step`) for Import → Build → Draft still.
 
 ## Coming (not this release)
 
-Gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, Materials/BlenderKit redesign, live tessellation regenerate, defeaturing, full auto-dress grid, STEP smoke. See [CHECKPOINT.md](CHECKPOINT.md).
+Gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, Materials/BlenderKit redesign, live tessellation regenerate, defeaturing, full auto-dress grid. See [CHECKPOINT.md](CHECKPOINT.md).
 
 ## Import Product
 
@@ -61,9 +61,9 @@ Sidebar **BEHOLD → Import** (or File → Import → **BEHOLD Product**):
 | --- | --- | --- |
 | Mesh | `.obj` `.fbx` `.stl` `.glb` `.gltf` | Native Blender 4.2+ / 5.2 LTS (`wm.obj_import`, `import_scene.fbx` / `gltf`, `wm.stl_import`) |
 | 3MF | `.3mf` | Native or add-on importer when present (`wm.threemf_import` / `import_mesh.threemf`) |
-| CAD | `.step` `.stp` `.iges` `.igs` `.brep` `.brp` | [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) if installed, else BEHOLD OCP |
+| CAD | `.step` `.stp` `.iges` `.igs` `.brep` `.brp` | **STEPper NEXT** (required for production CAD on 5.1+/5.2 LTS). Optional BEHOLD OCP fallback if STEPper is not installed and `cadquery-ocp` is in Blender's Python. |
 
-Mesh and 3MF paths **never** require STEPper. CAD files need STEPper NEXT (preferred) or `cadquery-ocp` / `cadquery-ocp-novtk` in Blender's Python.
+Mesh and 3MF paths **never** require STEPper. The Import panel shows **STEPper NEXT ready**, **OCP fallback**, or **Install STEPper NEXT** (opens Releases). CAD import without STEPper or OCP **fails loudly** — it does not silently cancel.
 
 After import, BEHOLD can:
 
@@ -72,7 +72,29 @@ After import, BEHOLD can:
 
 ### STEPper NEXT
 
-STEPper NEXT is the recommended OpenCASCADE STEP/IGES/BREP importer for Blender. Install it from **[Peak-Design/STEPper_NEXT](https://github.com/Peak-Design/STEPper_NEXT)** (Releases zip → drag onto Blender, or Preferences → Get Extensions → Install from Disk). Current STEPper NEXT targets **Blender 5.1**. On 4.2–5.0, use BEHOLD's OCP fallback or an older STEPper build if you have one.
+STEPper NEXT is the primary OpenCASCADE STEP/IGES/BREP importer for BEHOLD on **Blender 5.1+ / 5.2 LTS**. It is a GPL Blender **extension** (`id = "stepper_next"`) that ships bundled OCP wheels. BEHOLD does **not** vendor STEPper into the add-on zip.
+
+**Install STEPper NEXT for CAD:**
+
+1. Download the platform zip from **[Peak-Design/STEPper_NEXT Releases](https://github.com/Peak-Design/STEPper_NEXT/releases)**.
+2. Blender → Edit → Preferences → Get Extensions → Install from Disk (or drag the zip onto Blender).
+3. Enable **STEPper NEXT**. The BEHOLD Import panel should read **STEPper NEXT ready**.
+
+If STEPper is installed but disabled, Import Product enables it. If enable fails, BEHOLD reports the module name and the Releases URL.
+
+BEHOLD calls `bpy.ops.import_scene.occ_import_step` with an absolute `filepath` and `override_file` = basename (the same scripted path STEPper's `worker.py` uses). That stays on STEPper's synchronous importer — it does not open STEPper's full dialog and does not use `stepper.background_import`. Optional STEPper RNA (`quality_preset`, `lin_deflection_len`) is passed only when those properties exist.
+
+On 4.2–5.0, use BEHOLD's OCP fallback (`cadquery-ocp` / `cadquery-ocp-novtk` in Blender's Python) or an older STEPper build if you have one. OCP tessellation is a thinner fallback, not STEPper quality.
+
+### STEP vertical smoke
+
+Prove Import Product → Build Studio → Shoot (Draft) with the CC0 10 mm cube at [`tests/fixtures/unit_cube.step`](tests/fixtures/unit_cube.step) (provenance in that folder's README). `make test` classifies it as CAD and tessellates via OCP when bindings exist. With Blender and OCP or STEPper:
+
+```bash
+make smoke-step
+# blender --background --python scripts/smoke_step_vertical.py
+# still → dist/smoke/still.png (or BEHOLD_SMOKE_OUT)
+```
 
 ## Lights
 
@@ -110,19 +132,19 @@ Clear / Bake only touch the turntable pivot (and baked camera location / rotatio
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.6.0.zip`).
-2. **Versioned release** — push a tag `v0.6.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.7.0.zip`).
+2. **Versioned release** — push a tag `v0.7.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.6.0
-git push origin v0.6.0
+git tag v0.7.0
+git push origin v0.7.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.6.0.zip
+# → dist/behold-0.7.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
@@ -149,7 +171,13 @@ git clone https://github.com/wckdboy/BEHOLD.git
 # Point Blender at /path/to/repo/behold via preferences or symlink into addons/
 make test
 make zip
+
+# Real STEP Import → Build → Draft still (Blender + OCP or STEPper; not CI)
+blender --background --python scripts/smoke_step_vertical.py
+# or: make smoke-step
 ```
+
+`make test` is offline and CI-safe. If OCP is missing, tessellation is skipped; the unit-cube fixture is still classified as CAD (not mesh). The smoke script fails clearly (exit 2) when no CAD backend is present.
 
 ## Remotes
 

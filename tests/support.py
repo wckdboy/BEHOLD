@@ -9,6 +9,7 @@ from pathlib import Path
 from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[1]
+UNIT_CUBE_STEP = ROOT / "tests" / "fixtures" / "unit_cube.step"
 
 
 def load_module(relpath: str, name: str) -> ModuleType:
