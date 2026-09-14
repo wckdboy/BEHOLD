@@ -67,6 +67,10 @@ NO_CAMERA_TO_REMOVE = "No BEHOLD camera to remove — Build Studio or Add Camera
 NO_LIGHT_TO_REMOVE = "No BEHOLD light to remove — Build Studio or Add Light"
 NO_CAMERAS_TO_CLEAR = "No BEHOLD cameras to clear — Build Studio or Add Camera"
 
+UNKNOWN_LIGHT_PRESET = (
+    "Unknown light shape — pick Softbox, Strip, Octa, Hard, or Rim"
+)
+
 LIGHT_DRAW_NEEDS_VIEWPORT = (
     "Light Draw needs a 3D Viewport — open a 3D View and run it from Lights"
 )
@@ -164,6 +168,16 @@ def named_missing(kind: str, name: str, *, next_step: str) -> str:
 
 def light_not_found(name: str) -> str:
     return named_missing("Light", name, next_step=NO_LIGHTS_NEXT)
+
+
+def unknown_light_preset_message(preset_id: str) -> str:
+    shown = (preset_id or "").strip()
+    if not shown:
+        return UNKNOWN_LIGHT_PRESET
+    return (
+        f"Unknown light shape “{shown}” — "
+        "pick Softbox, Strip, Octa, Hard, or Rim"
+    )
 
 
 def camera_not_found(name: str) -> str:

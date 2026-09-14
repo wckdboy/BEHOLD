@@ -12,15 +12,15 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.15.0)
+## What works (v0.16.0)
 
-**0.15.0 is test hardening + N-panel draw-pass cache only** — same artist path as 0.14.0 (Shot Manager already on `main`). This zip does not change Shots.
+**0.16.0 is light shaping lite** on Lights. Shot Manager is already **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache on `main` (no artist chrome).
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
 1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
 2. **Studio** — backdrop White / Grey / Black + **Build**, then compact **HDRI** (Load / Reset, strength, Z rotation, optional reflections-only)
-3. **Lights** — inventory + Light Draw
+3. **Lights** — inventory + Light Draw + **Shape** presets (Softbox / Strip / Octa / Hard / Rim)
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras
 6. **Shoot** — Draft / Final, Still, Render, compact **Shots** (Add / Apply / rename / Delete), compact **Turntable** (seconds + Setup + Play)
@@ -31,10 +31,11 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 
 **Easy update** — Check for updates in add-on preferences (or the notice on the BEHOLD tab). Auto-check is on by default, at most once a day. See [Updates](#updates).
 
-**Lights** — native multi-light inventory plus Light Draw:
+**Lights** — native multi-light inventory plus Light Draw and one-click area looks:
 
 - Add / remove / set active BEHOLD studio lights
 - Per-light energy
+- **Shape** presets on the active light: Softbox, Strip, Octa, Hard, Rim (size / spread / procedural falloff)
 - Empty state when the studio has no lights yet
 - Light Draw **Aim: Active | New** — Reflect / Direct / Orbit (LMB aim, scroll power/size/distance, solo)
 
@@ -71,7 +72,7 @@ Backends:
 
 - **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
 - **Studio** — select mesh(es) → **Build Studio**. Cyclorama floor / wall auto-fit the product world AABB (v0.11.0: XY diagonal × margin, wall clears height with headroom). Rebuild replaces the old sweep. Lights sit outside the floor. Optional **Studio Margin** lives in Advanced (default 2.0×). White / Grey / Black first-ship tones + one Build button. **HDRI** (v0.13.0): Load an HDR/EXR from disk (OpenHDRI / Poly Haven / BYO), set strength and Z rotation, optional reflections-only + background strength, **Reset** to a solid studio world.
-- **Lights** — named BEHOLD area lights; Build Studio seeds Key / Fill / Rim and marks Key active
+- **Lights** — named BEHOLD area lights; Build Studio seeds Key / Fill / Rim and marks Key active; **Apply** a Softbox / Strip / Octa / Hard / Rim look to the active light
 - **Light Draw** — Reflect / Direct / Orbit modal aimed at the **active** light or a **new** light
 - **Cameras** — named BEHOLD product cameras; Build Studio seeds `BEHOLD_Camera` and marks it active; Add Camera / Frame / Clear from the N-panel
 - **Turntable** — `BEHOLD_TurntablePivot` orbits the active camera; Clear drops the pivot only; Bake writes camera loc/rot then removes the pivot
@@ -82,7 +83,7 @@ Backends:
 
 ## Coming (not this release)
 
-Light shaping / softbox textures, exposure / false color polish, bake-to-HDRI, gobos / IES, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
+Exposure / false color polish, bake-to-HDRI, gobos / IES, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
 ## Import Product
 
@@ -148,8 +149,9 @@ Sidebar **BEHOLD → Lights**:
 
 1. **Build Studio** (or **Add Light**) so the list is not empty.
 2. Click the radio to set **Active**. Drag wattage on the row. **X** removes that light.
-3. Light Draw **Aim = Active** moves the current light; **Aim = New** creates `BEHOLD_Draw_###` and aims it.
-4. In the viewport: LMB drag aim · Wheel power · Shift+Wheel size · Ctrl+Wheel distance · `1`/`2`/`3` mode · `S` solo · Esc exit.
+3. Pick a **Shape** (Softbox / Strip / Octa / Hard / Rim) and **Apply to active**. That sets size, spread, and a procedural softbox falloff on the area light — no extra image files.
+4. Light Draw **Aim = Active** moves the current light; **Aim = New** creates `BEHOLD_Draw_###` and aims it.
+5. In the viewport: LMB drag aim · Wheel power · Shift+Wheel size · Ctrl+Wheel distance · `1`/`2`/`3` mode · `S` solo · Esc exit.
 
 Hotkey legend stays under **Advanced**. Key / Fill / Rim mixer stays under **Advanced → Studio**.
 
@@ -237,19 +239,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.15.0.zip`).
-2. **Versioned release** — push a tag `v0.15.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.16.0.zip`).
+2. **Versioned release** — push a tag `v0.16.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.15.0
-git push origin v0.15.0
+git tag v0.16.0
+git push origin v0.16.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.15.0.zip
+# → dist/behold-0.16.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

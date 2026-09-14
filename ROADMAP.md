@@ -6,6 +6,10 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.16.0 Light shaping lite** — Softbox / Strip / Octa / Hard / Rim on the
+  active BEHOLD area light (Cycles `shape` / `size` / `size_y` / `energy` /
+  `spread` plus a procedural emission falloff). Not gobos, IES, or barn-door
+  gizmos — native area lights that no longer read as bare rectangles on chrome.
 - **0.15.0 Test hardening + perf** — regression tests and N-panel draw-once
   cache only. No new artist chrome. Does not change Shot Manager.
 - **0.14.0 Shot Manager** — named camera + quality + HDRI + backdrop +
@@ -25,16 +29,13 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Next (honest order)
 
-1. **Light shaping / softbox textures** — area lights still read as rectangles
-   on chrome. KeyShot and Light Wrangler win on barn doors, softbox maps, and
-   falloff. Native Blender lights first. Not an IES catalog.
-2. **Physical exposure / false color polish** — EV and false color already live
+1. **Physical exposure / false color polish** — EV and false color already live
    on Advanced. Make them trustworthy for hero chrome (metering, AgX-safe
    false color) so artists stop guessing.
-3. **Bake-to-HDRI** — studio + area lights → an environment the artist can
+2. **Bake-to-HDRI** — studio + area lights → an environment the artist can
    reuse or hand off. After Shot Manager, not before: you bake a *look*, not a
    random rig.
-4. **Gobos / IES** — window lights, practicals, photometric profiles. Last
+3. **Gobos / IES** — window lights, practicals, photometric profiles. Last
    because they need a library story and are easy to ship as a junk drawer.
 
 ## Explicitly later / maybe never

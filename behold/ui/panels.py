@@ -8,8 +8,9 @@ is last. Easy update (v0.10.0): a dismissible GitHub notice on the main
 panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
 Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
-backend line (v0.7.0). Lights is the v0.4.0 lighting section. Cameras is the
-v0.5.0 product-camera kit. Shoot carries a compact Turntable row (v0.6.0).
+backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
+shape presets (Apply to active). Cameras is the v0.5.0 product-camera kit.
+Shoot carries a compact Turntable row (v0.6.0) and compact Shots (v0.14.0).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch, and
 turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
@@ -200,7 +201,7 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
 
 
 def draw_lights_section(layout: UILayout, context: Context) -> None:
-    """Multi-light inventory + Light Draw Active / New."""
+    """Multi-light inventory + shape presets + Light Draw Active / New."""
     settings = context.scene.behold
     lights = light_lib.iter_behold_lights(context)
 
@@ -225,6 +226,15 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
             rm.light_name = light.name
         if active is not None:
             box.label(text=f"Active: {light_lib.display_light_name(active)}")
+        shape = layout.box()
+        shape.label(text="Shape", icon="LIGHT_AREA")
+        shape.prop(settings, "light_shape_preset", text="", expand=True)
+        apply = shape.operator(
+            "behold.apply_light_preset",
+            text="Apply to active",
+            icon="CHECKMARK",
+        )
+        apply.preset = settings.light_shape_preset
         row = layout.row(align=True)
         row.prop(settings, "new_light_energy", text="New W")
         row.operator("behold.add_light", text="Add", icon="ADD")
