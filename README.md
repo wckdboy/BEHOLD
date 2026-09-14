@@ -6,12 +6,12 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.10.0)
+## What works (v0.11.0)
 
-**First-ship N-panel** — Import → Studio → Shoot stays the three-click path. The BEHOLD tab now has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip that checks off as the scene fills in:
+**First-ship N-panel** — Import → Studio → Shoot stays the three-click path, physically ordered **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced**. The BEHOLD tab now has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip that checks off as the scene fills in:
 
 1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
-2. **Studio** — backdrop White / Grey / Black + **Build**
+2. **Studio** — backdrop White / Grey / Black + **Build** (cyclorama auto-fits the product)
 3. **Shoot** — Draft / Final, Still, Render, compact **Turntable** (seconds + Setup + Play)
 
 Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath.
@@ -47,12 +47,12 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Assist** applies a matching local look from the filename / STEP hint — **no BlenderKit account required**
 - If BlenderKit is signed in, Assist still applies the local look and also runs search
 
-Parked chrome (BlenderKit login / search / apply, mixer, CAD extras, batch, EV/WB/tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered.
+Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD extras, batch, EV/WB/tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered.
 
 Backends:
 
 - **Import Product** — pick `.obj`, `.fbx`, `.stl`, `.glb`/`.gltf`, `.3mf` (when Blender has an importer), or STEP/IGES/BREP → import → optional **Build Studio** + **Material Assist** from the filename
-- **Studio** — select mesh(es) → Build Studio (cyclorama / solid / HDRI world, three-point or softbox, auto camera, optional shadow catcher) + light mixer
+- **Studio** — select mesh(es) → **Build Studio**. Cyclorama floor / wall auto-fit the product world AABB (XY diagonal × margin, wall clears height with headroom). Rebuild replaces the old sweep. Lights sit outside the floor. Optional **Studio Margin** lives in Advanced (default 2.0×). White / Grey / Black first-ship tones + one Build button.
 - **Lights** — named BEHOLD area lights; Build Studio seeds Key / Fill / Rim and marks Key active
 - **Light Draw** — Reflect / Direct / Orbit modal aimed at the **active** light or a **new** light
 - **Cameras** — named BEHOLD product cameras; Build Studio seeds `BEHOLD_Camera` and marks it active; Add Camera / Frame / Clear from the N-panel
@@ -108,6 +108,14 @@ make smoke-step
 # blender --background --python scripts/smoke_step_vertical.py
 # still → dist/smoke/still.png (or BEHOLD_SMOKE_OUT)
 ```
+
+## Studio
+
+Sidebar **BEHOLD → Studio**:
+
+1. Select the product mesh(es). Pick **White / Grey / Black**. Click **Build**.
+2. The cyclorama sizes itself from the product world AABB: floor from the XY diagonal (or max width/depth) × **Studio Margin** (default 2.0×), wall from product height × 1.75 headroom. Lights sit outside the sweep. Build replaces any existing `BEHOLD_Cyclorama`.
+3. Empty / error if nothing is selected stays the same. Optional **Studio Margin** (1.5–2.5×) is under **Advanced → Studio**. First-ship stays one Build button.
 
 ## Lights
 
@@ -193,19 +201,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.10.0.zip`).
-2. **Versioned release** — push a tag `v0.10.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.11.0.zip`).
+2. **Versioned release** — push a tag `v0.11.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.10.0
-git push origin v0.10.0
+git tag v0.11.0
+git push origin v0.11.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.10.0.zip
+# → dist/behold-0.11.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

@@ -6,7 +6,7 @@ from __future__ import annotations
 import ast
 import unittest
 
-from tests.support import ROOT, load_module
+from tests.support import ROOT, load_addon_module, load_module
 
 PANELS = ROOT / "behold" / "ui" / "panels.py"
 CHECKPOINT = ROOT / "CHECKPOINT.md"
@@ -57,13 +57,15 @@ class FirstShipUiTests(unittest.TestCase):
                 "BEHOLD_PT_main",
                 "BEHOLD_PT_import",
                 "BEHOLD_PT_studio",
-                "BEHOLD_PT_shoot",
                 "BEHOLD_PT_lights",
-                "BEHOLD_PT_cameras",
                 "BEHOLD_PT_materials",
+                "BEHOLD_PT_cameras",
+                "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
             ],
         )
+        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        self.assertEqual(tuple(names[1:]), flow.PANEL_BL_IDNAMES)
 
     def test_main_panel_has_hero_and_flow(self) -> None:
         body = _class_source(self.source, self.tree, "BEHOLD_PT_main")
@@ -99,6 +101,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("studio_backdrop_tone", body)
         self.assertIn('text="Build"', body)
         self.assertIn("behold.build_studio", body)
+        self.assertNotIn("studio_margin", body)
         self.assertNotIn("Light Mixer", body)
         self.assertNotIn("key_power", body)
         self.assertNotIn("studio_light_rig", body)
@@ -185,6 +188,7 @@ class FirstShipUiTests(unittest.TestCase):
         shoot = _func_source(self.source, self.tree, "draw_shoot_parked")
         materials = _func_source(self.source, self.tree, "draw_materials_parked")
         self.assertIn("Light Mixer", studio)
+        self.assertIn("studio_margin", studio)
         self.assertIn("behold.batch_angles", shoot)
         self.assertIn("behold.bake_turntable", shoot)
         self.assertIn("behold.clear_turntable", shoot)
@@ -225,6 +229,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.8.0", text)
         self.assertIn("0.9.0", text)
         self.assertIn("0.10.0", text)
+        self.assertIn("0.11.0", text)
         self.assertIn("Check for updates", text)
         self.assertIn("Shift+Alt+B", text)
         self.assertIn("5.2", text)

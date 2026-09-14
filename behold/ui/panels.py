@@ -3,13 +3,16 @@
 
 Studio chrome (v0.9.0): branded hero + Import → Studio → Dress → Shoot strip
 on the main panel; section header icons; box cards and one-CTA empty states.
-Easy update (v0.10.0): a dismissible GitHub notice on the main panel when a
-newer stable zip is cached. First-ship Import / Studio / Shoot stay skinny. Import shows the picker plus
-one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting section. Cameras
-is the v0.5.0 product-camera kit. Shoot carries a compact Turntable row
-(v0.6.0). Materials is the v0.8.0 local-look rack (Assist applies without
-BlenderKit). Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch,
-and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
+N-panel order (v0.11.0): Import → Studio → Lights → Materials → Cameras →
+Shoot → Advanced. Easy update (v0.10.0): a dismissible GitHub notice on the
+main panel when a newer stable zip is cached. First-ship Import / Studio /
+Shoot stay skinny.
+Import shows the picker plus one CAD backend line (v0.7.0). Lights is the
+v0.4.0 lighting section. Cameras is the v0.5.0 product-camera kit. Shoot
+carries a compact Turntable row (v0.6.0). Materials is the v0.8.0 local-look
+rack (Assist applies without BlenderKit). Parked mixer, CAD box extras,
+BlenderKit chrome, hotkeys, batch, and turntable extras (plus Studio Margin
+in 0.11.0) live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -292,6 +295,7 @@ def draw_studio_parked(layout: UILayout, context: Context) -> None:
     layout.prop(settings, "studio_backdrop")
     layout.prop(settings, "studio_light_rig")
     layout.prop(settings, "include_shadow_catcher")
+    layout.prop(settings, "studio_margin")
 
     col = layout.column(align=True)
     col.label(text="Light Mixer")
@@ -551,14 +555,16 @@ class BEHOLD_PT_advanced(Panel):
         draw_shoot_parked(layout, context)
 
 
+# Registration order is N-panel order: Import → Studio → Lights → Materials →
+# Cameras → Shoot → Advanced (matches FLOW_STEPS with Lights/Cameras as inventory).
 CLASSES = (
     BEHOLD_PT_main,
     BEHOLD_PT_import,
     BEHOLD_PT_studio,
-    BEHOLD_PT_shoot,
     BEHOLD_PT_lights,
-    BEHOLD_PT_cameras,
     BEHOLD_PT_materials,
+    BEHOLD_PT_cameras,
+    BEHOLD_PT_shoot,
     BEHOLD_PT_advanced,
 )
 

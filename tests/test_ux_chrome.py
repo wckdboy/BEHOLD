@@ -31,6 +31,26 @@ class FlowStripTests(unittest.TestCase):
             [step.id for step in flow.FLOW_STEPS],
             ["import", "studio", "dress", "shoot"],
         )
+        self.assertEqual(
+            flow.PANEL_BL_IDNAMES,
+            (
+                "BEHOLD_PT_import",
+                "BEHOLD_PT_studio",
+                "BEHOLD_PT_lights",
+                "BEHOLD_PT_materials",
+                "BEHOLD_PT_cameras",
+                "BEHOLD_PT_shoot",
+                "BEHOLD_PT_advanced",
+            ),
+        )
+        self.assertLess(
+            flow.PANEL_BL_IDNAMES.index("BEHOLD_PT_materials"),
+            flow.PANEL_BL_IDNAMES.index("BEHOLD_PT_cameras"),
+        )
+        self.assertLess(
+            flow.PANEL_BL_IDNAMES.index("BEHOLD_PT_cameras"),
+            flow.PANEL_BL_IDNAMES.index("BEHOLD_PT_shoot"),
+        )
 
     def test_empty_scene_starts_at_import(self) -> None:
         done = flow.flow_completed(
@@ -171,7 +191,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("/releases", _read("behold/brand.py"))
         init = _read("behold/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (0, 10, 0)', init)
+        self.assertIn('"version": (0, 11, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
         source = _read("behold/ui/panels.py")
@@ -183,10 +203,10 @@ class PieHeaderPrefsTests(unittest.TestCase):
         for name in (
             "BEHOLD_PT_import",
             "BEHOLD_PT_studio",
-            "BEHOLD_PT_shoot",
             "BEHOLD_PT_lights",
-            "BEHOLD_PT_cameras",
             "BEHOLD_PT_materials",
+            "BEHOLD_PT_cameras",
+            "BEHOLD_PT_shoot",
             "BEHOLD_PT_advanced",
         ):
             body = _class_source(source, tree, name)
