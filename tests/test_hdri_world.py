@@ -178,6 +178,7 @@ class HdriWiringTests(unittest.TestCase):
         first = _func_source(source, tree, "draw_studio_first_ship")
         hdri = _func_source(source, tree, "draw_studio_hdri")
         self.assertIn("draw_studio_hdri", first)
+        self.assertIn("draw_studio_bake", first)
         self.assertIn("studio_backdrop_tone", first)
         self.assertIn('text="Build"', first)
         self.assertNotIn("studio_margin", first)

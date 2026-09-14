@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, shape presets."""
+"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape presets."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from bpy.props import EnumProperty, StringProperty
 from bpy.types import Context, Operator
 from bpy_extras.io_utils import ImportHelper
 
+from . import bake_apply
 from . import light_presets
 from . import light_shape
 from . import lights as light_lib
@@ -176,6 +177,24 @@ class BEHOLD_OT_reset_world(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_bake_hdri(Operator):
+    bl_idname = "behold.bake_hdri"
+    bl_label = "Bake HDRI"
+    bl_description = (
+        "Render BEHOLD studio lights (and optional world) to an "
+        "equirectangular HDR/EXR"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = bake_apply.bake_studio_hdri(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
 CLASSES = (
     BEHOLD_OT_build_studio,
     BEHOLD_OT_refresh_lights,
@@ -185,6 +204,7 @@ CLASSES = (
     BEHOLD_OT_apply_light_preset,
     BEHOLD_OT_load_hdri,
     BEHOLD_OT_reset_world,
+    BEHOLD_OT_bake_hdri,
 )
 
 
