@@ -18,6 +18,15 @@ from ..shoot.exposure import (
     FALSE_COLOR_UNAVAILABLE,
     NO_VIEW_SETTINGS,
 )
+from ..studio.bake import (
+    BAKE_FAILED,
+    BAKE_RENDER_FAILED,
+    NO_BAKE_PATH,
+    NO_LIGHTS_TO_BAKE,
+    UNSUPPORTED_BAKE,
+    baked_message,
+    path_problem_message as bake_path_problem_message,
+)
 from ..shoot.shots import (
     EMPTY_NO_SHOTS,
     EMPTY_NO_SHOTS_NEXT,
@@ -110,6 +119,9 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_HDRI_FILE,
         NO_WORLD,
         NO_LIGHTS,
+        NO_LIGHTS_TO_BAKE,
+        NO_BAKE_PATH,
+        UNSUPPORTED_BAKE,
         NO_CAMERAS,
         FRAME_NO_PRODUCT,
         NO_CAMERA_TO_REMOVE,
@@ -158,6 +170,7 @@ def report_type(message: str) -> str:
             "Unsupported file type:",
             "HDRI file not found:",
             "Unsupported HDRI:",
+            "Unsupported bake format:",
             "Shot name “",
             "Shot camera “",
         )
@@ -239,6 +252,10 @@ def unsupported_hdri_message(ext: str) -> str:
 def hdri_loaded_message(filepath: str) -> str:
     name = os.path.basename(filepath) or filepath or "HDRI"
     return f"HDRI loaded: {name}"
+
+
+def bake_hdri_message(filepath: str, *, applied: bool = False) -> str:
+    return baked_message(filepath, applied=applied)
 
 
 def update_failure_report(copy: dict[str, str]) -> str:

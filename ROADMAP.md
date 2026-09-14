@@ -6,6 +6,9 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.18.0 Bake studio to HDRI** — render BEHOLD area lights (optional world) to
+  a 1K/2K equirectangular HDR/EXR for reuse or Eevee. Optional apply as the
+  scene world. Not gobos, IES, or a Light Wrangler viewport gizmo.
 - **0.17.0 Physical exposure polish** — EV, Kelvin white balance, and
   AgX-safe False Color on Shoot (Photographer-class lite). Live Color
   Management apply. Not a full metering suite.
@@ -32,10 +35,7 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Next (honest order)
 
-1. **Bake-to-HDRI** — studio + area lights → an environment the artist can
-   reuse or hand off. After Shot Manager, not before: you bake a *look*, not a
-   random rig.
-2. **Gobos / IES** — window lights, practicals, photometric profiles. Last
+1. **Gobos / IES** — window lights, practicals, photometric profiles. Last
    because they need a library story and are easy to ship as a junk drawer.
 
 ## Explicitly later / maybe never

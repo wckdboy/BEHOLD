@@ -20,7 +20,8 @@ Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
 backdrop + output tokens. v0.15.0 draw-once cache: CAD status + scene flags
 once per N-panel pass. Compact Look on Shoot (v0.17.0): EV, Kelvin white
 balance, and AgX-safe False Color — wired to Color Management, not only
-Advanced.
+Advanced. Compact Bake HDRI on Studio (v0.18.0): 1K/2K equirectangular
+EXR/HDR of the light rig, optional world, optional apply as world.
 """
 
 from __future__ import annotations
@@ -104,12 +105,13 @@ def draw_import_first_ship(layout: UILayout, context: Context) -> None:
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
-    """Backdrop White / Grey / Black + Build, then compact HDRI world."""
+    """Backdrop White / Grey / Black + Build, compact HDRI, compact Bake HDRI."""
     settings = context.scene.behold
     card = layout.box()
     card.prop(settings, "studio_backdrop_tone", text="Backdrop", expand=True)
     card.operator("behold.build_studio", text="Build", icon="OUTLINER_OB_LIGHT")
     draw_studio_hdri(layout, context)
+    draw_studio_bake(layout, context)
 
 
 def draw_studio_hdri(layout: UILayout, context: Context) -> None:
@@ -126,6 +128,20 @@ def draw_studio_hdri(layout: UILayout, context: Context) -> None:
     card.prop(settings, "hdri_reflections_only", text="Reflections only")
     if settings.hdri_reflections_only:
         card.prop(settings, "hdri_background_strength", text="Background")
+
+
+def draw_studio_bake(layout: UILayout, context: Context) -> None:
+    """Bake studio lights to an equirectangular HDR/EXR (1K/2K)."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Bake HDRI", icon="WORLD")
+    card.prop(settings, "bake_hdri_filepath", text="")
+    row = card.row(align=True)
+    row.prop(settings, "bake_hdri_resolution", text="Size", expand=True)
+    row = card.row(align=True)
+    row.prop(settings, "bake_hdri_include_world", text="Include world")
+    row.prop(settings, "bake_hdri_apply", text="Apply after bake")
+    card.operator("behold.bake_hdri", text="Bake HDRI", icon="RENDER_STILL")
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:

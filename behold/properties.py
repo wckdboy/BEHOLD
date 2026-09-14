@@ -16,6 +16,8 @@ from bpy.props import (
 from bpy.types import PropertyGroup, Scene
 
 from .shoot.exposure_apply import on_exposure_update
+from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
+from .studio.bake import resolution_enum_items as bake_resolution_enum_items
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
@@ -389,6 +391,32 @@ class BEHOLDSceneSettings(PropertyGroup):
         soft_max=5.0,
         max=100.0,
         update=on_hdri_values_update,
+    )
+    bake_hdri_filepath: StringProperty(
+        name="Bake HDRI",
+        description=(
+            "Output path for the baked equirectangular HDR/EXR. "
+            "Empty uses the folder next to the .blend, or a temp path"
+        ),
+        default="",
+        subtype="FILE_PATH",
+        maxlen=1024,
+    )
+    bake_hdri_resolution: EnumProperty(
+        name="Bake Size",
+        description="Equirectangular resolution (2:1)",
+        items=bake_resolution_enum_items(),
+        default=BAKE_DEFAULT_RESOLUTION,
+    )
+    bake_hdri_include_world: BoolProperty(
+        name="Include world",
+        description="Bake the current world together with studio lights",
+        default=False,
+    )
+    bake_hdri_apply: BoolProperty(
+        name="Apply after bake",
+        description="Load the baked HDRI as the scene world when the render finishes",
+        default=False,
     )
     shots: CollectionProperty(
         type=BEHOLDShotItem,
