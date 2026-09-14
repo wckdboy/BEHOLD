@@ -27,6 +27,15 @@ from ..studio.bake import (
     baked_message,
     path_problem_message as bake_path_problem_message,
 )
+from ..studio.light_linking import (
+    LINKING_FAILED,
+    NO_LINKING_API,
+    NO_LINKING_ENGINE,
+    NO_PRODUCT_TO_SOLO,
+    NO_SELECTION,
+    NO_SHADOW_API,
+    UNKNOWN_KIND,
+)
 from ..shoot.batch import (
     BATCH_NO_CAMERA,
     BATCH_NO_MESH,
@@ -163,6 +172,12 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_VIEW_SETTINGS,
         NO_COMPOSITOR,
         LOOK_COMPOSITOR_BUSY,
+        NO_LINKING_API,
+        NO_LINKING_ENGINE,
+        NO_SHADOW_API,
+        NO_SELECTION,
+        NO_PRODUCT_TO_SOLO,
+        UNKNOWN_KIND,
     }
 )
 

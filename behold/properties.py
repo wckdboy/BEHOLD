@@ -21,6 +21,8 @@ from .shoot.looks import preset_enum_items as look_preset_enum_items
 from .shoot.looks_apply import on_look_update
 from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
 from .studio.bake import resolution_enum_items as bake_resolution_enum_items
+from .studio.light_linking import DEFAULT_KIND as LIGHT_LINKING_DEFAULT
+from .studio.light_linking import kind_enum_items as light_linking_kind_enum_items
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
@@ -349,6 +351,12 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Softbox / area look applied to the active BEHOLD light",
         items=light_shape_enum_items(),
         default=LIGHT_SHAPE_DEFAULT,
+    )
+    light_linking_kind: EnumProperty(
+        name="Linking",
+        description="Light linking (who is lit) or shadow linking (who casts)",
+        items=light_linking_kind_enum_items(),
+        default=LIGHT_LINKING_DEFAULT,
     )
     active_camera_name: StringProperty(
         name="Active Camera",

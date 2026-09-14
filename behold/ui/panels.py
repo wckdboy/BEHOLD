@@ -9,8 +9,9 @@ panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
 Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
 backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
-shape presets (Apply to active). Cameras is the v0.5.0 product-camera kit.
-Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
+shape presets (Apply to active) and v0.21.0 light / shadow linking lite
+(Link Selected / Unlink / Solo product). Cameras is the v0.5.0 product-camera
+kit. Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
 compact Look (v0.17.0 / v0.20.0 compositor presets), and compact Batch export
 (v0.19.0).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
@@ -256,7 +257,7 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
 
 
 def draw_lights_section(layout: UILayout, context: Context) -> None:
-    """Multi-light inventory + shape presets + Light Draw Active / New."""
+    """Multi-light inventory + shape presets + linking lite + Light Draw."""
     settings = context.scene.behold
     lights = light_lib.iter_behold_lights(context)
 
@@ -290,6 +291,15 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
             icon="CHECKMARK",
         )
         apply.preset = settings.light_shape_preset
+        linking = layout.box()
+        linking.label(text="Linking", icon="LINKED")
+        linking.prop(settings, "light_linking_kind", text="", expand=True)
+        row = linking.row(align=True)
+        link = row.operator("behold.link_selected", text="Link Selected")
+        link.kind = settings.light_linking_kind
+        unlink = row.operator("behold.unlink_selected", text="Unlink")
+        unlink.kind = settings.light_linking_kind
+        row.operator("behold.solo_product_link", text="Solo product")
         row = layout.row(align=True)
         row.prop(settings, "new_light_energy", text="New W")
         row.operator("behold.add_light", text="Add", icon="ADD")

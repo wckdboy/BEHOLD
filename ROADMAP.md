@@ -6,6 +6,10 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.21.0 Light & shadow linking lite** — Link Selected / Unlink / Solo product on
+  the active BEHOLD light (Cycles receiver collection include/exclude; optional
+  shadow linking via blocker collection on 5.2). Light Wrangler L / Shift+L as a
+  compact Lights card, not a viewport modal. Not gobos, IES, or Wrangler gizmos.
 - **0.20.0 Compositor look pack** — Clean / Catalog / Dramatic still looks on
   Shoot. Vignette, subtle grain, mild contrast; Dramatic adds bloom-safe glare.
   Toggle tears the graph down. Not gobos, IES, or a full grade suite.
