@@ -15,6 +15,7 @@ from .brand import (
     RELEASES_URL,
     VERSION,
 )
+from .previews import draw_mark_label
 from .updates.core import (
     available_from_cache,
     installed_version,
@@ -121,7 +122,7 @@ class BEHOLDAddonPreferences(AddonPreferences):
 
 def _draw_branding(layout: UILayout) -> None:
     box = layout.box()
-    box.label(text=PRODUCT_NAME, icon="RENDER_STILL")
+    draw_mark_label(box, PRODUCT_NAME)
     box.label(text=PRODUCT_CREDIT)
     box.label(text=PRODUCT_TAGLINE)
 

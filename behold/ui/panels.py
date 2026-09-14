@@ -13,7 +13,8 @@ v0.5.0 product-camera kit. Shoot carries a compact Turntable row (v0.6.0).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch, and
 turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
-(DEFAULT_CLOSED).
+(DEFAULT_CLOSED). Compact Studio HDRI (v0.13.0): load / strength / Z rotation
+/ reflections-only + Reset world — not a new first-class panel.
 """
 
 from __future__ import annotations
@@ -28,6 +29,7 @@ from ..cad import material_assist
 from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
 from ..materials.presets import EMPTY_NO_MESH, empty_state
+from ..previews import mark_icon_kwargs
 from ..product_import import formats
 from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
@@ -98,11 +100,28 @@ def draw_import_first_ship(layout: UILayout, context: Context) -> None:
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
-    """Backdrop White / Grey / Black + Build."""
+    """Backdrop White / Grey / Black + Build, then compact HDRI world."""
     settings = context.scene.behold
     card = layout.box()
     card.prop(settings, "studio_backdrop_tone", text="Backdrop", expand=True)
     card.operator("behold.build_studio", text="Build", icon="OUTLINER_OB_LIGHT")
+    draw_studio_hdri(layout, context)
+
+
+def draw_studio_hdri(layout: UILayout, context: Context) -> None:
+    """World HDRI: load, strength, Z rotation, optional reflections-only."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="HDRI", icon="WORLD")
+    card.prop(settings, "hdri_filepath", text="")
+    row = card.row(align=True)
+    row.operator("behold.load_hdri", text="Load", icon="FILE_IMAGE")
+    row.operator("behold.reset_world", text="Reset", icon="LOOP_BACK")
+    card.prop(settings, "hdri_strength", text="Strength")
+    card.prop(settings, "hdri_rotation", text="Rotation")
+    card.prop(settings, "hdri_reflections_only", text="Reflections only")
+    if settings.hdri_reflections_only:
+        card.prop(settings, "hdri_background_strength", text="Background")
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
@@ -428,6 +447,12 @@ class BEHOLD_PT_main(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "BEHOLD"
+
+    def draw_header(self, context: Context):
+        del context
+        kwargs = mark_icon_kwargs()
+        if "icon_value" in kwargs:
+            self.layout.label(text="", icon_value=int(kwargs["icon_value"]))
 
     def draw(self, context: Context):
         draw_hero(self.layout)

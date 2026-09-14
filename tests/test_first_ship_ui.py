@@ -125,6 +125,7 @@ class FirstShipUiTests(unittest.TestCase):
 
     def test_studio_first_ship_is_tone_and_build(self) -> None:
         body = _func_source(self.source, self.tree, "draw_studio_first_ship")
+        self.assertIn("draw_studio_hdri", body)
         self.assertIn("studio_backdrop_tone", body)
         self.assertIn('text="Build"', body)
         self.assertIn("behold.build_studio", body)
@@ -258,6 +259,9 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.10.0", text)
         self.assertIn("0.11.0", text)
         self.assertIn("0.12.0", text)
+        self.assertIn("0.13.0", text)
+        self.assertIn("ROADMAP.md", text)
+        self.assertIn("HDRI", text)
         self.assertIn("Check for updates", text)
         self.assertIn("Lights → Materials → Cameras → Shoot", text)
         self.assertIn("Shift+Alt+B", text)

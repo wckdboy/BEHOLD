@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Studio operators: build, light mixer, multi-light CRUD."""
+"""Studio operators: build, light mixer, multi-light CRUD, HDRI world."""
 
 from __future__ import annotations
 
 import bpy
 from bpy.props import StringProperty
 from bpy.types import Context, Operator
+from bpy_extras.io_utils import ImportHelper
 
 from . import lights as light_lib
 from . import setup as studio_setup
+from . import world as world_lib
+from . import world_apply
 from ..ui.messages import (
     NO_LIGHT_TO_REMOVE,
     NO_LIGHTS,
@@ -99,12 +102,54 @@ class BEHOLD_OT_set_active_light(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_load_hdri(Operator, ImportHelper):
+    bl_idname = "behold.load_hdri"
+    bl_label = "Load HDRI"
+    bl_description = (
+        "Load a world HDRI (OpenHDRI, Poly Haven, or disk) and wire strength / rotation"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    filename_ext = ".hdr"
+    filter_glob: StringProperty(
+        default=world_lib.HDRI_FILTER_GLOB,
+        options={"HIDDEN"},
+    )
+
+    def execute(self, context: Context):
+        settings = context.scene.behold
+        settings.hdri_filepath = self.filepath
+        result = world_apply.apply_hdri_from_settings(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_reset_world(Operator):
+    bl_idname = "behold.reset_world"
+    bl_label = "Reset World"
+    bl_description = "Clear the HDRI and restore a solid studio world"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = world_apply.reset_world(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
 CLASSES = (
     BEHOLD_OT_build_studio,
     BEHOLD_OT_refresh_lights,
     BEHOLD_OT_add_light,
     BEHOLD_OT_remove_light,
     BEHOLD_OT_set_active_light,
+    BEHOLD_OT_load_hdri,
+    BEHOLD_OT_reset_world,
 )
 
 
