@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Studio operators: build, light mixer, multi-light CRUD, HDRI world."""
+"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, shape presets."""
 
 from __future__ import annotations
 
 import bpy
-from bpy.props import StringProperty
+from bpy.props import EnumProperty, StringProperty
 from bpy.types import Context, Operator
 from bpy_extras.io_utils import ImportHelper
 
+from . import light_presets
+from . import light_shape
 from . import lights as light_lib
 from . import setup as studio_setup
 from . import world as world_lib
@@ -18,6 +20,7 @@ from ..ui.messages import (
     NO_MESH_SELECTED,
     light_not_found,
     report_set,
+    unknown_light_preset_message,
 )
 
 
@@ -102,6 +105,37 @@ class BEHOLD_OT_set_active_light(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_apply_light_preset(Operator):
+    bl_idname = "behold.apply_light_preset"
+    bl_label = "Apply Light Shape"
+    bl_description = (
+        "Apply a softbox / area look to the active BEHOLD light "
+        "(adds a light if the studio has none)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    preset: EnumProperty(
+        name="Shape",
+        items=light_presets.preset_enum_items(),
+        default=light_presets.DEFAULT_PRESET,
+    )
+
+    def execute(self, context: Context):
+        preset = light_presets.get_preset(self.preset)
+        if preset is None:
+            message = unknown_light_preset_message(self.preset)
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        result = light_shape.apply_preset_in_scene(context, preset.id)
+        if not result["ok"]:
+            message = NO_LIGHTS if result["message"] == "NO_LIGHTS" else result["message"]
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        context.scene.behold.light_shape_preset = preset.id
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
 class BEHOLD_OT_load_hdri(Operator, ImportHelper):
     bl_idname = "behold.load_hdri"
     bl_label = "Load HDRI"
@@ -148,6 +182,7 @@ CLASSES = (
     BEHOLD_OT_add_light,
     BEHOLD_OT_remove_light,
     BEHOLD_OT_set_active_light,
+    BEHOLD_OT_apply_light_preset,
     BEHOLD_OT_load_hdri,
     BEHOLD_OT_reset_world,
 )

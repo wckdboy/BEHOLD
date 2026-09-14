@@ -61,6 +61,12 @@ class MessageConstantTests(unittest.TestCase):
         self.assertIn("Hero", messages.camera_not_found("Hero"))
         self.assertIn("Add Camera", messages.camera_not_found("Hero"))
         self.assertIn("Bookmark", messages.bookmark_camera_missing("Cam"))
+        self.assertEqual(
+            messages.unknown_light_preset_message(""),
+            messages.UNKNOWN_LIGHT_PRESET,
+        )
+        self.assertIn("Gobo", messages.unknown_light_preset_message("Gobo"))
+        self.assertIn("Softbox", messages.unknown_light_preset_message("Gobo"))
 
     def test_empty_state_reports_warning_hard_fails_error(self) -> None:
         self.assertEqual(messages.report_type(messages.NO_MESH_SELECTED), "WARNING")
@@ -84,6 +90,7 @@ class MessageConstantTests(unittest.TestCase):
             messages.report_type(messages.light_not_found("Key")),
             "ERROR",
         )
+        self.assertEqual(messages.report_type(messages.UNKNOWN_LIGHT_PRESET), "ERROR")
         self.assertEqual(
             messages.report_type("STEPper NEXT import failed: boom"),
             "ERROR",
@@ -116,6 +123,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("BUILD_NEEDS_MESH", studio)
         self.assertIn("behold.load_hdri", studio)
         self.assertIn("behold.reset_world", studio)
+        self.assertIn("behold.apply_light_preset", studio)
         self.assertIn("EMPTY_NO_MESH", setup)
         self.assertIn("BUILD_NEEDS_MESH = EMPTY_NO_MESH", setup)
         self.assertIn("report_set", studio)

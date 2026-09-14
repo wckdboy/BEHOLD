@@ -78,6 +78,7 @@ class MultiLightWiringTests(unittest.TestCase):
             "behold.add_light",
             "behold.remove_light",
             "behold.set_active_light",
+            "behold.apply_light_preset",
         ):
             self.assertIn(f'bl_idname = "{bl_id}"', source)
 
@@ -86,6 +87,7 @@ class MultiLightWiringTests(unittest.TestCase):
         self.assertIn("active_light_name", source)
         self.assertIn("new_light_energy", source)
         self.assertIn("light_draw_target", source)
+        self.assertIn("light_shape_preset", source)
         self.assertIn('("ACTIVE", "Active"', source)
         self.assertIn('("NEW", "New"', source)
 
