@@ -16,6 +16,9 @@ from bpy.props import (
 from bpy.types import PropertyGroup, Scene
 
 from .shoot.exposure_apply import on_exposure_update
+from .shoot.looks import DEFAULT_PRESET as LOOK_DEFAULT
+from .shoot.looks import preset_enum_items as look_preset_enum_items
+from .shoot.looks_apply import on_look_update
 from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
 from .studio.bake import resolution_enum_items as bake_resolution_enum_items
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
@@ -235,6 +238,19 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="AgX-safe false-color heat map for exposure checks",
         default=False,
         update=on_exposure_update,
+    )
+    look_preset: EnumProperty(
+        name="Look",
+        description="Compositor still look: Clean, Catalog, or Dramatic",
+        items=look_preset_enum_items(),
+        default=LOOK_DEFAULT,
+        update=on_look_update,
+    )
+    look_enabled: BoolProperty(
+        name="Compositor",
+        description="Apply the Look preset through the compositor (vignette / grain)",
+        default=False,
+        update=on_look_update,
     )
     light_draw_mode: EnumProperty(
         name="Light Draw Mode",

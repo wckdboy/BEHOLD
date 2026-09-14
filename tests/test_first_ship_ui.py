@@ -207,8 +207,11 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("exposure_ev", look)
         self.assertIn("white_balance_kelvin", look)
         self.assertIn("false_color", look)
+        self.assertIn("look_preset", look)
+        self.assertIn("look_enabled", look)
         self.assertNotIn("batch_angles", look)
         self.assertNotIn("bookmark_camera", look)
+        self.assertNotIn("apply_look", look)
 
     def test_turntable_compact_has_setup_play_and_empty_state(self) -> None:
         body = _func_source(self.source, self.tree, "draw_turntable_compact")
@@ -242,6 +245,9 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("behold.apply_local_material", materials)
         self.assertIn("blenderkit", materials.lower())
         self.assertIn("exposure_ev", shoot)
+        self.assertIn("look_preset", shoot)
+        self.assertIn("look_enabled", shoot)
+        self.assertIn("behold.apply_look", shoot)
         self.assertIn("behold.apply_exposure", shoot)
 
     def test_backend_keeps_final_quality_and_backdrop_tones(self) -> None:
@@ -283,6 +289,9 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.17.0", text)
         self.assertIn("0.18.0", text)
         self.assertIn("0.19.0", text)
+        self.assertIn("0.20.0", text)
+        self.assertIn("Catalog", text)
+        self.assertIn("Dramatic", text)
         self.assertIn("Batch export", text)
         self.assertIn("Bake HDRI", text)
         self.assertIn("Shot Manager", text)

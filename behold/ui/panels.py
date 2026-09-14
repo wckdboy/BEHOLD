@@ -11,7 +11,8 @@ Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
 backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
 shape presets (Apply to active). Cameras is the v0.5.0 product-camera kit.
 Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
-compact Look (v0.17.0), and compact Batch export (v0.19.0).
+compact Look (v0.17.0 / v0.20.0 compositor presets), and compact Batch export
+(v0.19.0).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, tokens / bookmark,
 and turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
@@ -21,7 +22,9 @@ Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
 backdrop + output tokens. v0.15.0 draw-once cache: CAD status + scene flags
 once per N-panel pass. Compact Look on Shoot (v0.17.0): EV, Kelvin white
 balance, and AgX-safe False Color — wired to Color Management, not only
-Advanced. Compact Bake HDRI on Studio (v0.18.0): 1K/2K equirectangular
+Advanced. v0.20.0 adds Clean / Catalog / Dramatic compositor presets plus a
+Compositor toggle on the same card (vignette, grain, bloom-safe glare). Compact
+Bake HDRI on Studio (v0.18.0): 1K/2K equirectangular
 EXR/HDR of the light rig, optional world, optional apply as world. Compact
 Batch export on Shoot (v0.19.0): front / ¾ / top plus optional saved shots;
 path tokens stay in the output folder template.
@@ -169,7 +172,7 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
 
 
 def draw_look_compact(layout: UILayout, context: Context) -> None:
-    """EV, Kelvin white balance, False Color — live Color Management."""
+    """EV, WB, False Color, plus Clean / Catalog / Dramatic compositor presets."""
     settings = context.scene.behold
     card = layout.box()
     card.label(text="Look", icon="COLOR")
@@ -177,6 +180,9 @@ def draw_look_compact(layout: UILayout, context: Context) -> None:
     row.prop(settings, "exposure_ev", text="EV")
     row.prop(settings, "white_balance_kelvin", text="WB")
     card.prop(settings, "false_color", text="False Color", toggle=True)
+    row = card.row(align=True)
+    row.prop(settings, "look_preset", text="", expand=True)
+    card.prop(settings, "look_enabled", text="Compositor", toggle=True)
 
 
 def draw_shots_compact(layout: UILayout, context: Context) -> None:
@@ -489,6 +495,9 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     col.prop(settings, "exposure_ev")
     col.prop(settings, "white_balance_kelvin")
     col.prop(settings, "false_color", toggle=True)
+    col.prop(settings, "look_preset", text="", expand=True)
+    col.prop(settings, "look_enabled", text="Compositor", toggle=True)
+    col.operator("behold.apply_look", icon="NODE_COMPOSITING")
     col.operator("behold.apply_exposure", icon="COLOR")
 
     layout.separator()

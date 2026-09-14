@@ -32,6 +32,7 @@ from . import shots_apply
 from . import turntable as turntable_lib
 from . import turntable_rig
 from .exposure_apply import apply_exposure
+from .looks_apply import apply_look
 
 
 QUALITY_SAMPLES = {
@@ -102,6 +103,22 @@ class BEHOLD_OT_apply_exposure(Operator):
 
     def execute(self, context: Context):
         result = apply_exposure(context)
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+        else:
+            self.report(report_set(message), message)
+        return {"FINISHED"} if result["ok"] else {"CANCELLED"}
+
+
+class BEHOLD_OT_apply_look(Operator):
+    bl_idname = "behold.apply_look"
+    bl_label = "Apply Look"
+    bl_description = "Build or tear down compositor look nodes (Clean / Catalog / Dramatic)"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = apply_look(context)
         message = result["message"]
         if result["ok"]:
             self.report({"INFO"}, message)
@@ -266,6 +283,7 @@ class BEHOLD_OT_render_still(Operator):
             return {"CANCELLED"}
 
         apply_exposure(context)
+        apply_look(context)
         samples = apply_render_quality(context)
         scene = context.scene
         scene.render.image_settings.file_format = "PNG"
@@ -458,6 +476,7 @@ class BEHOLD_OT_render_turntable(Operator):
             return {"CANCELLED"}
 
         apply_exposure(context)
+        apply_look(context)
         samples = apply_render_quality(context)
         scene = context.scene
         scene.render.image_settings.file_format = "FFMPEG"
@@ -499,6 +518,7 @@ class BEHOLD_OT_batch_angles(Operator):
 
 CLASSES = (
     BEHOLD_OT_apply_exposure,
+    BEHOLD_OT_apply_look,
     BEHOLD_OT_apply_quality,
     BEHOLD_OT_bookmark_camera,
     BEHOLD_OT_use_main_camera,

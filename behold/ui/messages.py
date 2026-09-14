@@ -34,6 +34,14 @@ from ..shoot.batch import (
     BATCH_NOTHING,
     BATCH_RENDER_FAILED,
 )
+from ..shoot.looks import (
+    LOOK_COMPOSITOR_BUSY,
+    LOOK_DISABLED,
+    LOOK_NODES_FAILED,
+    NO_COMPOSITOR,
+    UNKNOWN_LOOK_PRESET,
+    unknown_look_message,
+)
 from ..shoot.shots import (
     EMPTY_NO_SHOTS,
     EMPTY_NO_SHOTS_NEXT,
@@ -153,6 +161,8 @@ EMPTY_STATE_MESSAGES = frozenset(
         SHOT_NAME_EMPTY,
         FALSE_COLOR_UNAVAILABLE,
         NO_VIEW_SETTINGS,
+        NO_COMPOSITOR,
+        LOOK_COMPOSITOR_BUSY,
     }
 )
 
@@ -211,6 +221,10 @@ def unknown_light_preset_message(preset_id: str) -> str:
         f"Unknown light shape “{shown}” — "
         "pick Softbox, Strip, Octa, Hard, or Rim"
     )
+
+
+def unknown_look_preset_message(preset_id: str) -> str:
+    return unknown_look_message(preset_id)
 
 
 def camera_not_found(name: str) -> str:

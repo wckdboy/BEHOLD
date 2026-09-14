@@ -12,9 +12,9 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.19.0)
+## What works (v0.20.0)
 
-**0.19.0 is catalog batch export** on Shoot. Bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
+**0.20.0 is compositor look pack** on Shoot. Catalog batch export is **0.19.0**; bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
@@ -23,7 +23,7 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 3. **Lights** — inventory + Light Draw + **Shape** presets (Softbox / Strip / Octa / Hard / Rim)
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras
-6. **Shoot** — Draft / Final, Still, Render, compact **Look** (EV / Kelvin WB / False Color), compact **Shots** (Add / Apply / rename / Delete), compact **Batch export** (Front / ¾ / Top and optional Saved shots), compact **Turntable** (seconds + Setup + Play)
+6. **Shoot** — Draft / Final, Still, Render, compact **Look** (EV / Kelvin WB / False Color, plus Clean / Catalog / Dramatic compositor presets), compact **Shots** (Add / Apply / rename / Delete), compact **Batch export** (Front / ¾ / Top and optional Saved shots), compact **Turntable** (seconds + Setup + Play)
 
 Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath. Operator failures use the same copy: a short sentence plus what to do next.
 
@@ -52,12 +52,13 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - Empty state if there is no camera or product yet (Build Studio / Add Camera / Import)
 - **Play** previews (Setup first if needed). **Advanced**: Linear vs Ease, Bake, Clear, Render
 
-**Look (0.17.0)** — Photographer-class lite on Shoot, not buried only in Advanced:
+**Look (0.17.0 / 0.20.0)** — Photographer-class lite on Shoot, not buried only in Advanced:
 
 - **EV** — exposure compensation in stops (−6 to +6), live on Color Management
 - **WB** — white balance in Kelvin (D65 = 6500 K). Blender 5.2 uses `use_white_balance` + temperature; older builds fall back to a D65 offset
 - **False Color** — AgX-safe heat map for hot/cold checks; toggling off restores the previous view transform instead of forcing AgX over Filmic
-- Dragging a slider applies immediately (viewport and render). **Apply Exposure** stays in Advanced. Light Draw **F** still toggles False Color.
+- **Clean / Catalog / Dramatic** (0.20.0) — one-click compositor still looks. Catalog is mild vignette + grain with bloom off; Dramatic adds stronger vignette/grain and mild bloom-safe glare. **Compositor** toggles the graph on or off (BEHOLD builds and tears down its own nodes; it will not overwrite a custom compositor)
+- Dragging EV / WB applies immediately (viewport and render). Preset + toggle apply the compositor graph. **Apply Exposure** and **Apply Look** stay in Advanced. Light Draw **F** still toggles False Color.
 
 **Bake HDRI (0.18.0)** — capture the studio light rig as a 360° environment for reuse / Eevee:
 
@@ -89,7 +90,7 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Assist** applies a matching local look from the filename / STEP hint — **no BlenderKit account required**
 - If BlenderKit is signed in, Assist still applies the local look and also runs search
 
-Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color and Batch export also remain under Advanced → Shoot for people who look there.
+Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color / compositor looks and Batch export also remain under Advanced → Shoot for people who look there.
 
 Backends:
 
@@ -101,7 +102,7 @@ Backends:
 - **Turntable** — `BEHOLD_TurntablePivot` orbits the active camera; Clear drops the pivot only; Bake writes camera loc/rot then removes the pivot
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint) applied from the N-panel; Material Assist finishes with that look
 - **BlenderKit** — optional soft-dependency bridge (login / search / apply in Advanced). Local looks work without an account
-- **Shoot** — compact **Look** (EV / Kelvin white balance / False Color on Color Management), Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, **Batch export** (front / ¾ / top and optional saved shots), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
+- **Shoot** — compact **Look** (EV / Kelvin white balance / False Color on Color Management; Clean / Catalog / Dramatic compositor presets), Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, **Batch export** (front / ¾ / top and optional saved shots), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
 - **CAD** — first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) for STEP/IGES/BREP on 5.1+/5.2 LTS (`import_scene.occ_import_step`). OCP fallback only if STEPper is missing and OpenCASCADE bindings actually import; otherwise Import fails with the [STEPper Releases](https://github.com/Peak-Design/STEPper_NEXT/releases) URL. Mesh formats stay native. Shared `product_import_dispatch` / `run_product_import`. CI-safe unit-cube STEP fixture; optional Blender smoke (`make smoke-step`) for Import → Build → Draft still.
 
 ## Coming (not this release)
@@ -200,13 +201,14 @@ Bookmark / Use Main stay under **Advanced → Shoot** for non-BEHOLD cameras.
 
 Sidebar **BEHOLD → Shoot**:
 
-1. After Draft / Final, the compact **Look** card has **EV**, **WB** (Kelvin), and **False Color**.
+1. After Draft / Final, the compact **Look** card has **EV**, **WB** (Kelvin), **False Color**, and **Clean / Catalog / Dramatic**.
 2. Drag EV to lift or crush the still. 0 is the Color Management default.
 3. Drag WB in Kelvin. **6500 K** is D65 (neutral). Set ~3200 K when the lights are tungsten so whites come back; raise it if a cool HDRI went blue.
 4. Toggle **False Color** to meter clipping, then toggle off — BEHOLD restores AgX (or whatever look you were on), not a hard Filmic reset.
-5. Still / Render / batch / turntable already push the same Look. Light Draw **F** toggles False Color while aiming.
+5. Pick **Catalog** (pack-shot vignette + grain, bloom off) or **Dramatic** (stronger edges + mild bloom-safe glare). **Clean** is a compositor passthrough. Toggle **Compositor** to build or tear down those nodes. A custom compositor in the scene reports a sentence plus the next step instead of being overwritten.
+6. Still / Render / batch / turntable already push EV / WB and re-apply the compositor look when the toggle is on. Light Draw **F** toggles False Color while aiming.
 
-Apply Exposure in **Advanced → Shoot** re-pushes the same props if you edited Color Management by hand.
+Apply Exposure and Apply Look in **Advanced → Shoot** re-push the same props if you edited Color Management or the compositor by hand.
 
 ## Turntable
 
@@ -281,19 +283,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.19.0.zip`).
-2. **Versioned release** — push a tag `v0.19.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.20.0.zip`).
+2. **Versioned release** — push a tag `v0.20.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.19.0
-git push origin v0.19.0
+git tag v0.20.0
+git push origin v0.20.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.19.0.zip
+# → dist/behold-0.20.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

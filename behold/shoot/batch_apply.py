@@ -16,6 +16,7 @@ from . import batch as batch_lib
 from . import shots as shots_lib
 from . import shots_apply
 from .exposure_apply import apply_exposure
+from .looks_apply import apply_look
 
 ReportFn = Callable[[str, str], None]
 
@@ -65,6 +66,7 @@ def _render_helpers():
 def _render_still(context: Context, job: batch_lib.BatchJob) -> dict[str, Any]:
     apply_quality, resolve_dir = _render_helpers()
     apply_exposure(context)
+    apply_look(context)
     apply_quality(context)
     scene = context.scene
     scene.render.image_settings.file_format = "PNG"

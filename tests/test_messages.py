@@ -84,6 +84,8 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(messages.report_type(messages.BATCH_NO_MESH), "WARNING")
         self.assertEqual(messages.report_type(messages.BATCH_NOTHING), "WARNING")
         self.assertEqual(messages.report_type(messages.UPDATE_CHECK_OFFLINE), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_COMPOSITOR), "WARNING")
+        self.assertEqual(messages.report_type(messages.LOOK_COMPOSITOR_BUSY), "WARNING")
         self.assertEqual(messages.report_set(messages.NO_MESH_SELECTED), {"WARNING"})
         self.assertEqual(
             messages.report_type(messages.file_not_found_message("/tmp/gone.step")),
@@ -98,6 +100,8 @@ class MessageConstantTests(unittest.TestCase):
             "ERROR",
         )
         self.assertEqual(messages.report_type(messages.UNKNOWN_LIGHT_PRESET), "ERROR")
+        self.assertEqual(messages.report_type(messages.UNKNOWN_LOOK_PRESET), "ERROR")
+        self.assertEqual(messages.report_type(messages.LOOK_NODES_FAILED), "ERROR")
         self.assertEqual(
             messages.report_type("STEPper NEXT import failed: boom"),
             "ERROR",
@@ -141,6 +145,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.add_shot", shoot)
         self.assertIn("behold.apply_shot", shoot)
         self.assertIn("behold.apply_exposure", shoot)
+        self.assertIn("behold.apply_look", shoot)
         self.assertIn("behold.batch_angles", shoot)
         self.assertIn("run_batch_export", shoot)
         apply_src = _read("behold/shoot/exposure_apply.py")
