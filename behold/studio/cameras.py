@@ -10,6 +10,7 @@ from bpy.types import Camera, Context, Object
 from mathutils import Vector
 
 from . import camera_ids
+from . import dof as dof_lib
 from . import lights as light_lib
 
 
@@ -79,6 +80,8 @@ def apply_product_lens(cam_data: Camera, lens_mm: float) -> None:
         cam_data.lens_unit = "MILLIMETERS"
     if hasattr(cam_data, "dof"):
         cam_data.dof.use_dof = False
+        if hasattr(cam_data.dof, "aperture_fstop"):
+            cam_data.dof.aperture_fstop = dof_lib.DEFAULT_FSTOP
 
 
 def place_product_camera(cam: Object, center: Vector, size: float) -> None:

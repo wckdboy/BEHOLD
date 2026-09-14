@@ -114,6 +114,9 @@ class CameraWiringTests(unittest.TestCase):
             "behold.bookmark_camera",
             "behold.use_main_camera",
             "behold.render_still",
+            "behold.apply_camera_dof",
+            "behold.focus_product",
+            "behold.focus_selected",
         ):
             self.assertIn(f'bl_idname = "{bl_id}"', source)
         self.assertIn("resolve_shoot_camera", source)
@@ -124,6 +127,8 @@ class CameraWiringTests(unittest.TestCase):
         self.assertIn("active_camera_name", source)
         self.assertIn("new_camera_lens", source)
         self.assertIn("main_camera_name", source)
+        self.assertIn("dof_enabled", source)
+        self.assertIn("dof_fstop", source)
 
     def test_helpers_create_frame_and_resolve(self) -> None:
         source = _read("behold/studio/cameras.py")
@@ -140,6 +145,7 @@ class CameraWiringTests(unittest.TestCase):
             "def product_targets",
             "apply_product_lens",
             'sensor_fit = "HORIZONTAL"',
+            "dof_lib.DEFAULT_FSTOP",
         ):
             self.assertIn(name, source)
 
@@ -158,6 +164,9 @@ class CameraWiringTests(unittest.TestCase):
         self.assertIn("behold.clear_cameras", source)
         self.assertIn("behold.set_active_camera", source)
         self.assertIn("behold.remove_camera", source)
+        self.assertIn("draw_cameras_dof", source)
+        self.assertIn("behold.focus_product", source)
+        self.assertIn("behold.focus_selected", source)
 
 
 if __name__ == "__main__":

@@ -27,6 +27,14 @@ from ..studio.bake import (
     baked_message,
     path_problem_message as bake_path_problem_message,
 )
+from ..studio.dof import (
+    DOF_DISABLED,
+    DOF_FAILED,
+    FOCUS_NO_PRODUCT,
+    FOCUS_NO_SELECTION,
+    NO_DOF_API,
+    UNKNOWN_FOCUS,
+)
 from ..studio.light_linking import (
     LINKING_FAILED,
     NO_LINKING_API,
@@ -178,6 +186,10 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_SELECTION,
         NO_PRODUCT_TO_SOLO,
         UNKNOWN_KIND,
+        NO_DOF_API,
+        FOCUS_NO_PRODUCT,
+        FOCUS_NO_SELECTION,
+        UNKNOWN_FOCUS,
     }
 )
 

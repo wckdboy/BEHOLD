@@ -21,6 +21,10 @@ from .shoot.looks import preset_enum_items as look_preset_enum_items
 from .shoot.looks_apply import on_look_update
 from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
 from .studio.bake import resolution_enum_items as bake_resolution_enum_items
+from .studio.dof import DEFAULT_FSTOP as DOF_DEFAULT_FSTOP
+from .studio.dof import FSTOP_MAX as DOF_FSTOP_MAX
+from .studio.dof import FSTOP_MIN as DOF_FSTOP_MIN
+from .studio.dof_apply import on_dof_update
 from .studio.light_linking import DEFAULT_KIND as LIGHT_LINKING_DEFAULT
 from .studio.light_linking import kind_enum_items as light_linking_kind_enum_items
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
@@ -370,6 +374,24 @@ class BEHOLDSceneSettings(PropertyGroup):
         default=85.0,
         min=12.0,
         max=300.0,
+    )
+    dof_enabled: BoolProperty(
+        name="DoF",
+        description="Enable depth of field on the active BEHOLD camera",
+        default=False,
+        update=on_dof_update,
+    )
+    dof_fstop: FloatProperty(
+        name="f-stop",
+        description="Aperture f-stop on the active BEHOLD camera (product default f/5.6)",
+        default=DOF_DEFAULT_FSTOP,
+        min=DOF_FSTOP_MIN,
+        max=DOF_FSTOP_MAX,
+        soft_min=2.8,
+        soft_max=11.0,
+        precision=1,
+        step=10,
+        update=on_dof_update,
     )
     hdri_filepath: StringProperty(
         name="HDRI",
