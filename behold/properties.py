@@ -19,6 +19,9 @@ from .shoot.exposure_apply import on_exposure_update
 from .shoot.looks import DEFAULT_PRESET as LOOK_DEFAULT
 from .shoot.looks import preset_enum_items as look_preset_enum_items
 from .shoot.looks_apply import on_look_update
+from .shoot.quality import DEFAULT_QUALITY as QUALITY_DEFAULT
+from .shoot.quality import quality_enum_items
+from .shoot.quality_apply import on_quality_update
 from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
 from .studio.bake import resolution_enum_items as bake_resolution_enum_items
 from .studio.dof import DEFAULT_FSTOP as DOF_DEFAULT_FSTOP
@@ -55,14 +58,9 @@ class BEHOLDShotItem(PropertyGroup):
     )
     render_quality: EnumProperty(
         name="Quality",
-        description="Cycles sample preset stored with this shot",
-        items=(
-            ("DRAFT", "Draft", "Fast look-dev (32 samples)"),
-            ("FINAL", "Final", "First-ship client still (256 samples)"),
-            ("PRODUCT", "Product", "Client-ready stills (128 samples)"),
-            ("HERO", "Hero", "Chrome / glass hero shots (512 samples)"),
-        ),
-        default="DRAFT",
+        description="Draft = EEVEE Next; Final / Product / Hero = Cycles",
+        items=quality_enum_items(),
+        default=QUALITY_DEFAULT,
     )
     turntable_seconds: FloatProperty(
         name="Turntable Seconds",
@@ -293,14 +291,10 @@ class BEHOLDSceneSettings(PropertyGroup):
     )
     render_quality: EnumProperty(
         name="Quality",
-        description="Cycles sample / denoise preset for product shots",
-        items=(
-            ("DRAFT", "Draft", "Fast look-dev (32 samples)"),
-            ("FINAL", "Final", "First-ship client still (256 samples)"),
-            ("PRODUCT", "Product", "Client-ready stills (128 samples)"),
-            ("HERO", "Hero", "Chrome / glass hero shots (512 samples)"),
-        ),
-        default="DRAFT",
+        description="Draft = EEVEE Next look-dev; Final / Product / Hero = Cycles stills",
+        items=quality_enum_items(),
+        default=QUALITY_DEFAULT,
+        update=on_quality_update,
     )
     output_directory: StringProperty(
         name="Output Folder",

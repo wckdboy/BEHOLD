@@ -19,6 +19,7 @@ from .fit import (
 from .tones import backdrop_tone_rgba, kelvin_to_rgb
 from .world_apply import reapply_hdri_if_loaded, setup_solid_world
 from ..materials.presets import EMPTY_NO_MESH
+from ..shoot.quality_apply import apply_render_quality
 
 PREFIX = light_lib.PREFIX
 BUILD_NEEDS_MESH = EMPTY_NO_MESH
@@ -239,9 +240,7 @@ def build_studio(context: Context) -> str:
     camera_lib.set_active_behold_camera(context, cam)
     _activate_key_light(context)
 
-    context.scene.render.engine = "CYCLES"
-    context.scene.cycles.samples = 128
-    context.scene.cycles.use_denoising = True
+    apply_render_quality(context)
     try:
         context.scene.view_settings.view_transform = "AgX"
     except TypeError:

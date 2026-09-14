@@ -13,8 +13,8 @@ shape presets (Apply to active) and v0.21.0 light / shadow linking lite
 (Link Selected / Unlink / Solo product). Cameras is the v0.5.0 product-camera
 kit plus v0.22.0 product DoF (on/off, f-stop, Focus on product / Focus on
 selected). Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
-compact Look (v0.17.0 / v0.20.0 compositor presets), and compact Batch export
-(v0.19.0).
+compact Look (v0.17.0 / v0.20.0 compositor presets), compact Batch export
+(v0.19.0), and v0.23.0 EEVEE Draft / Cycles Final (quality-linked engine).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, tokens / bookmark,
 and turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
@@ -46,6 +46,7 @@ from ..materials.presets import EMPTY_NO_MESH, empty_state
 from ..previews import mark_icon_kwargs
 from ..product_import import formats
 from ..shoot.batch import TOKEN_HINT as BATCH_TOKEN_HINT
+from ..shoot.quality import SHOOT_ENGINE_HINT
 from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
@@ -160,6 +161,7 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     row = card.row(align=True)
     row.prop_enum(settings, "render_quality", "DRAFT")
     row.prop_enum(settings, "render_quality", "FINAL")
+    card.label(text=SHOOT_ENGINE_HINT)
     row = card.row(align=True)
     row.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     row.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
@@ -528,6 +530,7 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     layout.separator()
     col = layout.column(align=True)
     col.label(text="Quality")
+    col.label(text=SHOOT_ENGINE_HINT)
     col.prop(settings, "render_quality", text="")
     col.operator("behold.apply_quality", icon="SETTINGS")
 

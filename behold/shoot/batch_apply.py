@@ -67,7 +67,12 @@ def _render_still(context: Context, job: batch_lib.BatchJob) -> dict[str, Any]:
     apply_quality, resolve_dir = _render_helpers()
     apply_exposure(context)
     apply_look(context)
-    apply_quality(context)
+    result = apply_quality(context)
+    if not result.get("ok"):
+        return {
+            "ok": False,
+            "message": str(result.get("message") or batch_lib.BATCH_RENDER_FAILED),
+        }
     scene = context.scene
     scene.render.image_settings.file_format = "PNG"
     out_dir = resolve_dir(context, angle=job.slug)

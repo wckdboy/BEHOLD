@@ -94,8 +94,12 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(messages.report_type(messages.NO_DOF_API), "WARNING")
         self.assertEqual(messages.report_type(messages.FOCUS_NO_PRODUCT), "WARNING")
         self.assertEqual(messages.report_type(messages.FOCUS_NO_SELECTION), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_EEVEE), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_CYCLES), "WARNING")
+        self.assertEqual(messages.report_type(messages.UNKNOWN_QUALITY), "WARNING")
         self.assertEqual(messages.report_type(messages.LINKING_FAILED), "ERROR")
         self.assertEqual(messages.report_type(messages.DOF_FAILED), "ERROR")
+        self.assertEqual(messages.report_type(messages.QUALITY_FAILED), "ERROR")
         self.assertEqual(messages.report_set(messages.NO_MESH_SELECTED), {"WARNING"})
         self.assertEqual(
             messages.report_type(messages.file_not_found_message("/tmp/gone.step")),
@@ -165,6 +169,8 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.apply_camera_dof", shoot)
         self.assertIn("behold.focus_product", shoot)
         self.assertIn("behold.focus_selected", shoot)
+        self.assertIn("behold.apply_quality", shoot)
+        self.assertIn("quality_apply", shoot)
         apply_src = _read("behold/shoot/exposure_apply.py")
         self.assertIn("on_exposure_update", apply_src)
         self.assertIn("LIGHT_DRAW_NEEDS_VIEWPORT", lights)

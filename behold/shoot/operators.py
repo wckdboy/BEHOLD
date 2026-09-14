@@ -29,19 +29,16 @@ from ..ui.messages import (
     shot_saved_message,
 )
 from . import batch as batch_lib
+from . import quality as quality_lib
 from . import shots_apply
 from . import turntable as turntable_lib
 from . import turntable_rig
 from .exposure_apply import apply_exposure
 from .looks_apply import apply_look
+from .quality_apply import apply_render_quality
 
 
-QUALITY_SAMPLES = {
-    "DRAFT": 32,
-    "FINAL": 256,
-    "PRODUCT": 128,
-    "HERO": 512,
-}
+QUALITY_SAMPLES = quality_lib.QUALITY_SAMPLES
 
 
 def _ensure_camera(context: Context) -> bpy.types.Object | None:
@@ -51,23 +48,14 @@ def _ensure_camera(context: Context) -> bpy.types.Object | None:
     return cam
 
 
-def apply_render_quality(context: Context) -> int:
-    """Push quality preset to Cycles. Returns sample count."""
-    settings = context.scene.behold
-    quality = settings.render_quality
-    samples = QUALITY_SAMPLES.get(quality, 128)
-
-    scene = context.scene
-    scene.render.engine = "CYCLES"
-    scene.cycles.samples = samples
-    scene.cycles.use_denoising = True
-    # Prefer OptiX/OIDN when available; ignore if the build lacks the attr.
-    if hasattr(scene.cycles, "denoiser"):
-        try:
-            scene.cycles.denoiser = "OPENIMAGEDENOISE"
-        except TypeError:
-            pass
-    return samples
+def _quality_samples(result: dict) -> int:
+    samples = result.get("samples")
+    if isinstance(samples, int):
+        return samples
+    plan = result.get("plan")
+    if plan is not None:
+        return int(getattr(plan, "samples", 128))
+    return 128
 
 
 def resolve_output_dir(context: Context, *, angle: str = "") -> str:
@@ -131,13 +119,21 @@ class BEHOLD_OT_apply_look(Operator):
 class BEHOLD_OT_apply_quality(Operator):
     bl_idname = "behold.apply_quality"
     bl_label = "Apply Quality Preset"
-    bl_description = "Push Draft / Final / Product / Hero sample counts to Cycles"
+    bl_description = (
+        "Draft uses EEVEE Next when available; Final / Product / Hero use Cycles"
+    )
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: Context):
-        samples = apply_render_quality(context)
-        quality = context.scene.behold.render_quality
-        self.report({"INFO"}, f"{quality.title()} quality — {samples} samples")
+        result = apply_render_quality(context)
+        message = str(result.get("message") or quality_lib.QUALITY_FAILED)
+        if not result.get("ok"):
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        if result.get("fallback"):
+            self.report(report_set(message), message)
+            return {"FINISHED"}
+        self.report({"INFO"}, message)
         return {"FINISHED"}
 
 
@@ -343,13 +339,24 @@ class BEHOLD_OT_render_still(Operator):
 
         apply_exposure(context)
         apply_look(context)
-        samples = apply_render_quality(context)
+        result = apply_render_quality(context)
+        if not result.get("ok"):
+            message = str(result.get("message") or quality_lib.QUALITY_FAILED)
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        samples = _quality_samples(result)
+        engine_label = str(result.get("engine_label") or "Cycles")
         scene = context.scene
         scene.render.image_settings.file_format = "PNG"
         out_dir = resolve_output_dir(context, angle="still")
         scene.render.filepath = os.path.join(out_dir, "still.png")
         bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
-        self.report({"INFO"}, f"Still started ({samples} samples) → {out_dir}")
+        if result.get("fallback"):
+            self.report(report_set(str(result["message"])), str(result["message"]))
+        self.report(
+            {"INFO"},
+            f"Still started ({engine_label}, {samples} samples) → {out_dir}",
+        )
         return {"FINISHED"}
 
 
@@ -536,7 +543,13 @@ class BEHOLD_OT_render_turntable(Operator):
 
         apply_exposure(context)
         apply_look(context)
-        samples = apply_render_quality(context)
+        result = apply_render_quality(context)
+        if not result.get("ok"):
+            message = str(result.get("message") or quality_lib.QUALITY_FAILED)
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        samples = _quality_samples(result)
+        engine_label = str(result.get("engine_label") or "Cycles")
         scene = context.scene
         scene.render.image_settings.file_format = "FFMPEG"
         scene.render.ffmpeg.format = "MPEG4"
@@ -544,7 +557,12 @@ class BEHOLD_OT_render_turntable(Operator):
         out_dir = resolve_output_dir(context, angle="turntable")
         scene.render.filepath = os.path.join(out_dir, "turntable")
         bpy.ops.render.render("INVOKE_DEFAULT", animation=True)
-        self.report({"INFO"}, f"Turntable started ({samples} samples) → {out_dir}")
+        if result.get("fallback"):
+            self.report(report_set(str(result["message"])), str(result["message"]))
+        self.report(
+            {"INFO"},
+            f"Turntable started ({engine_label}, {samples} samples) → {out_dir}",
+        )
         return {"FINISHED"}
 
 
