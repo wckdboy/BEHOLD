@@ -61,6 +61,30 @@ class ClassifyProductFileTests(unittest.TestCase):
         self.assertEqual(formats.product_import_dispatch("part.obj"), "mesh")
         self.assertEqual(formats.product_import_dispatch("notes.pdf"), "unknown")
 
+    def test_dispatch_covers_every_registered_extension(self) -> None:
+        for ext in formats.CAD_EXTENSIONS:
+            path = f"C:\\parts\\housing.v2{ext.upper()}"
+            self.assertEqual(formats.product_import_dispatch(path), "cad", path)
+            self.assertEqual(
+                formats.product_import_dispatch(path),
+                formats.classify_product_file(path),
+                path,
+            )
+        for ext in formats.MESH_EXTENSIONS:
+            path = f"/tmp/hero.final{ext}"
+            self.assertEqual(formats.product_import_dispatch(path), "mesh", path)
+            self.assertTrue(formats.mesh_operator_candidates(path), ext)
+
+    def test_dispatch_unknown_and_empty_paths(self) -> None:
+        self.assertEqual(formats.product_import_dispatch(""), "unknown")
+        self.assertEqual(formats.product_import_dispatch("file"), "unknown")
+        self.assertEqual(formats.product_import_dispatch("file.step.bak"), "unknown")
+        self.assertEqual(formats.product_import_dispatch("file.STEP.backup"), "unknown")
+        self.assertEqual(formats.extension_of(""), "")
+        glob = formats.import_filter_glob()
+        for ext in (".stp", ".igs", ".brep", ".brp", ".gltf"):
+            self.assertIn(f"*{ext}", glob)
+
 
 if __name__ == "__main__":
     unittest.main()

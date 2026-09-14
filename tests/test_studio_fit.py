@@ -119,6 +119,49 @@ class FitMathTests(unittest.TestCase):
         self.assertGreater(high.wall_height, low.wall_height)
         self.assertEqual(low.floor_size, high.floor_size)
 
+    def test_headroom_clamps_nan_and_out_of_range(self) -> None:
+        self.assertEqual(fit.clamp_headroom(float("nan")), fit.DEFAULT_HEADROOM)
+        self.assertEqual(fit.clamp_headroom(float("inf")), fit.DEFAULT_HEADROOM)
+        self.assertEqual(fit.clamp_headroom(0.0), fit.DEFAULT_HEADROOM)
+        self.assertEqual(fit.clamp_headroom(-2.0), fit.DEFAULT_HEADROOM)
+        self.assertEqual(fit.clamp_headroom(0.5), 1.0)
+        self.assertEqual(fit.clamp_headroom(1.0), 1.0)
+        self.assertEqual(fit.clamp_headroom(10.0), 4.0)
+        result = fit.fit_cyclorama(1.0, 1.0, 2.0, headroom=float("nan"))
+        self.assertEqual(result.headroom, fit.DEFAULT_HEADROOM)
+
+    def test_nan_extents_clamp_to_minimum(self) -> None:
+        result = fit.fit_cyclorama(float("nan"), float("inf"), -4.0)
+        self.assertEqual(result.width, fit.MIN_EXTENT)
+        self.assertEqual(result.depth, fit.MIN_EXTENT)
+        self.assertEqual(result.height, fit.MIN_EXTENT)
+        self.assertGreater(result.floor_size, 0.0)
+        self.assertGreater(result.bevel_width, 0.0)
+
+    def test_bevel_stays_inside_floor_and_wall(self) -> None:
+        result = fit.fit_cyclorama(4.0, 2.0, 3.0)
+        self.assertLessEqual(result.bevel_width, result.floor_size * fit.BEVEL_FROM_FLOOR)
+        self.assertLessEqual(result.bevel_width, result.wall_height * fit.BEVEL_FROM_WALL)
+        self.assertGreater(result.rig_size, 0.0)
+        self.assertGreaterEqual(
+            result.rig_size,
+            result.floor_size / fit.RIG_FROM_FLOOR,
+        )
+
+    def test_xy_outside_floor_uses_open_half_extent(self) -> None:
+        half = 5.0
+        floor = half * 2.0
+        self.assertFalse(fit.xy_outside_floor((half, 0.0, 1.0), floor))
+        self.assertFalse(fit.xy_outside_floor((0.0, half, 1.0), floor))
+        self.assertTrue(fit.xy_outside_floor((half + 0.01, 0.0, 1.0), floor))
+        self.assertTrue(fit.xy_outside_floor((0.0, -(half + 0.01), 0.0), floor))
+        self.assertFalse(fit.xy_outside_floor((0.0, 0.0, 99.0), floor))
+
+    def test_square_diagonal_beats_axis(self) -> None:
+        span = fit.horizontal_span(3.0, 3.0)
+        self.assertAlmostEqual(span, math.hypot(3.0, 3.0), places=6)
+        self.assertGreater(span, 3.0)
+
 
 class FitWiringTests(unittest.TestCase):
     def test_setup_uses_fit_helpers_and_rebuilds_backdrop(self) -> None:

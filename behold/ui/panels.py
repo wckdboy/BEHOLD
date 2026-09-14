@@ -16,7 +16,8 @@ turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
 (DEFAULT_CLOSED). Compact Studio HDRI (v0.13.0): load / strength / Z rotation
 / reflections-only + Reset world — not a new first-class panel. Compact Shot
 Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
-backdrop + output tokens.
+backdrop + output tokens. v0.15.0 draw-once cache: CAD status + scene flags
+once per N-panel pass.
 """
 
 from __future__ import annotations
@@ -27,7 +28,6 @@ import bpy
 from bpy.types import Context, Panel, UILayout
 
 from ..cad import detect as cad_detect
-from ..cad import material_assist
 from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
 from ..materials.presets import EMPTY_NO_MESH, empty_state
@@ -43,6 +43,7 @@ from .chrome import (
     draw_parked_heading,
     draw_section_icon,
     draw_update_notice,
+    scene_snap_from_context,
 )
 from .flow import (
     CHILD_PANEL_BL_ORDER,
@@ -56,14 +57,11 @@ from .messages import BATCH_NO_MESH, NO_MESH_SELECTED, NO_PRODUCT
 
 
 def _has_selected_mesh(context: Context) -> bool:
-    return any(obj.type == "MESH" for obj in context.selected_objects)
+    return scene_snap_from_context(context).has_selected_mesh
 
 
 def _has_imported_product(context: Context) -> bool:
-    return any(
-        obj.type == "MESH" and material_assist.is_behold_product(obj)
-        for obj in context.scene.objects
-    )
+    return scene_snap_from_context(context).has_imported_product
 
 
 def draw_cad_status_line(layout: UILayout, cad: dict) -> None:
@@ -99,7 +97,7 @@ def draw_import_first_ship(layout: UILayout, context: Context) -> None:
     del context
     card = layout.box()
     card.operator("behold.import_product", icon="IMPORT")
-    draw_cad_status_line(layout, cad_detect.cad_status())
+    draw_cad_status_line(layout, cad_detect.cad_status_for_draw())
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
@@ -173,10 +171,10 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
     """One row: seconds + Setup + Play. Empty-state if no camera or product."""
     settings = context.scene.behold
     cam = camera_lib.resolve_shoot_camera(context)
-    product = camera_lib.product_targets(context)
+    snap = scene_snap_from_context(context)
     message = turntable_lib.empty_state(
         has_camera=cam is not None,
-        has_product=bool(product),
+        has_product=snap.has_product,
     )
     if message == turntable_lib.EMPTY_NO_CAMERA:
         box = layout.box()
@@ -306,7 +304,7 @@ def draw_cameras_section(layout: UILayout, context: Context) -> None:
 def draw_import_parked(layout: UILayout, context: Context) -> None:
     """Auto-studio / Material Assist toggles and CAD backend (parked)."""
     settings = context.scene.behold
-    cad = cad_detect.cad_status()
+    cad = cad_detect.cad_status_for_draw()
 
     if not _has_selected_mesh(context) and not _has_imported_product(context):
         empty = layout.box()
@@ -419,7 +417,7 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     """EV / WB / tokens / bookmark / batch / turntable extras (parked)."""
     settings = context.scene.behold
     has_camera = context.scene.camera is not None or bool(settings.main_camera_name)
-    has_mesh = any(obj.type == "MESH" for obj in context.selected_objects)
+    has_mesh = _has_selected_mesh(context)
 
     if not has_camera:
         box = layout.box()

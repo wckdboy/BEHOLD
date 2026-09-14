@@ -7,6 +7,7 @@ from bpy.types import Context, UILayout
 
 from ..brand import PRODUCT_CREDIT, PRODUCT_NAME
 from ..cad import material_assist
+from ..draw_cache import SCENE_SNAP_KEY, draw_get
 from ..materials.presets import is_dressable_mesh_name
 from ..preferences import get_prefs
 from ..previews import draw_mark_label
@@ -26,9 +27,8 @@ from .flow import (
     flow_completed,
     is_look_material_name,
     next_step,
-    product_present,
-    studio_present,
 )
+from .scene_scan import ObjectDrawRow, SceneDrawSnap, snap_from_rows
 
 
 def draw_hero(layout: UILayout) -> None:
@@ -106,30 +106,49 @@ def draw_empty_card(
     return box
 
 
+def _object_draw_rows(context: Context) -> list[ObjectDrawRow]:
+    selected = {obj.name for obj in context.selected_objects}
+    rows: list[ObjectDrawRow] = []
+    for obj in context.scene.objects:
+        ob_type = obj.type
+        is_mesh = ob_type == "MESH"
+        rows.append(
+            ObjectDrawRow(
+                name=obj.name,
+                ob_type=ob_type,
+                tagged_product=is_mesh and material_assist.is_behold_product(obj),
+                has_look=(
+                    is_mesh
+                    and is_dressable_mesh_name(obj.name)
+                    and _mesh_has_look(obj)
+                ),
+                selected=obj.name in selected,
+                is_behold_light=ob_type == "LIGHT" and light_lib.is_behold_light(obj),
+                is_behold_camera=ob_type == "CAMERA" and camera_lib.is_behold_camera(obj),
+            )
+        )
+    return rows
+
+
+def scene_snap_from_context(context: Context) -> SceneDrawSnap:
+    """Product / studio / look / camera flags from one ``scene.objects`` walk."""
+
+    def load() -> SceneDrawSnap:
+        return snap_from_rows(
+            _object_draw_rows(context),
+            has_scene_camera=context.scene.camera is not None,
+        )
+
+    return draw_get(SCENE_SNAP_KEY, load)
+
+
 def flow_state_from_context(context: Context) -> dict[FlowStepId, bool]:
-    meshes = [obj.name for obj in context.scene.objects if obj.type == "MESH"]
-    tagged = any(
-        obj.type == "MESH" and material_assist.is_behold_product(obj)
-        for obj in context.scene.objects
-    )
-    has_product = product_present(mesh_names=meshes, tagged_product=tagged)
-    has_studio = studio_present(
-        mesh_names=meshes,
-        has_behold_light=bool(light_lib.iter_behold_lights(context)),
-    )
-    has_look = any(
-        _mesh_has_look(obj)
-        for obj in context.scene.objects
-        if obj.type == "MESH" and is_dressable_mesh_name(obj.name)
-    )
-    has_camera = bool(camera_lib.iter_behold_cameras(context)) or (
-        context.scene.camera is not None
-    )
+    snap = scene_snap_from_context(context)
     return flow_completed(
-        has_product=has_product,
-        has_studio=has_studio,
-        has_look=has_look,
-        has_camera=has_camera,
+        has_product=snap.has_product,
+        has_studio=snap.has_studio,
+        has_look=snap.has_look,
+        has_camera=snap.has_camera,
     )
 
 

@@ -158,7 +158,8 @@ class StepperWiringTests(unittest.TestCase):
     def test_detect_reexports_constants(self) -> None:
         source = (ROOT / "behold" / "cad" / "detect.py").read_text(encoding="utf-8")
         self.assertIn("STEPPER_INSTALL_URL", source)
-        self.assertIn("ensure_stepper_enabled", source)
+        self.assertIn("cad_status_for_draw", source)
+        self.assertIn("invalidate_cad_status_cache", source)
         self.assertIn("installed_addon_module_names", source)
         self.assertIn("bl_ext", source)
 
