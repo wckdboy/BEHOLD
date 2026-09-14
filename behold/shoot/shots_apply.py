@@ -98,12 +98,9 @@ def apply_shot_to_scene(
         return {"ok": False, "message": message}
 
     payload = shots_lib.snapshot_from_mapping(item)
-    result = shots_lib.apply_shot_to_mapping(payload, _settings(context))
-    camera_warning = _restore_camera(context, payload)
-    world_warning = _restore_world(context, payload)
-    _restore_backdrop_tone(context)
+    result = apply_payload_to_scene(context, payload)
     _settings(context).active_shot_index = index
-    warning = camera_warning or world_warning
+    warning = str(result.get("warning") or "")
     return {
         "ok": True,
         "name": payload["name"] or item.name,
@@ -112,6 +109,23 @@ def apply_shot_to_scene(
         "written": result["written"],
         "warning": warning,
         "message": warning or shots_lib.shot_applied_message(payload["name"] or item.name),
+    }
+
+
+def apply_payload_to_scene(context: Context, payload: dict[str, Any]) -> dict[str, Any]:
+    """Write a shot payload onto the scene. Does not touch the product mesh."""
+    result = shots_lib.apply_shot_to_mapping(payload, _settings(context))
+    data = result["payload"]
+    camera_warning = _restore_camera(context, data)
+    world_warning = _restore_world(context, data)
+    _restore_backdrop_tone(context)
+    warning = camera_warning or world_warning
+    return {
+        "ok": True,
+        "payload": data,
+        "written": result["written"],
+        "warning": warning,
+        "name": data.get("name") or "",
     }
 
 

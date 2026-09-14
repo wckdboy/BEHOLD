@@ -81,6 +81,8 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(messages.report_type(messages.NO_BAKE_PATH), "WARNING")
         self.assertEqual(messages.report_type(messages.NO_LIGHTS_TO_BAKE), "WARNING")
         self.assertEqual(messages.report_type(messages.TURNTABLE_NO_SETUP), "WARNING")
+        self.assertEqual(messages.report_type(messages.BATCH_NO_MESH), "WARNING")
+        self.assertEqual(messages.report_type(messages.BATCH_NOTHING), "WARNING")
         self.assertEqual(messages.report_type(messages.UPDATE_CHECK_OFFLINE), "WARNING")
         self.assertEqual(messages.report_set(messages.NO_MESH_SELECTED), {"WARNING"})
         self.assertEqual(
@@ -139,6 +141,8 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.add_shot", shoot)
         self.assertIn("behold.apply_shot", shoot)
         self.assertIn("behold.apply_exposure", shoot)
+        self.assertIn("behold.batch_angles", shoot)
+        self.assertIn("run_batch_export", shoot)
         apply_src = _read("behold/shoot/exposure_apply.py")
         self.assertIn("on_exposure_update", apply_src)
         self.assertIn("LIGHT_DRAW_NEEDS_VIEWPORT", lights)

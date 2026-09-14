@@ -10,10 +10,11 @@ Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
 backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
 shape presets (Apply to active). Cameras is the v0.5.0 product-camera kit.
-Shoot carries a compact Turntable row (v0.6.0) and compact Shots (v0.14.0).
+Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
+compact Look (v0.17.0), and compact Batch export (v0.19.0).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
-Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch, and
-turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
+Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, tokens / bookmark,
+and turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
 (DEFAULT_CLOSED). Compact Studio HDRI (v0.13.0): load / strength / Z rotation
 / reflections-only + Reset world — not a new first-class panel. Compact Shot
 Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
@@ -21,7 +22,9 @@ backdrop + output tokens. v0.15.0 draw-once cache: CAD status + scene flags
 once per N-panel pass. Compact Look on Shoot (v0.17.0): EV, Kelvin white
 balance, and AgX-safe False Color — wired to Color Management, not only
 Advanced. Compact Bake HDRI on Studio (v0.18.0): 1K/2K equirectangular
-EXR/HDR of the light rig, optional world, optional apply as world.
+EXR/HDR of the light rig, optional world, optional apply as world. Compact
+Batch export on Shoot (v0.19.0): front / ¾ / top plus optional saved shots;
+path tokens stay in the output folder template.
 """
 
 from __future__ import annotations
@@ -37,6 +40,7 @@ from ..materials import blenderkit_bridge, local_rack
 from ..materials.presets import EMPTY_NO_MESH, empty_state
 from ..previews import mark_icon_kwargs
 from ..product_import import formats
+from ..shoot.batch import TOKEN_HINT as BATCH_TOKEN_HINT
 from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
@@ -145,7 +149,7 @@ def draw_studio_bake(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
-    """Draft / Final, Still, Render, compact Look, Shots list, Turntable row."""
+    """Draft / Final, Still, Render, Look, Shots, Batch export, Turntable."""
     settings = context.scene.behold
     card = layout.box()
     row = card.row(align=True)
@@ -158,6 +162,8 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     draw_look_compact(layout, context)
     layout.separator()
     draw_shots_compact(layout, context)
+    layout.separator()
+    draw_batch_compact(layout, context)
     layout.separator()
     draw_turntable_compact(layout, context)
 
@@ -197,6 +203,18 @@ def draw_shots_compact(layout: UILayout, context: Context) -> None:
         remove = row.operator("behold.remove_shot", text="", icon="X")
         remove.shot_index = index
     card.operator("behold.add_shot", text="Add", icon="ADD")
+
+
+def draw_batch_compact(layout: UILayout, context: Context) -> None:
+    """One-click catalog stills: standard angles and/or saved shots."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Batch export", icon="CAMERA_DATA")
+    row = card.row(align=True)
+    row.prop(settings, "batch_include_angles", text="Front / ¾ / Top")
+    row.prop(settings, "batch_include_shots", text="Saved shots")
+    card.label(text=BATCH_TOKEN_HINT)
+    card.operator("behold.batch_angles", text="Batch export", icon="RENDER_STILL")
 
 
 def draw_turntable_compact(layout: UILayout, context: Context) -> None:
@@ -455,10 +473,11 @@ def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_parked(layout: UILayout, context: Context) -> None:
-    """Tokens / bookmark / batch / turntable extras (Look lives on Shoot)."""
+    """Tokens / bookmark / batch duplicate / turntable extras (Look lives on Shoot)."""
     settings = context.scene.behold
     has_camera = context.scene.camera is not None or bool(settings.main_camera_name)
-    has_mesh = _has_selected_mesh(context)
+    snap = scene_snap_from_context(context)
+    has_product = snap.has_product or snap.has_selected_mesh
 
     if not has_camera:
         box = layout.box()
@@ -491,15 +510,20 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     col = layout.column(align=True)
     col.label(text="Output")
     col.prop(settings, "output_directory", text="")
-    col.label(text="Tokens: {angle} {camera} {quality}")
+    col.label(text=BATCH_TOKEN_HINT)
 
     layout.separator()
-    if not has_mesh:
+    col = layout.column(align=True)
+    col.label(text="Batch export")
+    row = col.row(align=True)
+    row.prop(settings, "batch_include_angles", text="Front / ¾ / Top")
+    row.prop(settings, "batch_include_shots", text="Saved shots")
+    if not has_product:
         box = layout.box()
         box.label(text=BATCH_NO_MESH, icon="INFO")
         if not _has_imported_product(context):
             box.operator("behold.import_product", icon="IMPORT")
-    layout.operator("behold.batch_angles", icon="CAMERA_DATA")
+    layout.operator("behold.batch_angles", text="Batch export", icon="CAMERA_DATA")
 
     layout.separator()
     col = layout.column(align=True)

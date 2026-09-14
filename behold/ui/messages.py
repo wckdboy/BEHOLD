@@ -27,6 +27,13 @@ from ..studio.bake import (
     baked_message,
     path_problem_message as bake_path_problem_message,
 )
+from ..shoot.batch import (
+    BATCH_NO_CAMERA,
+    BATCH_NO_MESH,
+    BATCH_NO_SHOTS,
+    BATCH_NOTHING,
+    BATCH_RENDER_FAILED,
+)
 from ..shoot.shots import (
     EMPTY_NO_SHOTS,
     EMPTY_NO_SHOTS_NEXT,
@@ -100,7 +107,7 @@ LIGHT_DRAW_LIGHT_MISSING = (
 NO_MAIN_CAMERA = (
     "No main camera bookmarked yet — Bookmark on Advanced → Shoot, or Add Camera"
 )
-BATCH_NO_MESH = "No mesh selected for batch — select the product or Import Product"
+# BATCH_NO_MESH / BATCH_NO_SHOTS / BATCH_NOTHING live in shoot.batch.
 
 UPDATE_CHECK_OFFLINE = (
     "Could not reach GitHub — Check your network, then Check for updates. Or Open release."
@@ -134,6 +141,9 @@ EMPTY_STATE_MESSAGES = frozenset(
         TURNTABLE_NO_SETUP,
         TURNTABLE_NOTHING_TO_CLEAR,
         BATCH_NO_MESH,
+        BATCH_NO_CAMERA,
+        BATCH_NO_SHOTS,
+        BATCH_NOTHING,
         UPDATE_CHECK_OFFLINE,
         UPDATE_CHECK_UNAVAILABLE,
         NO_SHOTS,
@@ -173,6 +183,7 @@ def report_type(message: str) -> str:
             "Unsupported bake format:",
             "Shot name “",
             "Shot camera “",
+            "Batch export ",
         )
     ):
         return WARNING

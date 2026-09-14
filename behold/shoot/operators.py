@@ -9,11 +9,9 @@ import tempfile
 import bpy
 from bpy.props import IntProperty, StringProperty
 from bpy.types import Context, Operator
-from mathutils import Vector
 
 from ..studio import cameras as camera_lib
 from ..ui.messages import (
-    BATCH_NO_MESH,
     FRAME_NO_PRODUCT,
     NO_CAMERA,
     NO_CAMERA_TO_REMOVE,
@@ -29,6 +27,7 @@ from ..ui.messages import (
     shot_renamed_message,
     shot_saved_message,
 )
+from . import batch as batch_lib
 from . import shots_apply
 from . import turntable as turntable_lib
 from . import turntable_rig
@@ -74,15 +73,19 @@ def resolve_output_dir(context: Context, *, angle: str = "") -> str:
     settings = context.scene.behold
     cam = context.scene.camera
     camera_name = cam.name if cam is not None else "camera"
-    template = settings.output_directory.strip() or "//behold_out/"
-    filled = (
-        template.replace("{angle}", angle or "still")
-        .replace("{camera}", camera_name)
-        .replace("{quality}", settings.render_quality.lower())
+    filled = batch_lib.fill_output_tokens(
+        settings.output_directory,
+        angle=angle,
+        camera=camera_name,
+        quality=settings.render_quality,
     )
     path = bpy.path.abspath(filled)
     if not path or path.startswith("//"):
-        path = os.path.join(tempfile_fallback(), "behold_out", angle or "still")
+        path = os.path.join(
+            tempfile_fallback(),
+            "behold_out",
+            angle or batch_lib.DEFAULT_ANGLE,
+        )
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -469,65 +472,28 @@ class BEHOLD_OT_render_turntable(Operator):
 
 class BEHOLD_OT_batch_angles(Operator):
     bl_idname = "behold.batch_angles"
-    bl_label = "Batch Product Angles"
-    bl_description = "Render front, three-quarter, and top stills around the selection"
+    bl_label = "Batch export"
+    bl_description = (
+        "Render front / ¾ / top stills and optional saved shots in one click"
+    )
     bl_options = {"REGISTER"}
 
     def execute(self, context: Context):
-        targets = [obj for obj in context.selected_objects if obj.type == "MESH"]
-        if not targets:
-            self.report(report_set(BATCH_NO_MESH), BATCH_NO_MESH)
+        # operators owns render helpers; batch_apply imports them lazily.
+        from .batch_apply import run_batch_export
+
+        def report(level: str, message: str) -> None:
+            self.report({level}, message)
+
+        result = run_batch_export(context, report=report)
+        message = str(result.get("message") or batch_lib.BATCH_RENDER_FAILED)
+        if not result.get("ok"):
+            self.report(report_set(message), message)
             return {"CANCELLED"}
-
-        cam = _ensure_camera(context)
-        if cam is None:
-            self.report(report_set(NO_CAMERA), NO_CAMERA)
-            return {"CANCELLED"}
-
-        corners = [
-            obj.matrix_world @ Vector(corner)
-            for obj in targets
-            for corner in obj.bound_box
-        ]
-        center = sum(corners, Vector()) / len(corners)
-        mins = Vector(
-            (min(c.x for c in corners), min(c.y for c in corners), min(c.z for c in corners))
-        )
-        maxs = Vector(
-            (max(c.x for c in corners), max(c.y for c in corners), max(c.z for c in corners))
-        )
-        extent = max(maxs.x - mins.x, maxs.y - mins.y, maxs.z - mins.z, 0.1)
-        distance = extent * 2.4
-
-        angles = (
-            ("front", Vector((0.0, -distance, extent * 0.35))),
-            ("three_quarter", Vector((distance * 0.75, -distance * 0.85, extent * 0.45))),
-            ("top", Vector((0.0, -distance * 0.15, distance))),
-        )
-
-        apply_exposure(context)
-        samples = apply_render_quality(context)
-        scene = context.scene
-        scene.render.image_settings.file_format = "PNG"
-
-        original = cam.matrix_world.copy()
-        rendered = 0
-        last_dir = ""
-        for name, offset in angles:
-            out_dir = resolve_output_dir(context, angle=name)
-            last_dir = out_dir
-            cam.location = center + offset
-            direction = center - cam.location
-            cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
-            scene.render.filepath = os.path.join(out_dir, f"{name}.png")
-            bpy.ops.render.render(write_still=True)
-            rendered += 1
-
-        cam.matrix_world = original
-        self.report(
-            {"INFO"},
-            f"Rendered {rendered} angles ({samples} samples) → {last_dir}",
-        )
+        if result.get("errors"):
+            self.report({"WARNING"}, message)
+            return {"FINISHED"}
+        self.report({"INFO"}, message)
         return {"FINISHED"}
 
 

@@ -6,6 +6,9 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.19.0 Catalog batch export** — one-click front / ¾ / top stills on Shoot,
+  plus optional Shot Manager shots, with `{angle}` `{camera}` `{quality}`
+  path tokens. Not a render-queue farm.
 - **0.18.0 Bake studio to HDRI** — render BEHOLD area lights (optional world) to
   a 1K/2K equirectangular HDR/EXR for reuse or Eevee. Optional apply as the
   scene world. Not gobos, IES, or a Light Wrangler viewport gizmo.

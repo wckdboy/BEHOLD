@@ -184,7 +184,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("Light Mixer", body)
         self.assertNotIn("batch_angles", body)
 
-    def test_shoot_first_ship_is_draft_final_look_shots_and_turntable(self) -> None:
+    def test_shoot_first_ship_is_draft_final_look_shots_batch_and_turntable(self) -> None:
         body = _func_source(self.source, self.tree, "draw_shoot_first_ship")
         self.assertIn('"DRAFT"', body)
         self.assertIn('"FINAL"', body)
@@ -192,8 +192,10 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn('text="Render"', body)
         self.assertIn("draw_look_compact", body)
         self.assertIn("draw_shots_compact", body)
+        self.assertIn("draw_batch_compact", body)
         self.assertIn("draw_turntable_compact", body)
-        self.assertNotIn("batch_angles", body)
+        self.assertLess(body.index("draw_shots_compact"), body.index("draw_batch_compact"))
+        self.assertLess(body.index("draw_batch_compact"), body.index("draw_turntable_compact"))
         self.assertNotIn("bookmark_camera", body)
         self.assertNotIn("output_directory", body)
         self.assertNotIn("frame_camera", body)
@@ -280,6 +282,8 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.16.0", text)
         self.assertIn("0.17.0", text)
         self.assertIn("0.18.0", text)
+        self.assertIn("0.19.0", text)
+        self.assertIn("Batch export", text)
         self.assertIn("Bake HDRI", text)
         self.assertIn("Shot Manager", text)
         self.assertIn("Softbox", text)
