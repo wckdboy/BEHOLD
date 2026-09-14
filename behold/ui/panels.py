@@ -18,7 +18,9 @@ turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
 / reflections-only + Reset world — not a new first-class panel. Compact Shot
 Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
 backdrop + output tokens. v0.15.0 draw-once cache: CAD status + scene flags
-once per N-panel pass.
+once per N-panel pass. Compact Look on Shoot (v0.17.0): EV, Kelvin white
+balance, and AgX-safe False Color — wired to Color Management, not only
+Advanced.
 """
 
 from __future__ import annotations
@@ -127,7 +129,7 @@ def draw_studio_hdri(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
-    """Draft / Final, Still, Render, compact Shots list, compact Turntable row."""
+    """Draft / Final, Still, Render, compact Look, Shots list, Turntable row."""
     settings = context.scene.behold
     card = layout.box()
     row = card.row(align=True)
@@ -137,9 +139,22 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     row.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     row.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
     layout.separator()
+    draw_look_compact(layout, context)
+    layout.separator()
     draw_shots_compact(layout, context)
     layout.separator()
     draw_turntable_compact(layout, context)
+
+
+def draw_look_compact(layout: UILayout, context: Context) -> None:
+    """EV, Kelvin white balance, False Color — live Color Management."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Look", icon="COLOR")
+    row = card.row(align=True)
+    row.prop(settings, "exposure_ev", text="EV")
+    row.prop(settings, "white_balance_kelvin", text="WB")
+    card.prop(settings, "false_color", text="False Color", toggle=True)
 
 
 def draw_shots_compact(layout: UILayout, context: Context) -> None:
@@ -424,21 +439,21 @@ def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_parked(layout: UILayout, context: Context) -> None:
-    """EV / WB / tokens / bookmark / batch / turntable extras (parked)."""
+    """Tokens / bookmark / batch / turntable extras (Look lives on Shoot)."""
     settings = context.scene.behold
     has_camera = context.scene.camera is not None or bool(settings.main_camera_name)
     has_mesh = _has_selected_mesh(context)
 
     if not has_camera:
         box = layout.box()
-        box.label(text=turntable_lib.EMPTY_NO_CAMERA, icon="ERROR")
+        box.label(text=turntable_lib.EMPTY_NO_CAMERA, icon="INFO")
         box.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
 
     col = layout.column(align=True)
     col.label(text="Look")
     col.prop(settings, "exposure_ev")
     col.prop(settings, "white_balance_kelvin")
-    col.prop(settings, "false_color")
+    col.prop(settings, "false_color", toggle=True)
     col.operator("behold.apply_exposure", icon="COLOR")
 
     layout.separator()

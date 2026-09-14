@@ -11,6 +11,13 @@ from __future__ import annotations
 import os
 
 from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT
+from ..shoot.exposure import (
+    EXPOSURE_APPLIED,
+    FALSE_COLOR_OFF,
+    FALSE_COLOR_ON,
+    FALSE_COLOR_UNAVAILABLE,
+    NO_VIEW_SETTINGS,
+)
 from ..shoot.shots import (
     EMPTY_NO_SHOTS,
     EMPTY_NO_SHOTS_NEXT,
@@ -122,6 +129,8 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_SHOT_TO_REMOVE,
         NO_SHOT_TO_RENAME,
         SHOT_NAME_EMPTY,
+        FALSE_COLOR_UNAVAILABLE,
+        NO_VIEW_SETTINGS,
     }
 )
 

@@ -6,6 +6,9 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.17.0 Physical exposure polish** — EV, Kelvin white balance, and
+  AgX-safe False Color on Shoot (Photographer-class lite). Live Color
+  Management apply. Not a full metering suite.
 - **0.16.0 Light shaping lite** — Softbox / Strip / Octa / Hard / Rim on the
   active BEHOLD area light (Cycles `shape` / `size` / `size_y` / `energy` /
   `spread` plus a procedural emission falloff). Not gobos, IES, or barn-door
@@ -29,13 +32,10 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Next (honest order)
 
-1. **Physical exposure / false color polish** — EV and false color already live
-   on Advanced. Make them trustworthy for hero chrome (metering, AgX-safe
-   false color) so artists stop guessing.
-2. **Bake-to-HDRI** — studio + area lights → an environment the artist can
+1. **Bake-to-HDRI** — studio + area lights → an environment the artist can
    reuse or hand off. After Shot Manager, not before: you bake a *look*, not a
    random rig.
-3. **Gobos / IES** — window lights, practicals, photometric profiles. Last
+2. **Gobos / IES** — window lights, practicals, photometric profiles. Last
    because they need a library story and are easy to ship as a junk drawer.
 
 ## Explicitly later / maybe never
