@@ -56,6 +56,11 @@ class ClassifyProductFileTests(unittest.TestCase):
     def test_cad_has_no_mesh_operators(self) -> None:
         self.assertEqual(formats.mesh_operator_candidates("a.step"), ())
 
+    def test_product_import_dispatch_matches_classify(self) -> None:
+        self.assertEqual(formats.product_import_dispatch("part.step"), "cad")
+        self.assertEqual(formats.product_import_dispatch("part.obj"), "mesh")
+        self.assertEqual(formats.product_import_dispatch("notes.pdf"), "unknown")
+
 
 if __name__ == "__main__":
     unittest.main()

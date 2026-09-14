@@ -56,6 +56,15 @@ def classify_product_file(filepath: str) -> Kind:
     return "unknown"
 
 
+def product_import_dispatch(filepath: str) -> Kind:
+    """Import Product routing: ``cad`` (STEPper/OCP), ``mesh`` (native), or ``unknown``.
+
+    ``BEHOLD_OT_import_product`` and the STEP vertical smoke script both call
+    this before choosing ``import_cad_file`` vs ``import_mesh_file``.
+    """
+    return classify_product_file(filepath)
+
+
 def mesh_operator_candidates(filepath: str) -> tuple[str, ...]:
     return MESH_OPERATORS.get(extension_of(filepath), ())
 
