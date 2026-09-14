@@ -12,9 +12,9 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.24.0)
+## What works (v0.25.0)
 
-**0.24.0 is ground contact polish** on Studio: **Catcher** next to **Build**. Cyclorama gets a soft contact shadow; Solid / HDRI get a Cycles shadow-catcher plane with an EEVEE-friendly fallback. **0.23.0** is EEVEE quick look on Shoot (Draft = EEVEE / Final = Cycles). Product DoF / focus pick is **0.22.0**. Light & shadow linking lite is **0.21.0**; compositor look pack is **0.20.0**; catalog batch export is **0.19.0**; bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
+**0.25.0 is catalog resolution presets** on Shoot: compact **Size** with **Square 1:1**, **Portrait 4:5**, **Landscape 16:9** plus **2048² / 1080p / 4K**. Size is the long edge; output writes `scene.render.resolution_x` / `resolution_y` at 100% with square pixels (`pixel_aspect` 1:1). **0.24.0** is ground contact polish on Studio (**Catcher** next to **Build**). **0.23.0** is EEVEE quick look on Shoot (Draft = EEVEE / Final = Cycles). Product DoF / focus pick is **0.22.0**. Light & shadow linking lite is **0.21.0**; compositor look pack is **0.20.0**; catalog batch export is **0.19.0**; bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
@@ -23,7 +23,7 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 3. **Lights** — inventory + Light Draw + **Shape** presets (Softbox / Strip / Octa / Hard / Rim) + **Linking** (Link Selected / Unlink / Solo product)
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras + compact **DoF** (on/off, f-stop, Focus on product / Focus on selected)
-6. **Shoot** — Draft / Final (**Draft = EEVEE · Final = Cycles**), Still, Render, compact **Look** (EV / Kelvin WB / False Color, plus Clean / Catalog / Dramatic compositor presets), compact **Shots** (Add / Apply / rename / Delete), compact **Batch export** (Front / ¾ / Top and optional Saved shots), compact **Turntable** (seconds + Setup + Play)
+6. **Shoot** — Draft / Final (**Draft = EEVEE · Final = Cycles**), Still, Render, compact **Size** (Square 1:1 / Portrait 4:5 / Landscape 16:9 + 2048² / 1080p / 4K), compact **Look** (EV / Kelvin WB / False Color, plus Clean / Catalog / Dramatic compositor presets), compact **Shots** (Add / Apply / rename / Delete), compact **Batch export** (Front / ¾ / Top and optional Saved shots), compact **Turntable** (seconds + Setup + Play)
 
 Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath. Operator failures use the same copy: a short sentence plus what to do next.
 
@@ -53,6 +53,13 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Final** (and Advanced **Product** / **Hero**) stay **Cycles** — 256 / 128 / 512 samples with denoising. Client stills do not silently stay on EEVEE
 - Caption on the card: **Draft = EEVEE · Final = Cycles**. Live RNA update; **Apply Quality** stays in Advanced
 - If EEVEE Next is missing, Draft falls back to Cycles (32 samples) and reports a sentence plus the next step (`NO_EEVEE`). Missing Cycles on Final reports `NO_CYCLES`
+
+**Size (0.25.0)** — one-click catalog output sizes on Shoot, not a second Output Properties panel:
+
+- **Square 1:1**, **Portrait 4:5**, **Landscape 16:9** compose with **2048²**, **1080p**, and **4K**. Size is the long edge (2048 / 1920 / 3840)
+- Writes `scene.render.resolution_x` / `resolution_y`, `resolution_percentage` 100, and square `pixel_aspect` (1:1) so leftover anamorphic settings do not skew the still
+- Default is Square 1:1 at 2048² (2048 × 2048). Landscape + 1080p is 1920 × 1080; Landscape + 4K is 3840 × 2160. A readout shows the computed pixels
+- Live RNA update; **Apply Size** stays in Advanced. Unknown aspect / size reports a sentence plus the next step. Draft / Final path unchanged. Not gobos / IES / logo
 
 **Catcher (0.24.0)** — believable ground contact after Build Studio, not a second engine panel:
 
@@ -107,7 +114,7 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Assist** applies a matching local look from the filename / STEP hint — **no BlenderKit account required**
 - If BlenderKit is signed in, Assist still applies the local look and also runs search
 
-Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, **Apply Catcher**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render, Apply DoF) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color / compositor looks and Batch export also remain under Advanced → Shoot for people who look there.
+Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, **Apply Catcher**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render, Apply DoF, Apply Quality, Apply Size) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color / compositor looks, Size, and Batch export also remain under Advanced → Shoot for people who look there.
 
 Backends:
 
@@ -119,7 +126,7 @@ Backends:
 - **Turntable** — `BEHOLD_TurntablePivot` orbits the active camera; Clear drops the pivot only; Bake writes camera loc/rot then removes the pivot
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint) applied from the N-panel; Material Assist finishes with that look
 - **BlenderKit** — optional soft-dependency bridge (login / search / apply in Advanced). Local looks work without an account
-- **Shoot** — compact **Look** (EV / Kelvin white balance / False Color on Color Management; Clean / Catalog / Dramatic compositor presets), **Draft = EEVEE · Final = Cycles** (Product / Hero stay Cycles), output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, **Batch export** (front / ¾ / top and optional saved shots), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
+- **Shoot** — compact **Size** (Square 1:1 / Portrait 4:5 / Landscape 16:9 + 2048² / 1080p / 4K on `scene.render` resolution), compact **Look** (EV / Kelvin white balance / False Color on Color Management; Clean / Catalog / Dramatic compositor presets), **Draft = EEVEE · Final = Cycles** (Product / Hero stay Cycles), output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, **Batch export** (front / ¾ / top and optional saved shots), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
 - **CAD** — first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) for STEP/IGES/BREP on 5.1+/5.2 LTS (`import_scene.occ_import_step`). OCP fallback only if STEPper is missing and OpenCASCADE bindings actually import; otherwise Import fails with the [STEPper Releases](https://github.com/Peak-Design/STEPper_NEXT/releases) URL. Mesh formats stay native. Shared `product_import_dispatch` / `run_product_import`. CI-safe unit-cube STEP fixture; optional Blender smoke (`make smoke-step`) for Import → Build → Draft still.
 
 ## Coming (not this release)
@@ -300,19 +307,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.24.0.zip`).
-2. **Versioned release** — push a tag `v0.24.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.25.0.zip`).
+2. **Versioned release** — push a tag `v0.25.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.24.0
-git push origin v0.24.0
+git tag v0.25.0
+git push origin v0.25.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.24.0.zip
+# → dist/behold-0.25.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

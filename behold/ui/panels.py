@@ -14,7 +14,9 @@ shape presets (Apply to active) and v0.21.0 light / shadow linking lite
 kit plus v0.22.0 product DoF (on/off, f-stop, Focus on product / Focus on
 selected). Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
 compact Look (v0.17.0 / v0.20.0 compositor presets), compact Batch export
-(v0.19.0), and v0.23.0 EEVEE Draft / Cycles Final (quality-linked engine).
+(v0.19.0), compact Size (v0.25.0 catalog resolution presets: Square 1:1 /
+Portrait 4:5 / Landscape 16:9 + 2048² / 1080p / 4K), and v0.23.0
+EEVEE Draft / Cycles Final (quality-linked engine).
 Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, tokens / bookmark,
 and turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
@@ -50,6 +52,7 @@ from ..previews import mark_icon_kwargs
 from ..product_import import formats
 from ..shoot.batch import TOKEN_HINT as BATCH_TOKEN_HINT
 from ..shoot.quality import SHOOT_ENGINE_HINT
+from ..shoot import resolution as resolution_lib
 from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
@@ -160,7 +163,7 @@ def draw_studio_bake(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
-    """Draft / Final, Still, Render, Look, Shots, Batch export, Turntable."""
+    """Draft / Final, Size, Still, Render, Look, Shots, Batch export, Turntable."""
     settings = context.scene.behold
     card = layout.box()
     row = card.row(align=True)
@@ -171,6 +174,8 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     row.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     row.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
     layout.separator()
+    draw_resolution_compact(layout, context)
+    layout.separator()
     draw_look_compact(layout, context)
     layout.separator()
     draw_shots_compact(layout, context)
@@ -178,6 +183,23 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     draw_batch_compact(layout, context)
     layout.separator()
     draw_turntable_compact(layout, context)
+
+
+def draw_resolution_compact(layout: UILayout, context: Context) -> None:
+    """Aspect + pixel-size presets writing scene.render resolution."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Size", icon="OUTPUT")
+    row = card.row(align=True)
+    row.prop(settings, "resolution_aspect", text="", expand=True)
+    row = card.row(align=True)
+    row.prop(settings, "resolution_size", text="", expand=True)
+    card.label(
+        text=resolution_lib.summary_label(
+            settings.resolution_aspect,
+            settings.resolution_size,
+        )
+    )
 
 
 def draw_look_compact(layout: UILayout, context: Context) -> None:
@@ -539,6 +561,19 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     col.label(text=SHOOT_ENGINE_HINT)
     col.prop(settings, "render_quality", text="")
     col.operator("behold.apply_quality", icon="SETTINGS")
+
+    layout.separator()
+    col = layout.column(align=True)
+    col.label(text="Size")
+    col.prop(settings, "resolution_aspect", text="", expand=True)
+    col.prop(settings, "resolution_size", text="", expand=True)
+    col.label(
+        text=resolution_lib.summary_label(
+            settings.resolution_aspect,
+            settings.resolution_size,
+        )
+    )
+    col.operator("behold.apply_resolution", icon="OUTPUT")
 
     layout.separator()
     col = layout.column(align=True)

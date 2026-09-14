@@ -21,6 +21,7 @@ from .tones import backdrop_tone_rgba, kelvin_to_rgb
 from .world_apply import reapply_hdri_if_loaded, setup_solid_world
 from ..materials.presets import EMPTY_NO_MESH
 from ..shoot.quality_apply import apply_render_quality
+from ..shoot.resolution_apply import apply_resolution
 
 PREFIX = light_lib.PREFIX
 BUILD_NEEDS_MESH = EMPTY_NO_MESH
@@ -229,6 +230,7 @@ def build_studio(context: Context) -> str:
     _activate_key_light(context)
 
     apply_render_quality(context)
+    apply_resolution(context)
     try:
         context.scene.view_settings.view_transform = "AgX"
     except TypeError:
