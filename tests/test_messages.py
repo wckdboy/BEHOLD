@@ -98,6 +98,9 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(flow.EMPTY_CAMERAS.hint, messages.NO_CAMERAS_NEXT)
         self.assertEqual(flow.EMPTY_MATERIALS.title, messages.NO_MESH_SELECTED)
         self.assertEqual(flow.EMPTY_MATERIALS.hint, messages.NO_MESH_HINT)
+        self.assertEqual(flow.EMPTY_SHOTS.title, messages.NO_SHOTS_TITLE)
+        self.assertEqual(flow.EMPTY_SHOTS.hint, messages.NO_SHOTS_NEXT)
+        self.assertEqual(flow.EMPTY_SHOTS.operator, "behold.add_shot")
 
 
 class OperatorWiringTests(unittest.TestCase):
@@ -119,6 +122,8 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("NO_CAMERA", shoot)
         self.assertIn("FRAME_NO_PRODUCT", shoot)
         self.assertIn("TURNTABLE_NO_SETUP", shoot)
+        self.assertIn("behold.add_shot", shoot)
+        self.assertIn("behold.apply_shot", shoot)
         self.assertIn("LIGHT_DRAW_NEEDS_VIEWPORT", lights)
         self.assertIn("LIGHT_DRAW_NO_LIGHTS", lights)
         self.assertIn('self.report({"INFO"}, LIGHT_DRAW_NO_LIGHTS)', lights)

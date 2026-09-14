@@ -7,7 +7,7 @@ import os
 import tempfile
 
 import bpy
-from bpy.props import StringProperty
+from bpy.props import IntProperty, StringProperty
 from bpy.types import Context, Operator
 from mathutils import Vector
 
@@ -24,7 +24,12 @@ from ..ui.messages import (
     bookmark_camera_missing,
     camera_not_found,
     report_set,
+    shot_applied_message,
+    shot_removed_message,
+    shot_renamed_message,
+    shot_saved_message,
 )
+from . import shots_apply
 from . import turntable as turntable_lib
 from . import turntable_rig
 
@@ -283,6 +288,100 @@ class BEHOLD_OT_render_still(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_add_shot(Operator):
+    bl_idname = "behold.add_shot"
+    bl_label = "Add Shot"
+    bl_description = "Save the current camera, quality, HDRI, backdrop, and output as a named shot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = shots_apply.add_shot_from_scene(context)
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report({"INFO"}, shot_saved_message(str(result["name"])))
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_shot(Operator):
+    bl_idname = "behold.apply_shot"
+    bl_label = "Apply Shot"
+    bl_description = "Restore this shot's camera, quality, HDRI, and backdrop without changing the product mesh"
+    bl_options = {"REGISTER", "UNDO"}
+
+    shot_name: StringProperty(name="Shot", default="")
+    shot_index: IntProperty(name="Index", default=-1, min=-1)
+
+    def execute(self, context: Context):
+        result = shots_apply.apply_shot_to_scene(
+            context,
+            shot_name=self.shot_name,
+            shot_index=self.shot_index,
+        )
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        warning = str(result.get("warning") or "")
+        if warning:
+            self.report(report_set(warning), warning)
+            return {"FINISHED"}
+        self.report({"INFO"}, shot_applied_message(str(result["name"])))
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_remove_shot(Operator):
+    bl_idname = "behold.remove_shot"
+    bl_label = "Remove Shot"
+    bl_description = "Delete a saved shot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    shot_name: StringProperty(name="Shot", default="")
+    shot_index: IntProperty(name="Index", default=-1, min=-1)
+
+    def execute(self, context: Context):
+        result = shots_apply.remove_shot_from_scene(
+            context,
+            shot_name=self.shot_name,
+            shot_index=self.shot_index,
+        )
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report({"INFO"}, shot_removed_message(str(result["name"])))
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_rename_shot(Operator):
+    bl_idname = "behold.rename_shot"
+    bl_label = "Rename Shot"
+    bl_description = "Rename a saved shot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    shot_name: StringProperty(name="Shot", default="")
+    shot_index: IntProperty(name="Index", default=-1, min=-1)
+    new_name: StringProperty(name="New Name", default="", maxlen=128)
+
+    def execute(self, context: Context):
+        result = shots_apply.rename_shot_on_scene(
+            context,
+            shot_name=self.shot_name,
+            shot_index=self.shot_index,
+            new_name=self.new_name,
+        )
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report(
+            {"INFO"},
+            shot_renamed_message(str(result["old_name"]), str(result["name"])),
+        )
+        return {"FINISHED"}
+
+
 class BEHOLD_OT_setup_turntable(Operator):
     bl_idname = "behold.setup_turntable"
     bl_label = "Setup Turntable"
@@ -457,6 +556,10 @@ CLASSES = (
     BEHOLD_OT_set_active_camera,
     BEHOLD_OT_frame_camera,
     BEHOLD_OT_clear_cameras,
+    BEHOLD_OT_add_shot,
+    BEHOLD_OT_apply_shot,
+    BEHOLD_OT_remove_shot,
+    BEHOLD_OT_rename_shot,
     BEHOLD_OT_render_still,
     BEHOLD_OT_setup_turntable,
     BEHOLD_OT_play_turntable,

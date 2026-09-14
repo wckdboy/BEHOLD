@@ -22,6 +22,8 @@ from .messages import (
     NO_CAMERAS_TITLE,
     NO_LIGHTS_NEXT,
     NO_LIGHTS_TITLE,
+    NO_SHOTS_NEXT,
+    NO_SHOTS_TITLE,
 )
 
 # Re-exported so chrome tests can load one bpy-free module.
@@ -124,6 +126,14 @@ EMPTY_MATERIALS = EmptyState(
     operator="behold.import_product",
     operator_text="Import Product",
     icon="IMPORT",
+)
+
+EMPTY_SHOTS = EmptyState(
+    title=NO_SHOTS_TITLE,
+    hint=NO_SHOTS_NEXT,
+    operator="behold.add_shot",
+    operator_text="Add",
+    icon="ADD",
 )
 
 

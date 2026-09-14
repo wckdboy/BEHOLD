@@ -11,6 +11,20 @@ from __future__ import annotations
 import os
 
 from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT
+from ..shoot.shots import (
+    EMPTY_NO_SHOTS,
+    EMPTY_NO_SHOTS_NEXT,
+    EMPTY_NO_SHOTS_TITLE,
+    NO_SHOT_TO_APPLY,
+    NO_SHOT_TO_REMOVE,
+    NO_SHOT_TO_RENAME,
+    SHOT_NAME_EMPTY,
+    shot_applied_message,
+    shot_name_taken,
+    shot_removed_message,
+    shot_renamed_message,
+    shot_saved_message,
+)
 from ..shoot.turntable import (
     EMPTY_NO_CAMERA,
     EMPTY_NO_PRODUCT,
@@ -43,6 +57,10 @@ NO_CAMERAS_TITLE = "No BEHOLD cameras yet"
 NO_CAMERAS_NEXT = "Build Studio or Add Camera"
 NO_CAMERAS = f"{NO_CAMERAS_TITLE} — {NO_CAMERAS_NEXT}"
 NO_CAMERAS_HINT = "Build Studio to add a framed product camera"
+
+NO_SHOTS_TITLE = EMPTY_NO_SHOTS_TITLE
+NO_SHOTS_NEXT = EMPTY_NO_SHOTS_NEXT
+NO_SHOTS = EMPTY_NO_SHOTS
 
 FRAME_NO_PRODUCT = "No product to frame — select the mesh or Import Product"
 NO_CAMERA_TO_REMOVE = "No BEHOLD camera to remove — Build Studio or Add Camera"
@@ -95,6 +113,11 @@ EMPTY_STATE_MESSAGES = frozenset(
         BATCH_NO_MESH,
         UPDATE_CHECK_OFFLINE,
         UPDATE_CHECK_UNAVAILABLE,
+        NO_SHOTS,
+        NO_SHOT_TO_APPLY,
+        NO_SHOT_TO_REMOVE,
+        NO_SHOT_TO_RENAME,
+        SHOT_NAME_EMPTY,
     }
 )
 
@@ -122,6 +145,8 @@ def report_type(message: str) -> str:
             "Unsupported file type:",
             "HDRI file not found:",
             "Unsupported HDRI:",
+            "Shot name “",
+            "Shot camera “",
         )
     ):
         return WARNING
@@ -143,6 +168,18 @@ def light_not_found(name: str) -> str:
 
 def camera_not_found(name: str) -> str:
     return named_missing("Camera", name, next_step=NO_CAMERAS_NEXT)
+
+
+def shot_not_found(name: str) -> str:
+    return named_missing("Shot", name, next_step=NO_SHOTS_NEXT)
+
+
+def shot_camera_missing(name: str) -> str:
+    return named_missing(
+        "Shot camera",
+        name,
+        next_step="Add Camera or pick another shot",
+    )
 
 
 def bookmark_camera_missing(name: str) -> str:
