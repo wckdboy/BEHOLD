@@ -6,7 +6,7 @@ from __future__ import annotations
 bl_info = {
     "name": "BEHOLD",
     "author": "AMIRITE.studio",
-    "version": (0, 5, 0),
+    "version": (0, 6, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD",
     "description": "Product studio lighting and rendering — BEHOLD by AMIRITE.studio",

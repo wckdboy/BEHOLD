@@ -86,12 +86,30 @@ class BEHOLDSceneSettings(PropertyGroup):
         min=-6.0,
         max=6.0,
     )
+    turntable_seconds: FloatProperty(
+        name="Seconds",
+        description="Turntable duration. Default 6 s (144 frames at 24 fps) for a 360° loop",
+        default=6.0,
+        min=1.0,
+        max=60.0,
+        step=10,
+        precision=1,
+    )
+    turntable_interpolation: EnumProperty(
+        name="Spin",
+        description="Linear is a constant loop-friendly spin. Ease is a one-shot in/out",
+        items=(
+            ("LINEAR", "Linear", "Constant 360° spin, loop-friendly"),
+            ("EASE", "Ease", "Ease in/out — one-shot spin, not a loop"),
+        ),
+        default="LINEAR",
+    )
     turntable_frames: IntProperty(
         name="Turntable Frames",
-        description="Frame count for a full 360° turntable",
-        default=120,
+        description="Frame count written at Setup from seconds × scene fps (6 s × 24 fps = 144)",
+        default=144,
         min=24,
-        max=360,
+        max=3600,
     )
     blenderkit_query: StringProperty(
         name="BlenderKit Search",

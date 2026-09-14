@@ -3,14 +3,17 @@
 
 from __future__ import annotations
 
-import math
 import os
+import tempfile
 
 import bpy
 from bpy.props import StringProperty
 from bpy.types import Context, Operator
+from mathutils import Vector
 
 from ..studio import cameras as camera_lib
+from . import turntable as turntable_lib
+from . import turntable_rig
 
 
 QUALITY_SAMPLES = {
@@ -86,8 +89,6 @@ def resolve_output_dir(context: Context, *, angle: str = "") -> str:
 
 
 def tempfile_fallback() -> str:
-    import tempfile
-
     return tempfile.gettempdir()
 
 
@@ -270,59 +271,70 @@ class BEHOLD_OT_render_still(Operator):
 class BEHOLD_OT_setup_turntable(Operator):
     bl_idname = "behold.setup_turntable"
     bl_label = "Setup Turntable"
-    bl_description = "Animate a 360° orbit of the active camera around the selection"
+    bl_description = "360° orbit of the active BEHOLD camera around the product"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: Context):
-        targets = [obj for obj in context.selected_objects if obj.type == "MESH"]
-        if not targets:
-            self.report({"ERROR"}, "Select the product mesh(es) to orbit")
+        error, plan = turntable_rig.setup_turntable(context)
+        if error or plan is None:
+            self.report({"ERROR"}, error or "Turntable setup failed")
             return {"CANCELLED"}
+        spin = "linear loop" if plan.loop_friendly else "ease"
+        self.report(
+            {"INFO"},
+            f"Turntable {plan.seconds:.1f}s ({plan.frames} frames, {spin})",
+        )
+        return {"FINISHED"}
 
-        cam = _ensure_camera(context)
-        if cam is None:
-            self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
+
+class BEHOLD_OT_play_turntable(Operator):
+    bl_idname = "behold.play_turntable"
+    bl_label = "Play Turntable"
+    bl_description = "Apply current seconds / spin, then preview the 360° orbit"
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: Context):
+        error, _plan = turntable_rig.setup_turntable(context)
+        if error:
+            self.report({"ERROR"}, error)
             return {"CANCELLED"}
+        context.scene.frame_set(context.scene.frame_start)
+        try:
+            bpy.ops.screen.animation_play()
+        except RuntimeError:
+            self.report({"WARNING"}, "Turntable ready — press Space to play")
+            return {"FINISHED"}
+        self.report({"INFO"}, "Playing turntable")
+        return {"FINISHED"}
 
-        from mathutils import Vector
 
-        corners = [
-            obj.matrix_world @ Vector(corner)
-            for obj in targets
-            for corner in obj.bound_box
-        ]
-        center = sum(corners, Vector()) / len(corners)
+class BEHOLD_OT_clear_turntable(Operator):
+    bl_idname = "behold.clear_turntable"
+    bl_label = "Clear Turntable"
+    bl_description = "Remove the turntable pivot or baked camera spin; leave the rest of the scene"
+    bl_options = {"REGISTER", "UNDO"}
 
-        pivot_name = "BEHOLD_TurntablePivot"
-        pivot = bpy.data.objects.get(pivot_name)
-        if pivot is None:
-            pivot = bpy.data.objects.new(pivot_name, None)
-            context.scene.collection.objects.link(pivot)
-        pivot.empty_display_type = "PLAIN_AXES"
-        pivot.location = center
+    def execute(self, context: Context):
+        error = turntable_rig.clear_turntable(context)
+        if error:
+            self.report({"ERROR"}, error)
+            return {"CANCELLED"}
+        self.report({"INFO"}, "Turntable cleared")
+        return {"FINISHED"}
 
-        # Parent camera to pivot while keeping world transform.
-        mw = cam.matrix_world.copy()
-        cam.parent = pivot
-        cam.matrix_world = mw
 
-        frames = int(context.scene.behold.turntable_frames)
-        scene = context.scene
-        scene.frame_start = 1
-        scene.frame_end = frames
-        pivot.rotation_euler = (0.0, 0.0, 0.0)
-        pivot.keyframe_insert(data_path="rotation_euler", frame=1)
-        pivot.rotation_euler = (0.0, 0.0, math.tau)
-        pivot.keyframe_insert(data_path="rotation_euler", frame=frames)
+class BEHOLD_OT_bake_turntable(Operator):
+    bl_idname = "behold.bake_turntable"
+    bl_label = "Bake Turntable"
+    bl_description = "Bake the camera orbit onto the camera, then delete the pivot"
+    bl_options = {"REGISTER", "UNDO"}
 
-        # Linear interpolation for constant spin.
-        if pivot.animation_data and pivot.animation_data.action:
-            for fcurve in pivot.animation_data.action.fcurves:
-                for kp in fcurve.keyframe_points:
-                    kp.interpolation = "LINEAR"
-
-        apply_exposure(context)
-        self.report({"INFO"}, f"Turntable set for {frames} frames")
+    def execute(self, context: Context):
+        error = turntable_rig.bake_turntable(context)
+        if error:
+            self.report({"ERROR"}, error)
+            return {"CANCELLED"}
+        self.report({"INFO"}, "Turntable baked onto the camera")
         return {"FINISHED"}
 
 
@@ -332,7 +344,10 @@ class BEHOLD_OT_render_turntable(Operator):
     bl_description = "Render the turntable animation with the active quality preset"
 
     def execute(self, context: Context):
-        if bpy.data.objects.get("BEHOLD_TurntablePivot") is None:
+        if not turntable_rig.has_turntable() and not (
+            context.scene.camera is not None
+            and context.scene.camera.get(turntable_lib.PROP_BAKED)
+        ):
             self.report({"ERROR"}, "Run Setup Turntable first")
             return {"CANCELLED"}
         if _ensure_camera(context) is None:
@@ -368,8 +383,6 @@ class BEHOLD_OT_batch_angles(Operator):
         if cam is None:
             self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
             return {"CANCELLED"}
-
-        from mathutils import Vector
 
         corners = [
             obj.matrix_world @ Vector(corner)
@@ -430,6 +443,9 @@ CLASSES = (
     BEHOLD_OT_clear_cameras,
     BEHOLD_OT_render_still,
     BEHOLD_OT_setup_turntable,
+    BEHOLD_OT_play_turntable,
+    BEHOLD_OT_clear_turntable,
+    BEHOLD_OT_bake_turntable,
     BEHOLD_OT_render_turntable,
     BEHOLD_OT_batch_angles,
 )
