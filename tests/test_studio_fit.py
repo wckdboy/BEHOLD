@@ -127,7 +127,7 @@ class FitWiringTests(unittest.TestCase):
         self.assertIn("fit_from_aabb", source)
         self.assertIn("BUILD_NEEDS_MESH", source)
         self.assertIn("EMPTY_NO_MESH", source)
-        self.assertIn("No mesh selected", source)
+        self.assertIn("BUILD_NEEDS_MESH = EMPTY_NO_MESH", source)
         ops = _read("behold/studio/operators.py")
         self.assertIn("BUILD_NEEDS_MESH", ops)
         self.assertIn("NO_MESH_SELECTED", ops)
