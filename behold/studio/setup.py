@@ -19,6 +19,7 @@ from .fit import (
 from .tones import backdrop_tone_rgba, kelvin_to_rgb
 
 PREFIX = light_lib.PREFIX
+BUILD_NEEDS_MESH = "Select a product mesh, then click Build — or Import Product first"
 
 
 def selected_meshes(context: Context) -> list[Object]:
@@ -149,7 +150,7 @@ def build_studio(context: Context) -> str:
     settings = context.scene.behold
     targets = selected_meshes(context)
     if not targets:
-        return "Select at least one mesh object"
+        return BUILD_NEEDS_MESH
 
     mins, maxs = bounds_world(targets)
     floor_center = Vector(((mins.x + maxs.x) * 0.5, (mins.y + maxs.y) * 0.5, mins.z))

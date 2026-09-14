@@ -8,7 +8,7 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 
 ## What works (v0.11.0)
 
-**First-ship N-panel** — Import → Studio → Shoot stays the three-click path. The BEHOLD tab now has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip that checks off as the scene fills in:
+**First-ship N-panel** — Import → Studio → Shoot stays the three-click path, physically ordered **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced**. The BEHOLD tab now has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip that checks off as the scene fills in:
 
 1. **Import** — Import Product file picker + CAD backend line (STEPper ready / OCP fallback / Install STEPper NEXT)
 2. **Studio** — backdrop White / Grey / Black + **Build** (cyclorama auto-fits the product)

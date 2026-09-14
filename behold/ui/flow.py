@@ -75,6 +75,18 @@ FLOW_STEPS: tuple[FlowStep, ...] = (
     FlowStep("shoot", "Shoot", "RENDER_STILL"),
 )
 
+# Child panels under BEHOLD_PT_main, top-to-bottom. Lights / Cameras are
+# inventory on the shoot path; Dress in the strip is the Materials panel.
+PANEL_BL_IDNAMES: tuple[str, ...] = (
+    "BEHOLD_PT_import",
+    "BEHOLD_PT_studio",
+    "BEHOLD_PT_lights",
+    "BEHOLD_PT_materials",
+    "BEHOLD_PT_cameras",
+    "BEHOLD_PT_shoot",
+    "BEHOLD_PT_advanced",
+)
+
 EMPTY_LIGHTS = EmptyState(
     title="No BEHOLD lights yet",
     hint="Build Studio to seed Key, Fill, and Rim",

@@ -19,7 +19,7 @@ class BEHOLD_OT_build_studio(Operator):
 
     def execute(self, context: Context):
         message = studio_setup.build_studio(context)
-        if message.startswith("Select"):
+        if message == studio_setup.BUILD_NEEDS_MESH:
             self.report({"ERROR"}, message)
             return {"CANCELLED"}
         self.report({"INFO"}, message)

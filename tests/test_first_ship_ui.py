@@ -6,7 +6,7 @@ from __future__ import annotations
 import ast
 import unittest
 
-from tests.support import ROOT, load_module
+from tests.support import ROOT, load_addon_module, load_module
 
 PANELS = ROOT / "behold" / "ui" / "panels.py"
 CHECKPOINT = ROOT / "CHECKPOINT.md"
@@ -57,13 +57,15 @@ class FirstShipUiTests(unittest.TestCase):
                 "BEHOLD_PT_main",
                 "BEHOLD_PT_import",
                 "BEHOLD_PT_studio",
-                "BEHOLD_PT_shoot",
                 "BEHOLD_PT_lights",
-                "BEHOLD_PT_cameras",
                 "BEHOLD_PT_materials",
+                "BEHOLD_PT_cameras",
+                "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
             ],
         )
+        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        self.assertEqual(tuple(names[1:]), flow.PANEL_BL_IDNAMES)
 
     def test_main_panel_has_hero_and_flow(self) -> None:
         body = _class_source(self.source, self.tree, "BEHOLD_PT_main")
