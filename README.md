@@ -2,11 +2,11 @@
 
 **BEHOLD by AMIRITE.studio** — open-source Blender add-on for KeyShot-simple product rendering.
 
-Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_info` / `blender_manifest.toml`) so older 4.x/5.1 builds can load the zip; production lighting is developed and tested against 5.2 LTS.
+Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_info` / `blender_manifest.toml`) so older 4.x/5.1 builds can load the zip; production lighting and cameras are developed and tested against 5.2 LTS.
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.4.0)
+## What works (v0.5.0)
 
 **First-ship N-panel** — Import → Studio → Shoot stays the three-click path:
 
@@ -14,12 +14,18 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 2. **Studio** — backdrop White / Grey / Black + **Build**
 3. **Shoot** — Draft / Final, Still, Render
 
-**Lights** (this cut) — native multi-light inventory plus Light Draw:
+**Lights** — native multi-light inventory plus Light Draw:
 
 - Add / remove / set active BEHOLD studio lights
 - Per-light energy
 - Empty state when the studio has no lights yet
 - Light Draw **Aim: Active | New** — Reflect / Direct / Orbit (LMB aim, scroll power/size/distance, solo)
+
+**Cameras** (this cut) — product cameras without hunting Blender's default camera UI:
+
+- Add a BEHOLD camera with product defaults (85 mm, full-frame 36×24 mm sensor, framed on the selection or product)
+- List / set active / frame selected-or-product / delete / clear
+- Active camera is the Shoot still camera (and the main-camera bookmark)
 
 Parked chrome (Materials, mixer, CAD backend, batch, turntable, EV/WB/tokens/bookmark, Light Draw hotkeys) is in **Advanced**, collapsed closed. Operators stay registered.
 
@@ -29,6 +35,7 @@ Backends:
 - **Studio** — select mesh(es) → Build Studio (cyclorama / solid / HDRI world, three-point or softbox, auto camera, optional shadow catcher) + light mixer
 - **Lights** — named BEHOLD area lights; Build Studio seeds Key / Fill / Rim and marks Key active
 - **Light Draw** — Reflect / Direct / Orbit modal aimed at the **active** light or a **new** light
+- **Cameras** — named BEHOLD product cameras; Build Studio seeds `BEHOLD_Camera` and marks it active; Add Camera / Frame / Clear from the N-panel
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint)
 - **BlenderKit** — soft-dependency bridge with **login from day one**, search, and apply hooks
 - **Shoot** — EV / white balance / false color, Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
@@ -36,7 +43,7 @@ Backends:
 
 ## Coming (not this release)
 
-Camera management suite, auto-turntable polish, gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, Materials/BlenderKit redesign, live tessellation regenerate, defeaturing, full auto-dress grid. See [CHECKPOINT.md](CHECKPOINT.md).
+Auto-turntable polish, gobos / IES / scrims, bake-to-HDRI, light/shadow linking UI, Materials/BlenderKit redesign, live tessellation regenerate, defeaturing, full auto-dress grid, STEP smoke. See [CHECKPOINT.md](CHECKPOINT.md).
 
 ## Import Product
 
@@ -70,21 +77,32 @@ Sidebar **BEHOLD → Lights**:
 
 Hotkey legend stays under **Advanced**. Key / Fill / Rim mixer stays under **Advanced → Studio**.
 
+## Cameras
+
+Sidebar **BEHOLD → Cameras**:
+
+1. **Build Studio** (or **Add Camera**) so the list is not empty.
+2. Click the radio to set **Active** — that becomes the scene camera and the Shoot still / bookmark.
+3. Drag focal length on the row. The zoom-selected icon **Frames** that camera on the selection (or the product if nothing is selected). **X** removes it.
+4. **Add** makes another `BEHOLD_Camera_###` with the mm field as the lens. **Frame** reframes the active camera. **Clear** removes the BEHOLD camera kit.
+
+Bookmark / Use Main stay under **Advanced → Shoot** for non-BEHOLD cameras.
+
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.4.0.zip`).
-2. **Versioned release** — push a tag `v0.4.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.5.0.zip`).
+2. **Versioned release** — push a tag `v0.5.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.4.0
-git push origin v0.4.0
+git tag v0.5.0
+git push origin v0.5.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.4.0.zip
+# → dist/behold-0.5.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

@@ -7,7 +7,10 @@ import math
 import os
 
 import bpy
+from bpy.props import StringProperty
 from bpy.types import Context, Operator
+
+from ..studio import cameras as camera_lib
 
 
 QUALITY_SAMPLES = {
@@ -19,20 +22,10 @@ QUALITY_SAMPLES = {
 
 
 def _ensure_camera(context: Context) -> bpy.types.Object | None:
-    settings = context.scene.behold
-    if settings.main_camera_name:
-        bookmarked = bpy.data.objects.get(settings.main_camera_name)
-        if bookmarked is not None and bookmarked.type == "CAMERA":
-            context.scene.camera = bookmarked
-            return bookmarked
-
-    if context.scene.camera is not None:
-        return context.scene.camera
-
-    cam = bpy.data.objects.get("BEHOLD_Camera")
+    cam = camera_lib.resolve_shoot_camera(context)
     if cam is not None:
         context.scene.camera = cam
-    return context.scene.camera
+    return cam
 
 
 def apply_exposure(context: Context) -> None:
@@ -132,9 +125,12 @@ class BEHOLD_OT_bookmark_camera(Operator):
     def execute(self, context: Context):
         cam = context.scene.camera
         if cam is None or cam.type != "CAMERA":
-            self.report({"ERROR"}, "Set a scene camera first (Build Studio)")
+            self.report({"ERROR"}, "Set a scene camera first (Build Studio or Add Camera)")
             return {"CANCELLED"}
-        context.scene.behold.main_camera_name = cam.name
+        if camera_lib.is_behold_camera(cam):
+            camera_lib.set_active_behold_camera(context, cam)
+        else:
+            context.scene.behold.main_camera_name = cam.name
         self.report({"INFO"}, f"Main camera: {cam.name}")
         return {"FINISHED"}
 
@@ -154,8 +150,98 @@ class BEHOLD_OT_use_main_camera(Operator):
         if cam is None or cam.type != "CAMERA":
             self.report({"ERROR"}, f"Bookmarked camera “{name}” is missing")
             return {"CANCELLED"}
-        context.scene.camera = cam
+        if camera_lib.is_behold_camera(cam):
+            camera_lib.set_active_behold_camera(context, cam)
+        else:
+            context.scene.camera = cam
         self.report({"INFO"}, f"Scene camera → {name}")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_add_camera(Operator):
+    bl_idname = "behold.add_camera"
+    bl_label = "Add Camera"
+    bl_description = "Create a BEHOLD product camera and make it the Shoot camera"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        cam = camera_lib.add_product_camera(context)
+        self.report({"INFO"}, f"Added {cam.name} ({cam.data.lens:.0f} mm)")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_remove_camera(Operator):
+    bl_idname = "behold.remove_camera"
+    bl_label = "Remove Camera"
+    bl_description = "Remove a BEHOLD camera"
+    bl_options = {"REGISTER", "UNDO"}
+
+    camera_name: StringProperty(name="Camera", default="")
+
+    def execute(self, context: Context):
+        name = (self.camera_name or "").strip()
+        cam = bpy.data.objects.get(name) if name else camera_lib.get_active_behold_camera(context)
+        if cam is None or not camera_lib.is_behold_camera(cam):
+            self.report({"ERROR"}, "Pick a BEHOLD camera to remove")
+            return {"CANCELLED"}
+        removed = cam.name
+        camera_lib.remove_behold_camera(context, cam)
+        self.report({"INFO"}, f"Removed {removed}")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_set_active_camera(Operator):
+    bl_idname = "behold.set_active_camera"
+    bl_label = "Set Active Camera"
+    bl_description = "Make this the scene camera and BEHOLD main camera"
+    bl_options = {"REGISTER", "UNDO"}
+
+    camera_name: StringProperty(name="Camera", default="")
+
+    def execute(self, context: Context):
+        cam = bpy.data.objects.get(self.camera_name)
+        if cam is None or not camera_lib.is_behold_camera(cam):
+            self.report({"ERROR"}, f"Camera “{self.camera_name}” not found")
+            return {"CANCELLED"}
+        camera_lib.set_active_behold_camera(context, cam)
+        self.report({"INFO"}, f"Active camera: {cam.name}")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_frame_camera(Operator):
+    bl_idname = "behold.frame_camera"
+    bl_label = "Frame Camera"
+    bl_description = "Frame the selected mesh, or the product, in the active BEHOLD camera"
+    bl_options = {"REGISTER", "UNDO"}
+
+    camera_name: StringProperty(name="Camera", default="")
+
+    def execute(self, context: Context):
+        name = (self.camera_name or "").strip()
+        cam = bpy.data.objects.get(name) if name else camera_lib.get_active_behold_camera(context)
+        if cam is None or not camera_lib.is_behold_camera(cam):
+            self.report({"ERROR"}, "Add a BEHOLD camera first")
+            return {"CANCELLED"}
+        if not camera_lib.product_targets(context):
+            self.report({"ERROR"}, "Select a product mesh or Build Studio")
+            return {"CANCELLED"}
+        camera_lib.frame_behold_camera(context, cam)
+        self.report({"INFO"}, f"Framed {cam.name}")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_clear_cameras(Operator):
+    bl_idname = "behold.clear_cameras"
+    bl_label = "Clear Cameras"
+    bl_description = "Remove all BEHOLD cameras from the scene"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        count = camera_lib.clear_behold_cameras(context)
+        if count == 0:
+            self.report({"WARNING"}, "No BEHOLD cameras to clear")
+            return {"CANCELLED"}
+        self.report({"INFO"}, f"Cleared {count} camera(s)")
         return {"FINISHED"}
 
 
@@ -167,7 +253,7 @@ class BEHOLD_OT_render_still(Operator):
     def execute(self, context: Context):
         cam = _ensure_camera(context)
         if cam is None:
-            self.report({"ERROR"}, "No camera — Build Studio first")
+            self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
             return {"CANCELLED"}
 
         apply_exposure(context)
@@ -195,7 +281,7 @@ class BEHOLD_OT_setup_turntable(Operator):
 
         cam = _ensure_camera(context)
         if cam is None:
-            self.report({"ERROR"}, "No camera — Build Studio first")
+            self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
             return {"CANCELLED"}
 
         from mathutils import Vector
@@ -280,7 +366,7 @@ class BEHOLD_OT_batch_angles(Operator):
 
         cam = _ensure_camera(context)
         if cam is None:
-            self.report({"ERROR"}, "No camera — Build Studio first")
+            self.report({"ERROR"}, "No camera — Build Studio or Add Camera")
             return {"CANCELLED"}
 
         from mathutils import Vector
@@ -337,6 +423,11 @@ CLASSES = (
     BEHOLD_OT_apply_quality,
     BEHOLD_OT_bookmark_camera,
     BEHOLD_OT_use_main_camera,
+    BEHOLD_OT_add_camera,
+    BEHOLD_OT_remove_camera,
+    BEHOLD_OT_set_active_camera,
+    BEHOLD_OT_frame_camera,
+    BEHOLD_OT_clear_cameras,
     BEHOLD_OT_render_still,
     BEHOLD_OT_setup_turntable,
     BEHOLD_OT_render_turntable,

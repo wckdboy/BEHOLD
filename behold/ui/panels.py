@@ -2,8 +2,9 @@
 """BEHOLD N-panel UI.
 
 First-ship chrome: Import / Studio / Shoot stay skinny. Lights is the v0.4.0
-lighting section (inventory + Light Draw). Parked mixer, CAD box, materials,
-hotkeys, batch, and turntable live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
+lighting section. Cameras is the v0.5.0 product-camera kit. Parked mixer, CAD
+box, materials, hotkeys, batch, and turntable live in BEHOLD_PT_advanced
+(DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from ..cad import detect as cad_detect
 from ..cad import material_assist
 from ..materials import blenderkit_bridge, local_rack
 from ..product_import import formats
+from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
 
 
@@ -93,6 +95,46 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
     col.prop(settings, "light_draw_mode", text="Mode", expand=True)
     col.prop(settings, "light_draw_distance")
     col.operator("behold.light_draw", icon="LIGHT_AREA")
+
+
+def draw_cameras_section(layout: UILayout, context: Context) -> None:
+    """Product camera inventory: add / active / frame / delete."""
+    settings = context.scene.behold
+    cameras = camera_lib.iter_behold_cameras(context)
+
+    if not cameras:
+        empty = layout.box()
+        empty.label(text="No BEHOLD cameras yet", icon="INFO")
+        empty.label(text="Build Studio or Add Camera")
+        empty.prop(settings, "new_camera_lens", text="mm")
+        row = empty.row(align=True)
+        row.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
+        row.operator("behold.add_camera", text="Add Camera", icon="ADD")
+        return
+
+    active = camera_lib.get_active_behold_camera(context)
+    active_name = active.name if active is not None else ""
+    box = layout.box()
+    box.label(text="Studio cameras", icon="CAMERA_DATA")
+    for cam in cameras:
+        row = box.row(align=True)
+        is_active = cam.name == active_name
+        icon = "RADIOBUT_ON" if is_active else "RADIOBUT_OFF"
+        op = row.operator("behold.set_active_camera", text="", icon=icon, emboss=False)
+        op.camera_name = cam.name
+        row.label(text=camera_lib.display_camera_name(cam))
+        row.prop(cam.data, "lens", text="")
+        fr = row.operator("behold.frame_camera", text="", icon="ZOOM_SELECTED")
+        fr.camera_name = cam.name
+        rm = row.operator("behold.remove_camera", text="", icon="X")
+        rm.camera_name = cam.name
+    if active is not None:
+        box.label(text=f"Active: {camera_lib.display_camera_name(active)}")
+    row = layout.row(align=True)
+    row.prop(settings, "new_camera_lens", text="mm")
+    row.operator("behold.add_camera", text="Add", icon="ADD")
+    row.operator("behold.frame_camera", text="Frame", icon="ZOOM_SELECTED")
+    row.operator("behold.clear_cameras", text="Clear", icon="TRASH")
 
 
 def draw_import_parked(layout: UILayout, context: Context) -> None:
@@ -206,7 +248,7 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
 
     if not has_camera:
         box = layout.box()
-        box.label(text="No camera — Build Studio first", icon="ERROR")
+        box.label(text="No camera — Build Studio or Add Camera", icon="ERROR")
 
     col = layout.column(align=True)
     col.label(text="Look")
@@ -309,6 +351,18 @@ class BEHOLD_PT_lights(Panel):
         draw_lights_section(self.layout, context)
 
 
+class BEHOLD_PT_cameras(Panel):
+    bl_label = "Cameras"
+    bl_idname = "BEHOLD_PT_cameras"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BEHOLD"
+    bl_parent_id = "BEHOLD_PT_main"
+
+    def draw(self, context: Context):
+        draw_cameras_section(self.layout, context)
+
+
 class BEHOLD_PT_advanced(Panel):
     bl_label = "Advanced"
     bl_idname = "BEHOLD_PT_advanced"
@@ -342,6 +396,7 @@ CLASSES = (
     BEHOLD_PT_studio,
     BEHOLD_PT_shoot,
     BEHOLD_PT_lights,
+    BEHOLD_PT_cameras,
     BEHOLD_PT_advanced,
 )
 

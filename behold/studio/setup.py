@@ -7,6 +7,8 @@ import bpy
 from bpy.types import Context, Object
 from mathutils import Vector
 
+from . import camera_ids
+from . import cameras as camera_lib
 from . import lights as light_lib
 from .tones import backdrop_tone_rgba, kelvin_to_rgb
 
@@ -86,14 +88,13 @@ def make_shadow_catcher(coll: bpy.types.Collection, center: Vector, size: float)
 
 
 def frame_camera(coll: bpy.types.Collection, center: Vector, size: float) -> Object:
-    cam_data = bpy.data.cameras.new(f"{PREFIX}_Camera")
-    cam_data.lens = 85.0
-    cam = bpy.data.objects.new(f"{PREFIX}_Camera", cam_data)
-    cam.location = center + Vector((size * 1.6, -size * 2.2, size * 0.85))
-    direction = center - cam.location
-    cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
-    coll.objects.link(cam)
-    return cam
+    return camera_lib.create_product_camera(
+        coll,
+        center,
+        size,
+        name=camera_ids.STUDIO_CAMERA_NAME,
+        lens_mm=camera_ids.DEFAULT_LENS_MM,
+    )
 
 
 def setup_world(
@@ -193,8 +194,7 @@ def build_studio(context: Context) -> str:
         )
 
     cam = frame_camera(coll, product_center, size)
-    context.scene.camera = cam
-    context.scene.behold.main_camera_name = cam.name
+    camera_lib.set_active_behold_camera(context, cam)
     _activate_key_light(context)
 
     context.scene.render.engine = "CYCLES"

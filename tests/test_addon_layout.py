@@ -22,8 +22,8 @@ class AddonLayoutTests(unittest.TestCase):
         init = _read(ADDON / "__init__.py")
         match = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
         self.assertIsNotNone(match)
-        self.assertEqual(match.group(1), "0.4.0")
-        self.assertIn('"version": (0, 4, 0)', init)
+        self.assertEqual(match.group(1), "0.5.0")
+        self.assertIn('"version": (0, 5, 0)', init)
         self.assertIn('"blender": (4, 2, 0)', init)
         self.assertIn('blender_version_min = "4.2.0"', manifest)
         self.assertIn("AMIRITE.studio", init)
@@ -35,10 +35,11 @@ class AddonLayoutTests(unittest.TestCase):
         self.assertIn(url, readme)
         self.assertIn(url, detect)
         self.assertIn("Import Product", readme)
-        self.assertIn("0.4.0", readme)
+        self.assertIn("0.5.0", readme)
         self.assertIn("5.2", readme)
         self.assertIn("AMIRITE.studio", readme)
         self.assertIn("Lights", readme)
+        self.assertIn("Cameras", readme)
 
     def test_python_sources_parse(self) -> None:
         files = list(ADDON.rglob("*.py")) + list((ROOT / "tests").glob("*.py"))
