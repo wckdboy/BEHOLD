@@ -12,11 +12,11 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.3.1 |
-| **This branch / after merge** | **0.4.0** |
+| **Version on `main` (before this cut)** | 0.4.0 |
+| **This branch / after merge** | **0.5.0** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.4.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-0.5.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
@@ -26,20 +26,22 @@ Honest inventory of what this cut ships (plus what `main` already had).
 - **Studio** — cyclorama / solid / HDRI, three-point or softbox, auto camera, optional shadow catcher, White / Grey / Black first-ship backdrop tones, light mixer (key / fill / rim / temperature).
 - **Lights (0.4.0)** — add / remove / set active BEHOLD studio lights; per-light energy; empty-state UX; Build Studio seeds the rig and marks Key active.
 - **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, wheel power/size/distance, solo). **Aim Active vs New** against the multi-light inventory.
+- **Cameras (0.5.0)** — add / remove / set active / frame / clear BEHOLD product cameras; 85 mm full-frame defaults; frames selected mesh or product bounds (studio sweep excluded); active camera is the Shoot still + main-camera bookmark. Build Studio still seeds `BEHOLD_Camera`.
 - **Materials / BlenderKit** — local PBR rack (metal, plastic, rubber, glass, paint) + BlenderKit login / search / apply bridge.
-- **Shoot depth** — EV / white balance / false color; Draft · Product · Hero (and Final) sample presets; `{angle}` `{camera}` `{quality}` path tokens; main-camera bookmark; still; batch angles; turntable.
+- **Shoot depth** — EV / white balance / false color; Draft · Product · Hero (and Final) sample presets; `{angle}` `{camera}` `{quality}` path tokens; main-camera bookmark; still; batch angles; turntable (uses the active/bookmarked camera).
 - **CI zip** — GitHub Actions runs `make test` then builds the install zip; tags `v*` publish a GitHub Release.
 - **Tests** — `make test` (`unittest` under `tests/`, no Blender required).
 
 ## First-ship chrome (Percival)
 
-N-panel keeps the three-click path skinny. Lights is a dedicated section after Shoot so lighting is findable without stuffing the mixer into Studio.
+N-panel keeps the three-click path skinny. Lights and Cameras are dedicated sections after Shoot so lighting and cameras are findable without stuffing either into Studio or Shoot.
 
 1. **Import** — only the **Import Product** file picker. CAD backend box, auto-studio, and Material Assist toggles are not on this panel.
 2. **Studio** — backdrop **White / Grey / Black** + one **Build** button. No light mixer.
 3. **Shoot** — **Draft / Final**, **Still**, **Render** only. No batch, turntable, EV, WB, path tokens, or camera bookmark on this panel.
 4. **Lights** — inventory + Light Draw Active / New. Not a Light Wrangler clone; native Blender chrome.
-5. **Advanced** (`BEHOLD_PT_advanced`, `DEFAULT_CLOSED`) — mixer, CAD box, materials, Light Draw hotkeys, batch, turntable.
+5. **Cameras** — inventory + Add / Frame / Clear. Not Blender's Properties camera dump; native BEHOLD chrome.
+6. **Advanced** (`BEHOLD_PT_advanced`, `DEFAULT_CLOSED`) — mixer, CAD box, materials, Light Draw hotkeys, batch, turntable, Bookmark / Use Main.
 
 Backend operators stay registered.
 
@@ -47,7 +49,6 @@ Backend operators stay registered.
 
 Not this PR:
 
-- Camera creation / management suite.
 - Auto-turntable chrome redesign / polish.
 - Gobos, IES library streaming, scrims.
 - Bake-to-HDRI.
@@ -57,14 +58,15 @@ Not this PR:
 - Live tessellation regenerate (OCP / STEPper deflection without re-picking the file).
 - Defeaturing (fillet/chamfer/hole suppress before tessellate).
 - Full auto-dress grid (filename + STEP material names → applied look, not just a BlenderKit query).
-- STEP vertical smoke — open [PR #7](https://github.com/wckdboy/BEHOLD/pull/7); separate lane, do not merge into 0.4.0.
-
-Draft [PR #5](https://github.com/wckdboy/BEHOLD/pull/5) (`cursor/behold-multi-light-5f2a`) sketched this multi-light + Active/New direction on pre-first-ship chrome. **0.4.0 continues that sketch** on current `main` (first-ship N-panel + backdrop tones). Leave PR #5 as historical draft.
+- STEP vertical smoke — open [PR #7](https://github.com/wckdboy/BEHOLD/pull/7); separate lane, do not merge into 0.5.0.
 
 ## Change log
 
 ### 2026-09-14
 
+- v**0.5.0** Cameras: create, manage, and frame product cameras from the N-panel. Shoot still uses the active / bookmarked camera.
+- Focused **Cameras** N-panel next to Lights; Import / Studio / Shoot first-ship path unchanged.
+- Product defaults: 85 mm, 36×24 mm full-frame sensor, horizontal fit, clip range from product size. Frame selected mesh, else tagged product, else non-studio meshes.
 - v**0.4.0** Light Wrangler foundation: multi-light inventory (add / remove / set active, per-light energy, empty state) + Light Draw Aim Active / New.
 - Focused **Lights** N-panel; Import / Studio / Shoot first-ship path unchanged.
 - Primary Blender target documented as **5.2 LTS+**; install min stays 4.2.0.
@@ -80,8 +82,8 @@ Draft [PR #5](https://github.com/wckdboy/BEHOLD/pull/5) (`cursor/behold-multi-li
 
 ## Operating notes
 
-- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, shoot operators).
+- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, cameras, shoot operators).
 - **Percival** owns panel chrome (what the N-panel shows, what stays collapsed in Advanced).
 - First-ship Import / Studio / Shoot must stay skinny even if extra operators remain registered.
 - Prefer parking controls in `BEHOLD_PT_advanced` over deleting them.
-- Lights is the one extra first-class section for the lighting cut; do not reopen Materials or Shoot chrome here.
+- Lights and Cameras are the extra first-class sections; do not reopen Materials or Shoot chrome here.

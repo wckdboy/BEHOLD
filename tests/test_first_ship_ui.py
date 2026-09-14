@@ -40,6 +40,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("BEHOLD_PT_materials", self.source)
         self.assertNotIn("BEHOLD_PT_light_draw", self.source)
         self.assertIn("BEHOLD_PT_lights", self.source)
+        self.assertIn("BEHOLD_PT_cameras", self.source)
         classes_assign = next(
             node
             for node in self.tree.body
@@ -58,6 +59,7 @@ class FirstShipUiTests(unittest.TestCase):
                 "BEHOLD_PT_studio",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_lights",
+                "BEHOLD_PT_cameras",
                 "BEHOLD_PT_advanced",
             ],
         )
@@ -105,6 +107,19 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("Light Mixer", body)
         self.assertNotIn("key_power", body)
 
+    def test_cameras_section_has_inventory_and_frame(self) -> None:
+        body = _func_source(self.source, self.tree, "draw_cameras_section")
+        self.assertIn("No BEHOLD cameras yet", body)
+        self.assertIn("behold.add_camera", body)
+        self.assertIn("behold.remove_camera", body)
+        self.assertIn("behold.set_active_camera", body)
+        self.assertIn("behold.frame_camera", body)
+        self.assertIn("behold.clear_cameras", body)
+        self.assertIn("new_camera_lens", body)
+        self.assertNotIn("Light Mixer", body)
+        self.assertNotIn("batch_angles", body)
+        self.assertNotIn("turntable", body)
+
     def test_shoot_first_ship_is_draft_final_still_render(self) -> None:
         body = _func_source(self.source, self.tree, "draw_shoot_first_ship")
         self.assertIn('"DRAFT"', body)
@@ -117,6 +132,9 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("white_balance", body)
         self.assertNotIn("bookmark_camera", body)
         self.assertNotIn("output_directory", body)
+        self.assertNotIn("add_camera", body)
+        self.assertNotIn("frame_camera", body)
+        self.assertNotIn("clear_cameras", body)
 
     def test_parked_draw_keeps_mixer_batch_and_materials(self) -> None:
         studio = _func_source(self.source, self.tree, "draw_studio_parked")
@@ -152,11 +170,12 @@ class FirstShipUiTests(unittest.TestCase):
         text = CHECKPOINT.read_text(encoding="utf-8")
         self.assertIn("KeyShot-simple OSS product renders in Blender", text)
         self.assertIn("AMIRITE.studio", text)
-        self.assertIn("0.4.0", text)
+        self.assertIn("0.5.0", text)
         self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)
         self.assertIn("Import Product", text)
         self.assertIn("Light Draw", text)
+        self.assertIn("Cameras", text)
         self.assertIn("Active", text)
         self.assertIn("BlenderKit", text)
         self.assertIn("First-ship chrome", text)

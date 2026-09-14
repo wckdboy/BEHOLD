@@ -186,6 +186,19 @@ class BEHOLDSceneSettings(PropertyGroup):
         ),
         default="ACTIVE",
     )
+    active_camera_name: StringProperty(
+        name="Active Camera",
+        description="BEHOLD camera used by Shoot still / batch / turntable",
+        default="",
+        maxlen=128,
+    )
+    new_camera_lens: FloatProperty(
+        name="New Camera Lens",
+        description="Focal length in mm for cameras created with Add Camera",
+        default=85.0,
+        min=12.0,
+        max=300.0,
+    )
 
 
 CLASSES = (BEHOLDSceneSettings,)

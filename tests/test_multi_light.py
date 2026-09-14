@@ -102,7 +102,7 @@ class MultiLightWiringTests(unittest.TestCase):
         self.assertIn("backdrop_tone_rgba", source)
         self.assertIn("set_active_behold_light", source)
         self.assertIn("apply_temperature_to_extras", source)
-        self.assertIn("main_camera_name", source)
+        self.assertIn("set_active_behold_camera", source)
 
     def test_mixer_empty_state_cancels(self) -> None:
         source = _read("behold/studio/operators.py")
