@@ -93,6 +93,12 @@ class BEHOLDAddonPreferences(AddonPreferences):
         default="",
         options={"HIDDEN"},
     )
+    update_error_kind: StringProperty(
+        name="Update error kind",
+        description="network / github / download / install / no_zip (BEHOLD manages this)",
+        default="",
+        options={"HIDDEN"},
+    )
     update_checking: BoolProperty(
         name="Update check in progress",
         default=False,
@@ -137,23 +143,29 @@ def _draw_updates(layout: UILayout, prefs: AddonPreferences) -> None:
         html_url=getattr(prefs, "update_latest_url", "") or "",
         zip_url=getattr(prefs, "update_latest_zip_url", "") or "",
     )
+    error = getattr(prefs, "update_last_error", "") or ""
     copy = prefs_status_copy(
         checking=bool(getattr(prefs, "update_checking", False)),
         installing=bool(getattr(prefs, "update_installing", False)),
         last_iso=getattr(prefs, "update_last_check", "") or "",
-        error=getattr(prefs, "update_last_error", "") or "",
+        error=error,
+        error_kind=getattr(prefs, "update_error_kind", "") or "",
         available=available,
         installed=installed_version(),
     )
-    box.label(text=copy["line"])
+    status = box.column(align=True)
+    if copy.get("alert"):
+        status.alert = True
+        status.label(text=copy["line"], icon="ERROR")
+    else:
+        status.label(text=copy["line"])
     if copy["detail"]:
-        box.label(text=copy["detail"])
-    box.operator("behold.check_updates", icon="FILE_REFRESH")
-    if available:
-        row = box.row(align=True)
-        if available.get("zip_url"):
-            row.operator("behold.install_update", text="Install", icon="IMPORT")
-        row.operator("behold.open_release", text="Open release", icon="URL")
+        status.label(text=copy["detail"])
+    row = box.row(align=True)
+    row.operator("behold.check_updates", icon="FILE_REFRESH")
+    if available and available.get("zip_url"):
+        row.operator("behold.install_update", text="Install", icon="IMPORT")
+    row.operator("behold.open_release", text="Open release", icon="URL")
 
 
 def _draw_chrome_toggles(layout: UILayout, prefs: AddonPreferences) -> None:

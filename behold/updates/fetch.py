@@ -34,6 +34,10 @@ def fetch_latest_release(
     try:
         with opener(request, timeout=timeout) as response:
             raw = response.read()
+    except urllib.error.HTTPError as exc:
+        if exc.code in (403, 429):
+            raise ValueError("GitHub rate limit") from exc
+        raise ValueError(f"GitHub HTTP {exc.code}") from exc
     except urllib.error.URLError as exc:
         raise ValueError(f"GitHub request failed: {exc}") from exc
     try:

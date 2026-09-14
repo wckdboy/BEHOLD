@@ -185,11 +185,11 @@ BEHOLD is installed from a GitHub zip, so Blender's extensions.blender.org updat
 
 1. **Auto-check** (default on) runs in the background shortly after Blender loads, at most **once per day**. Turn it off with **Check for updates** in add-on preferences.
 2. Click **Check for updates** any time. Preferences show last-checked status, or **Update available: x.y.z**.
-3. A light notice on the **BEHOLD** tab offers **Install** / **Open release**. **X** dismisses it until you restart Blender.
+3. A light notice on the **BEHOLD** tab offers **Install** / **Open release**. **X** dismisses it until you restart Blender. If the check or install fails, the same notice (and preferences) say **what failed** and what to try next: check your network, **Check again**, or **Open release**.
 4. **Install** downloads `behold-*.zip` from that release, then runs Blender 5.2 **Install from Disk** (`extensions.package_install_files` into `user_default`, overwrite + enable). Older 4.2+ builds fall back to **Add-ons → Install**.
 5. **Restart Blender** to finish. In-place replace of a loaded add-on is fragile; the zip is in, but the old code is still in memory until restart.
 
-If the release has no `behold-*.zip` asset, use **Open release** and install the zip the same way as the first time.
+If the release has no `behold-*.zip` asset, **Open release** and install the zip the same way as the first time. Failures are not silent.
 
 ## Download install zip (GitHub Actions)
 

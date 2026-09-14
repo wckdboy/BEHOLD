@@ -18,7 +18,9 @@ from ..preferences import get_prefs
 from . import blender_install
 from . import fetch
 from .core import (
+    FailureStage,
     cache_from_parsed,
+    describe_failure,
     should_auto_check,
 )
 
@@ -138,6 +140,7 @@ def _apply_check(prefs, result: dict[str, Any]) -> None:
         result.get("parsed") or {},
         today=date.today(),
         error=str(result.get("error") or ""),
+        stage="check",
     )
     for key, value in payload.items():
         try:
@@ -205,26 +208,40 @@ def _start_install_thread(url: str) -> None:
     _install_thread.start()
 
 
+def _set_failure(prefs, stage: FailureStage, error: str = "") -> None:
+    copy = describe_failure(stage, error)
+    try:
+        prefs.update_last_error = copy["line"]
+        prefs.update_error_kind = copy["kind"]
+    except Exception:  # noqa: BLE001
+        pass
+    print("BEHOLD:", copy["line"], copy["detail"])
+
+
 def _finish_install(prefs, result: dict[str, Any]) -> None:
     _write_installing(prefs, False)
     path = str(result.get("path") or "")
     error = str(result.get("error") or "")
     if error:
-        try:
-            prefs.update_last_error = error
-        except Exception:  # noqa: BLE001
-            pass
-        print("BEHOLD: update download failed:", error)
+        _set_failure(prefs, "download", error)
         return
     if not path:
+        _set_failure(prefs, "download", "download produced no file")
         return
     try:
         installed = blender_install.install_zip_file(path)
         if not installed.get("ok"):
-            prefs.update_last_error = str(installed.get("message") or "install failed")
-            print("BEHOLD: update install failed:", installed.get("message"))
+            _set_failure(
+                prefs,
+                "install",
+                str(installed.get("message") or "install failed"),
+            )
         else:
-            prefs.update_last_error = ""
+            try:
+                prefs.update_last_error = ""
+                prefs.update_error_kind = ""
+            except Exception:  # noqa: BLE001
+                pass
             print("BEHOLD:", installed.get("message"))
     finally:
         try:
@@ -273,6 +290,7 @@ def _tick() -> float | None:
         if not url:
             _install_requested = False
             _write_installing(prefs, False)
+            _set_failure(prefs, "no_zip")
             return _POLL
         _write_installing(prefs, True)
         _start_install_thread(url)

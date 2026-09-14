@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import re
 from datetime import date
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Literal, Mapping, Never
 from urllib.parse import urlparse
 
 from ..brand import DOCS_URL, RELEASES_URL, VERSION
@@ -33,6 +33,9 @@ ADDON_INSTALL_OP = "preferences.addon_install"
 ADDON_ENABLE_OP = "preferences.addon_enable"
 USER_EXTENSIONS_REPO = "user_default"
 RESTART_MESSAGE = "Restart Blender to finish the update."
+
+FailureStage = Literal["check", "download", "install", "no_zip"]
+FailureKind = Literal["network", "github", "download", "install", "no_zip"]
 
 
 def installed_version() -> tuple[int, ...]:
@@ -186,22 +189,94 @@ def available_from_cache(
     }
 
 
+def describe_failure(stage: FailureStage, error: str = "") -> dict[str, str]:
+    """Artist-facing what-failed + next step. Always points at Open release."""
+    lowered = error.lower()
+    if stage == "check":
+        if "rate limit" in lowered:
+            return {
+                "kind": "github",
+                "line": "GitHub rate limit — try again in a bit",
+                "detail": "Or Open release and download the zip yourself.",
+            }
+        if "not a stable" in lowered or "not a version" in lowered:
+            return {
+                "kind": "github",
+                "line": "GitHub has no usable stable release yet",
+                "detail": "Open release and install a zip from there.",
+            }
+        return {
+            "kind": "network",
+            "line": "Could not reach GitHub",
+            "detail": "Check your network, then Check for updates. Or Open release.",
+        }
+    if stage == "download":
+        return {
+            "kind": "download",
+            "line": "Could not download the update zip",
+            "detail": "Check your network, then Install again. Or Open release.",
+        }
+    if stage == "install":
+        return {
+            "kind": "install",
+            "line": "Install from Disk failed",
+            "detail": "Open release, download behold-*.zip, then Preferences → Install from Disk.",
+        }
+    if stage == "no_zip":
+        return {
+            "kind": "no_zip",
+            "line": "This release has no behold-*.zip",
+            "detail": "Open release and install the zip the same way as the first time.",
+        }
+    unreachable: Never = stage
+    raise RuntimeError(f"unhandled update failure stage: {unreachable}")
+
+
+def infer_failure_stage(kind: str, error: str = "") -> FailureStage:
+    """Map stored prefs kind / leftover error text back to a failure stage."""
+    if kind == "download":
+        return "download"
+    if kind == "install":
+        return "install"
+    if kind == "no_zip":
+        return "no_zip"
+    if kind in {"network", "github", "check"}:
+        return "check"
+    text = error.lower()
+    if "behold-*.zip" in text or "no behold" in text:
+        return "no_zip"
+    if "install from disk" in text or "install failed" in text:
+        return "install"
+    if "download" in text:
+        return "download"
+    return "check"
+
+
+def failure_copy(*, kind: str = "", error: str = "") -> dict[str, str]:
+    return describe_failure(infer_failure_stage(kind, error), error)
+
+
 def cache_from_parsed(
     parsed: Mapping[str, Any],
     *,
     today: date | None = None,
     error: str = "",
+    stage: FailureStage = "check",
 ) -> dict[str, str]:
     when = (today or date.today()).isoformat()
     if error:
+        copy = describe_failure(stage, error)
         return {
             "update_last_check": when,
-            "update_last_error": error,
+            "update_last_error": copy["line"],
+            "update_error_kind": copy["kind"],
         }
     if not parsed.get("stable"):
+        copy = describe_failure("check", "latest GitHub release is not a stable tag")
         return {
             "update_last_check": when,
-            "update_last_error": "",
+            "update_last_error": copy["line"],
+            "update_error_kind": copy["kind"],
         }
     return {
         "update_last_check": when,
@@ -209,6 +284,7 @@ def cache_from_parsed(
         "update_latest_url": str(parsed.get("html_url") or RELEASES_PAGE),
         "update_latest_zip_url": str(parsed.get("zip_url") or ""),
         "update_last_error": "",
+        "update_error_kind": "",
     }
 
 
@@ -220,27 +296,36 @@ def prefs_status_copy(
     error: str,
     available: Mapping[str, str] | None,
     installed: tuple[int, ...] | None = None,
+    error_kind: str = "",
 ) -> dict[str, str]:
     current = version_string(installed)
     if checking:
-        return {"line": "Checking GitHub…", "detail": ""}
+        return {"line": "Checking GitHub…", "detail": "", "alert": ""}
     if installing:
-        return {"line": "Installing update…", "detail": RESTART_MESSAGE}
-    if error:
         return {
-            "line": "Could not reach GitHub",
-            "detail": "Try again later. No token is used.",
+            "line": "Installing update…",
+            "detail": RESTART_MESSAGE,
+            "alert": "",
+        }
+    if error:
+        copy = failure_copy(kind=error_kind, error=error)
+        return {
+            "line": copy["line"],
+            "detail": copy["detail"],
+            "alert": "ERROR",
         }
     if available:
         return {
             "line": f"Update available: {available['version']}",
             "detail": last_iso and f"Last checked: {last_iso}" or "",
+            "alert": "",
         }
     if not last_iso:
-        return {"line": "Not checked yet", "detail": ""}
+        return {"line": "Not checked yet", "detail": "", "alert": ""}
     return {
         "line": f"BEHOLD {current} is up to date",
         "detail": f"Last checked: {last_iso}",
+        "alert": "",
     }
 
 

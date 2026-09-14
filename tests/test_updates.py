@@ -181,6 +181,54 @@ class CacheAndScheduleTests(unittest.TestCase):
             installed=(0, 10, 0),
         )
         self.assertIn("0.10.0 is up to date", current["line"])
+        network = core.prefs_status_copy(
+            checking=False,
+            installing=False,
+            last_iso="2026-09-14",
+            error="GitHub request failed: timed out",
+            error_kind="network",
+            available=None,
+        )
+        self.assertEqual(network["line"], "Could not reach GitHub")
+        self.assertIn("network", network["detail"].lower())
+        self.assertIn("Open release", network["detail"])
+        self.assertEqual(network["alert"], "ERROR")
+        self.assertNotIn("Try again later", network["detail"])
+        install = core.prefs_status_copy(
+            checking=False,
+            installing=False,
+            last_iso="2026-09-14",
+            error="Install failed: Repository not set",
+            error_kind="install",
+            available={"version": "0.11.0"},
+        )
+        self.assertEqual(install["line"], "Install from Disk failed")
+        self.assertIn("Open release", install["detail"])
+        self.assertIn("Install from Disk", install["detail"])
+
+
+class FailureCopyTests(unittest.TestCase):
+    def test_every_stage_names_what_failed_and_open_release(self) -> None:
+        stages = ("check", "download", "install", "no_zip")
+        for stage in stages:
+            copy = core.describe_failure(stage, "GitHub request failed")
+            self.assertTrue(copy["line"], msg=stage)
+            self.assertIn("Open release", copy["detail"], msg=stage)
+
+    def test_rate_limit_and_missing_zip_are_specific(self) -> None:
+        rate = core.describe_failure("check", "GitHub rate limit")
+        self.assertIn("rate limit", rate["line"].lower())
+        self.assertIn("Open release", rate["detail"])
+        missing = core.describe_failure("no_zip")
+        self.assertIn("behold-*.zip", missing["line"])
+        self.assertIn("Open release", missing["detail"])
+
+    def test_infer_stage_from_stored_kind_or_text(self) -> None:
+        self.assertEqual(core.infer_failure_stage("install", ""), "install")
+        self.assertEqual(core.infer_failure_stage("", "download failed: timeout"), "download")
+        self.assertEqual(core.infer_failure_stage("", "no behold-*.zip"), "no_zip")
+        copy = core.failure_copy(kind="network", error="Could not reach GitHub")
+        self.assertIn("network", copy["detail"].lower())
 
 
 class FetchInjectTests(unittest.TestCase):
@@ -297,8 +345,13 @@ class WiringTests(unittest.TestCase):
         self.assertIn("behold.check_updates", prefs)
         self.assertIn("behold.install_update", prefs)
         self.assertIn("behold.open_release", prefs)
+        self.assertIn("update_error_kind", prefs)
+        self.assertIn("alert", prefs)
         self.assertIn("draw_update_notice", panels)
-        self.assertIn("behold.dismiss_update", chrome)
+        self.assertIn("behold.open_release", chrome)
+        self.assertIn("behold.check_updates", chrome)
+        self.assertIn('icon="ERROR"', chrome)
+        self.assertIn("Check again", chrome)
         self.assertIn("updates", init)
         self.assertIn("GitHub", manifest)
         self.assertNotIn("GITHUB_TOKEN", operators)

@@ -12,6 +12,7 @@ from . import runtime
 from .core import (
     RESTART_MESSAGE,
     available_from_cache,
+    describe_failure,
     installed_version,
     is_allowed_download_url,
 )
@@ -43,6 +44,7 @@ class BEHOLD_OT_check_updates(Operator):
         if prefs is not None:
             prefs.update_checking = True
             prefs.update_last_error = ""
+            prefs.update_error_kind = ""
         runtime.request_check(force=True)
         self.report({"INFO"}, "Checking GitHub for a newer BEHOLD…")
         return {"FINISHED"}
@@ -66,14 +68,17 @@ class BEHOLD_OT_install_update(Operator):
         if update and update.get("zip_url"):
             zip_url = update["zip_url"]
         if not is_allowed_download_url(zip_url):
-            self.report(
-                {"ERROR"},
-                "No behold-*.zip on that release. Use Open release.",
-            )
+            copy = describe_failure("no_zip")
+            if prefs is not None:
+                prefs.update_installing = False
+                prefs.update_last_error = copy["line"]
+                prefs.update_error_kind = copy["kind"]
+            self.report({"ERROR"}, f"{copy['line']}. {copy['detail']}")
             return {"CANCELLED"}
         if prefs is not None:
             prefs.update_installing = True
             prefs.update_last_error = ""
+            prefs.update_error_kind = ""
         runtime.request_install()
         version = update["version"] if update else "update"
         self.report(

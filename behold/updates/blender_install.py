@@ -88,7 +88,10 @@ def install_zip_file(filepath: str) -> dict[str, Any]:
         return {
             "ok": False,
             "method": "",
-            "message": "Blender has no Install from Disk operator. Open the zip from Preferences.",
+            "message": (
+                "Blender has no Install from Disk operator. "
+                "Open release, download behold-*.zip, then Preferences → Install from Disk."
+            ),
         }
     chosen: InstallOp = (
         EXTENSIONS_INSTALL_OP
@@ -119,7 +122,10 @@ def install_zip_file(filepath: str) -> dict[str, Any]:
         return {
             "ok": False,
             "method": chosen,
-            "message": "Install from Disk did not finish. Open the zip from Preferences.",
+            "message": (
+                "Install from Disk did not finish. "
+                "Open release, download behold-*.zip, then Preferences → Install from Disk."
+            ),
         }
 
     if chosen == ADDON_INSTALL_OP:
