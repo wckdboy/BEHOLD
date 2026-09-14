@@ -6,6 +6,9 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.20.0 Compositor look pack** — Clean / Catalog / Dramatic still looks on
+  Shoot. Vignette, subtle grain, mild contrast; Dramatic adds bloom-safe glare.
+  Toggle tears the graph down. Not gobos, IES, or a full grade suite.
 - **0.19.0 Catalog batch export** — one-click front / ¾ / top stills on Shoot,
   plus optional Shot Manager shots, with `{angle}` `{camera}` `{quality}`
   path tokens. Not a render-queue farm.
