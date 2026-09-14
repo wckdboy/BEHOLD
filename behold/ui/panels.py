@@ -3,7 +3,8 @@
 
 Studio chrome (v0.9.0): branded hero + Import → Studio → Dress → Shoot strip
 on the main panel; section header icons; box cards and one-CTA empty states.
-First-ship Import / Studio / Shoot stay skinny. Import shows the picker plus
+Easy update (v0.10.0): a dismissible GitHub notice on the main panel when a
+newer stable zip is cached. First-ship Import / Studio / Shoot stay skinny. Import shows the picker plus
 one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting section. Cameras
 is the v0.5.0 product-camera kit. Shoot carries a compact Turntable row
 (v0.6.0). Materials is the v0.8.0 local-look rack (Assist applies without
@@ -33,6 +34,7 @@ from .chrome import (
     draw_hero,
     draw_parked_heading,
     draw_section_icon,
+    draw_update_notice,
 )
 from .flow import EMPTY_CAMERAS, EMPTY_LIGHTS, EMPTY_MATERIALS, SECTION_ICONS
 
@@ -417,6 +419,7 @@ class BEHOLD_PT_main(Panel):
 
     def draw(self, context: Context):
         draw_hero(self.layout)
+        draw_update_notice(self.layout, context)
         draw_flow_strip(self.layout, context)
 
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 bl_info = {
     "name": "BEHOLD",
     "author": "AMIRITE.studio",
-    "version": (0, 9, 0),
+    "version": (0, 10, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD | Shift+Alt+B pie",
     "description": "Product studio lighting and rendering — BEHOLD by AMIRITE.studio",
@@ -16,6 +16,7 @@ bl_info = {
 
 from . import preferences
 from . import properties
+from . import updates
 from . import ui
 from .light_draw import operators as light_draw_ops
 from .materials import blenderkit_bridge, local_rack
@@ -28,6 +29,7 @@ from .studio import operators as studio_ops
 _MODULES = (
     properties,
     preferences,
+    updates,
     studio_ops,
     local_rack,
     blenderkit_bridge,

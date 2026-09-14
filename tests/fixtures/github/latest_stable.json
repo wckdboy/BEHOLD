@@ -1,0 +1,16 @@
+{
+  "tag_name": "v0.10.0",
+  "name": "v0.10.0",
+  "draft": false,
+  "prerelease": false,
+  "html_url": "https://github.com/wckdboy/BEHOLD/releases/tag/v0.10.0",
+  "zipball_url": "https://api.github.com/repos/wckdboy/BEHOLD/zipball/v0.10.0",
+  "tarball_url": "https://api.github.com/repos/wckdboy/BEHOLD/tarball/v0.10.0",
+  "assets": [
+    {
+      "name": "behold-0.10.0.zip",
+      "content_type": "application/zip",
+      "browser_download_url": "https://github.com/wckdboy/BEHOLD/releases/download/v0.10.0/behold-0.10.0.zip"
+    }
+  ]
+}

@@ -5,12 +5,14 @@ from __future__ import annotations
 
 from bpy.types import Context, UILayout
 
+from ..brand import HERO_ICON, PRODUCT_CREDIT, PRODUCT_NAME
 from ..cad import material_assist
 from ..materials.presets import is_dressable_mesh_name
 from ..preferences import get_prefs
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
-from ..brand import HERO_ICON, PRODUCT_CREDIT, PRODUCT_NAME
+from ..updates.core import available_from_cache, installed_version
+from ..updates.runtime import notice_is_dismissed
 from .flow import (
     FLOW_STEPS,
     EmptyState,
@@ -28,6 +30,30 @@ def draw_hero(layout: UILayout) -> None:
     box = layout.box()
     box.label(text=PRODUCT_NAME, icon=HERO_ICON)
     box.label(text=PRODUCT_CREDIT)
+
+
+def draw_update_notice(layout: UILayout, context: Context) -> None:
+    """Session-dismissible notice when GitHub has a newer stable zip."""
+    if notice_is_dismissed():
+        return
+    prefs = get_prefs(context)
+    if prefs is None:
+        return
+    update = available_from_cache(
+        getattr(prefs, "update_latest_tag", "") or "",
+        installed=installed_version(),
+        html_url=getattr(prefs, "update_latest_url", "") or "",
+        zip_url=getattr(prefs, "update_latest_zip_url", "") or "",
+    )
+    if update is None:
+        return
+    box = layout.box()
+    box.label(text=f"Update available: {update['version']}", icon="INFO")
+    row = box.row(align=True)
+    if update.get("zip_url"):
+        row.operator("behold.install_update", text="Install", icon="IMPORT")
+    row.operator("behold.open_release", text="Open release", icon="URL")
+    row.operator("behold.dismiss_update", text="", icon="X")
 
 
 def draw_section_icon(layout: UILayout, icon: str) -> None:

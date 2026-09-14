@@ -6,7 +6,7 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.9.0)
+## What works (v0.10.0)
 
 **First-ship N-panel** — Import → Studio → Shoot stays the three-click path. The BEHOLD tab now has a branded hero (**BEHOLD** / **by AMIRITE.studio**) and a compact **Import → Studio → Dress → Shoot** strip that checks off as the scene fills in:
 
@@ -17,6 +17,8 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath.
 
 **Faster actions** — pie menu + 3D View header (see [Pie and header](#pie-and-header) below).
+
+**Easy update** — Check for updates in add-on preferences (or the notice on the BEHOLD tab). Auto-check is on by default, at most once a day. See [Updates](#updates).
 
 **Lights** — native multi-light inventory plus Light Draw:
 
@@ -173,24 +175,37 @@ The keymap is registered on the add-on keyconfig for **3D View** (Shift+Alt+B). 
 Edit → Preferences → Add-ons → **BEHOLD**:
 
 - Branding line (**BEHOLD** / **by AMIRITE.studio**) plus Docs and Releases links
+- **Updates** — **Check for updates**, last-checked status, **Update available: x.y.z** with **Install** / **Open release**. **Check for updates** toggle (default on) asks GitHub at most once a day
 - **Workflow strip** and **3D View header shortcuts** toggles
 - This-scene **Build Studio after Import**, **Material Assist after Import**, and **Quality** (same scene props as Advanced)
 
+## Updates
+
+BEHOLD is installed from a GitHub zip, so Blender's extensions.blender.org updater does not see it. The add-on asks the public [GitHub Releases API](https://github.com/wckdboy/BEHOLD/releases) for `wckdboy/BEHOLD` — **no token**, nothing about you or your files.
+
+1. **Auto-check** (default on) runs in the background shortly after Blender loads, at most **once per day**. Turn it off with **Check for updates** in add-on preferences.
+2. Click **Check for updates** any time. Preferences show last-checked status, or **Update available: x.y.z**.
+3. A light notice on the **BEHOLD** tab offers **Install** / **Open release**. **X** dismisses it until you restart Blender.
+4. **Install** downloads `behold-*.zip` from that release, then runs Blender 5.2 **Install from Disk** (`extensions.package_install_files` into `user_default`, overwrite + enable). Older 4.2+ builds fall back to **Add-ons → Install**.
+5. **Restart Blender** to finish. In-place replace of a loaded add-on is fragile; the zip is in, but the old code is still in memory until restart.
+
+If the release has no `behold-*.zip` asset, use **Open release** and install the zip the same way as the first time.
+
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.9.0.zip`).
-2. **Versioned release** — push a tag `v0.9.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.10.0.zip`).
+2. **Versioned release** — push a tag `v0.10.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.9.0
-git push origin v0.9.0
+git tag v0.10.0
+git push origin v0.10.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.9.0.zip
+# → dist/behold-0.10.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
