@@ -97,9 +97,14 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(messages.report_type(messages.NO_EEVEE), "WARNING")
         self.assertEqual(messages.report_type(messages.NO_CYCLES), "WARNING")
         self.assertEqual(messages.report_type(messages.UNKNOWN_QUALITY), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_CATCHER_API), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_STUDIO), "WARNING")
+        self.assertEqual(messages.report_type(messages.NO_PRODUCT_FOR_CATCHER), "WARNING")
+        self.assertEqual(messages.report_type(messages.UNKNOWN_BACKDROP), "WARNING")
         self.assertEqual(messages.report_type(messages.LINKING_FAILED), "ERROR")
         self.assertEqual(messages.report_type(messages.DOF_FAILED), "ERROR")
         self.assertEqual(messages.report_type(messages.QUALITY_FAILED), "ERROR")
+        self.assertEqual(messages.report_type(messages.CATCHER_FAILED), "ERROR")
         self.assertEqual(messages.report_set(messages.NO_MESH_SELECTED), {"WARNING"})
         self.assertEqual(
             messages.report_type(messages.file_not_found_message("/tmp/gone.step")),
@@ -149,6 +154,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.load_hdri", studio)
         self.assertIn("behold.reset_world", studio)
         self.assertIn("behold.bake_hdri", studio)
+        self.assertIn("behold.apply_catcher", studio)
         self.assertIn("behold.apply_light_preset", studio)
         self.assertIn("behold.link_selected", studio)
         self.assertIn("behold.exclude_selected", studio)

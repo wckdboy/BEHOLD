@@ -9,6 +9,7 @@ from bpy.types import Context, Operator
 from bpy_extras.io_utils import ImportHelper
 
 from . import bake_apply
+from . import catcher_apply
 from . import light_linking
 from . import light_linking_apply
 from . import light_presets
@@ -197,6 +198,24 @@ class BEHOLD_OT_bake_hdri(Operator):
         return {"FINISHED"}
 
 
+class BEHOLD_OT_apply_catcher(Operator):
+    bl_idname = "behold.apply_catcher"
+    bl_label = "Apply Catcher"
+    bl_description = (
+        "Apply ground contact: soft contact on the cyclorama, or a "
+        "Cycles shadow-catcher plane (EEVEE fallback) for Solid / HDRI"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = catcher_apply.apply_ground_contact(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
 class BEHOLD_OT_link_selected(Operator):
     bl_idname = "behold.link_selected"
     bl_label = "Link Selected"
@@ -304,6 +323,7 @@ CLASSES = (
     BEHOLD_OT_load_hdri,
     BEHOLD_OT_reset_world,
     BEHOLD_OT_bake_hdri,
+    BEHOLD_OT_apply_catcher,
 )
 
 

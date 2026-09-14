@@ -24,6 +24,7 @@ from .shoot.quality import quality_enum_items
 from .shoot.quality_apply import on_quality_update
 from .studio.bake import DEFAULT_RESOLUTION as BAKE_DEFAULT_RESOLUTION
 from .studio.bake import resolution_enum_items as bake_resolution_enum_items
+from .studio.catcher_apply import on_catcher_update
 from .studio.dof import DEFAULT_FSTOP as DOF_DEFAULT_FSTOP
 from .studio.dof import FSTOP_MAX as DOF_FSTOP_MAX
 from .studio.dof import FSTOP_MIN as DOF_FSTOP_MIN
@@ -152,9 +153,13 @@ class BEHOLDSceneSettings(PropertyGroup):
         default="THREE_POINT",
     )
     include_shadow_catcher: BoolProperty(
-        name="Shadow Catcher",
-        description="Add a ground plane that catches shadows",
+        name="Catcher",
+        description=(
+            "Ground contact after Build: soft contact on the cyclorama, "
+            "or a Cycles shadow-catcher plane (EEVEE fallback) for Solid / HDRI"
+        ),
         default=True,
+        update=on_catcher_update,
     )
     studio_margin: FloatProperty(
         name="Studio Margin",

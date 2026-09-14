@@ -175,6 +175,7 @@ class FitWiringTests(unittest.TestCase):
         self.assertIn("BUILD_NEEDS_MESH", ops)
         self.assertIn("NO_MESH_SELECTED", ops)
         self.assertIn("remove_studio_backdrops", source)
+        self.assertIn("catcher_apply.apply_ground_contact", source)
         self.assertIn("studio_margin", source)
         self.assertIn("fit.floor_size", source)
         self.assertIn("fit.wall_height", source)
@@ -199,6 +200,7 @@ class FitWiringTests(unittest.TestCase):
         first = source.split("def draw_studio_first_ship", 1)[1].split("def ", 1)[0]
         parked = source.split("def draw_studio_parked", 1)[1].split("def ", 1)[0]
         self.assertNotIn("studio_margin", first)
+        self.assertIn("include_shadow_catcher", first)
         self.assertIn("studio_margin", parked)
         self.assertIn('text="Build"', first)
 

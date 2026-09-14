@@ -137,6 +137,7 @@ class FlowStripTests(unittest.TestCase):
             flow.studio_present(mesh_names=("housing",), has_behold_light=False)
         )
         self.assertTrue(camera_ids.is_studio_mesh_name("BEHOLD_ShadowCatcher"))
+        self.assertTrue(camera_ids.is_studio_mesh_name("BEHOLD_ContactShadow"))
 
     def test_empty_states_have_one_primary_cta(self) -> None:
         self.assertEqual(flow.EMPTY_LIGHTS.title, "No BEHOLD lights yet")
@@ -197,7 +198,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("/releases", _read("behold/brand.py"))
         init = _read("behold/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (0, 23, 0)', init)
+        self.assertIn('"version": (0, 24, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
         source = _read("behold/ui/panels.py")
