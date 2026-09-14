@@ -65,6 +65,12 @@ class FirstShipUiTests(unittest.TestCase):
             ],
         )
 
+    def test_main_panel_has_hero_and_flow(self) -> None:
+        body = _class_source(self.source, self.tree, "BEHOLD_PT_main")
+        self.assertIn("draw_hero", body)
+        self.assertIn("draw_flow_strip", body)
+        self.assertNotIn("Light Mixer", body)
+
     def test_advanced_defaults_closed(self) -> None:
         advanced = _class_source(self.source, self.tree, "BEHOLD_PT_advanced")
         self.assertIn("DEFAULT_CLOSED", advanced)
@@ -102,7 +108,8 @@ class FirstShipUiTests(unittest.TestCase):
 
     def test_lights_section_has_inventory_and_draw_target(self) -> None:
         body = _func_source(self.source, self.tree, "draw_lights_section")
-        self.assertIn("No BEHOLD lights yet", body)
+        self.assertIn("EMPTY_LIGHTS", body)
+        self.assertIn("draw_empty_card", body)
         self.assertIn("behold.add_light", body)
         self.assertIn("behold.remove_light", body)
         self.assertIn("behold.set_active_light", body)
@@ -114,7 +121,8 @@ class FirstShipUiTests(unittest.TestCase):
 
     def test_cameras_section_has_inventory_and_frame(self) -> None:
         body = _func_source(self.source, self.tree, "draw_cameras_section")
-        self.assertIn("No BEHOLD cameras yet", body)
+        self.assertIn("EMPTY_CAMERAS", body)
+        self.assertIn("draw_empty_card", body)
         self.assertIn("behold.add_camera", body)
         self.assertIn("behold.remove_camera", body)
         self.assertIn("behold.set_active_camera", body)
@@ -128,9 +136,10 @@ class FirstShipUiTests(unittest.TestCase):
     def test_materials_section_has_rack_assist_and_empty_state(self) -> None:
         body = _func_source(self.source, self.tree, "draw_materials_section")
         self.assertIn("EMPTY_NO_MESH", body)
+        self.assertIn("EMPTY_MATERIALS", body)
+        self.assertIn("draw_empty_card", body)
         self.assertIn("behold.apply_local_material", body)
         self.assertIn("behold.cad_material_assist", body)
-        self.assertIn("behold.import_product", body)
         self.assertNotIn("blenderkit_login", body)
         self.assertNotIn("blenderkit_search", body)
         self.assertNotIn("blenderkit_apply", body)
@@ -213,6 +222,8 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.6.0", text)
         self.assertIn("0.7.0", text)
         self.assertIn("0.8.0", text)
+        self.assertIn("0.9.0", text)
+        self.assertIn("Shift+Alt+B", text)
         self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)
         self.assertIn("Import Product", text)

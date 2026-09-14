@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-First-ship chrome: Import / Studio / Shoot stay skinny. Import shows the
-picker plus one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting
-section. Cameras is the v0.5.0 product-camera kit. Shoot carries a compact
-Turntable row (v0.6.0). Materials is the v0.8.0 local-look rack (Assist
-applies without BlenderKit). Parked mixer, CAD box extras, BlenderKit chrome,
-hotkeys, batch, and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
+Studio chrome (v0.9.0): branded hero + Import → Studio → Dress → Shoot strip
+on the main panel; section header icons; box cards and one-CTA empty states.
+First-ship Import / Studio / Shoot stay skinny. Import shows the picker plus
+one CAD backend line (v0.7.0). Lights is the v0.4.0 lighting section. Cameras
+is the v0.5.0 product-camera kit. Shoot carries a compact Turntable row
+(v0.6.0). Materials is the v0.8.0 local-look rack (Assist applies without
+BlenderKit). Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch,
+and turntable extras live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -20,11 +22,19 @@ from ..cad import detect as cad_detect
 from ..cad import material_assist
 from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
-from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT, empty_state
+from ..materials.presets import EMPTY_NO_MESH, empty_state
 from ..product_import import formats
 from ..shoot import turntable as turntable_lib
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
+from .chrome import (
+    draw_empty_card,
+    draw_flow_strip,
+    draw_hero,
+    draw_parked_heading,
+    draw_section_icon,
+)
+from .flow import EMPTY_CAMERAS, EMPTY_LIGHTS, EMPTY_MATERIALS, SECTION_ICONS
 
 
 def _has_selected_mesh(context: Context) -> bool:
@@ -69,25 +79,29 @@ def draw_cad_status_line(layout: UILayout, cad: dict) -> None:
 def draw_import_first_ship(layout: UILayout, context: Context) -> None:
     """Import Product picker plus CAD backend status."""
     del context
-    layout.operator("behold.import_product", icon="IMPORT")
+    card = layout.box()
+    card.operator("behold.import_product", icon="IMPORT")
     draw_cad_status_line(layout, cad_detect.cad_status())
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
     """Backdrop White / Grey / Black + Build."""
     settings = context.scene.behold
-    layout.prop(settings, "studio_backdrop_tone", text="Backdrop", expand=True)
-    layout.operator("behold.build_studio", text="Build", icon="OUTLINER_OB_LIGHT")
+    card = layout.box()
+    card.prop(settings, "studio_backdrop_tone", text="Backdrop", expand=True)
+    card.operator("behold.build_studio", text="Build", icon="OUTLINER_OB_LIGHT")
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     """Draft / Final, Still, Render, compact Turntable row."""
     settings = context.scene.behold
-    row = layout.row(align=True)
+    card = layout.box()
+    row = card.row(align=True)
     row.prop_enum(settings, "render_quality", "DRAFT")
     row.prop_enum(settings, "render_quality", "FINAL")
-    layout.operator("behold.render_still", text="Still", icon="RENDER_STILL")
-    layout.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
+    row = card.row(align=True)
+    row.operator("behold.render_still", text="Still", icon="RENDER_STILL")
+    row.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
     layout.separator()
     draw_turntable_compact(layout, context)
 
@@ -104,9 +118,8 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
     if message == turntable_lib.EMPTY_NO_CAMERA:
         box = layout.box()
         box.label(text=message, icon="INFO")
-        row = box.row(align=True)
-        row.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
-        row.operator("behold.add_camera", text="Add Camera", icon="ADD")
+        box.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
+        box.operator("behold.add_camera", text="Add Camera", icon="ADD")
         return
     if message == turntable_lib.EMPTY_NO_PRODUCT:
         box = layout.box()
@@ -117,8 +130,9 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
         box = layout.box()
         box.label(text=message, icon="INFO")
         return
-    row = layout.row(align=True)
-    row.label(text="Turntable")
+    card = layout.box()
+    row = card.row(align=True)
+    row.label(text="Turntable", icon="RECOVER_LAST")
     row.prop(settings, "turntable_seconds", text="")
     row.operator("behold.setup_turntable", text="Setup")
     row.operator("behold.play_turntable", text="Play", icon="PLAY")
@@ -130,13 +144,9 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
     lights = light_lib.iter_behold_lights(context)
 
     if not lights:
-        empty = layout.box()
-        empty.label(text="No BEHOLD lights yet", icon="INFO")
-        empty.label(text="Build Studio or Add Light")
+        empty = draw_empty_card(layout, EMPTY_LIGHTS)
         empty.prop(settings, "new_light_energy", text="New W")
-        row = empty.row(align=True)
-        row.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
-        row.operator("behold.add_light", text="Add Light", icon="ADD")
+        empty.operator("behold.add_light", text="Add Light", icon="ADD")
     else:
         active = light_lib.get_active_behold_light(context)
         active_name = active.name if active is not None else ""
@@ -159,8 +169,8 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
         row.operator("behold.add_light", text="Add", icon="ADD")
 
     layout.separator()
-    col = layout.column(align=True)
-    col.label(text="Light Draw")
+    col = layout.box()
+    col.label(text="Light Draw", icon="LIGHT_AREA")
     col.prop(settings, "light_draw_target", text="Aim", expand=True)
     col.prop(settings, "light_draw_mode", text="Mode", expand=True)
     col.prop(settings, "light_draw_distance")
@@ -171,26 +181,27 @@ def draw_materials_section(layout: UILayout, context: Context) -> None:
     """Local PBR rack + Assist. Empty-state if nothing dressable is selected."""
     meshes = local_rack.dressable_meshes(context.selected_objects)
     message = empty_state(has_product_mesh=bool(meshes))
+    if message == EMPTY_NO_MESH:
+        draw_empty_card(layout, EMPTY_MATERIALS)
+        return
     if message is not None:
-        empty = layout.box()
-        empty.label(text=EMPTY_NO_MESH, icon="INFO")
-        empty.label(text=EMPTY_NO_MESH_HINT)
-        empty.operator("behold.import_product", icon="IMPORT")
+        box = layout.box()
+        box.label(text=message, icon="INFO")
         return
 
-    grid = layout.grid_flow(columns=3, align=True)
+    card = layout.box()
+    card.label(text="Looks", icon="MATERIAL")
+    grid = card.grid_flow(columns=3, align=True)
     for key, data in local_rack.PRESETS.items():
         op = grid.operator("behold.apply_local_material", text=data["label"])
         op.preset = key
-
-    row = layout.row(align=True)
-    row.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
+    card.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
 
     status = blenderkit_bridge.blenderkit_status()
     if status["installed"] and status["logged_in"]:
-        layout.label(text="BlenderKit signed in — Assist also searches")
+        card.label(text="BlenderKit signed in — Assist also searches")
     else:
-        layout.label(text="Local looks — no BlenderKit account needed")
+        card.label(text="Local looks — no BlenderKit account needed")
 
 
 def draw_cameras_section(layout: UILayout, context: Context) -> None:
@@ -199,13 +210,9 @@ def draw_cameras_section(layout: UILayout, context: Context) -> None:
     cameras = camera_lib.iter_behold_cameras(context)
 
     if not cameras:
-        empty = layout.box()
-        empty.label(text="No BEHOLD cameras yet", icon="INFO")
-        empty.label(text="Build Studio or Add Camera")
+        empty = draw_empty_card(layout, EMPTY_CAMERAS)
         empty.prop(settings, "new_camera_lens", text="mm")
-        row = empty.row(align=True)
-        row.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
-        row.operator("behold.add_camera", text="Add Camera", icon="ADD")
+        empty.operator("behold.add_camera", text="Add Camera", icon="ADD")
         return
 
     active = camera_lib.get_active_behold_camera(context)
@@ -243,6 +250,7 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
         empty.label(text="No product in the scene yet", icon="INFO")
         empty.label(text=f"Mesh: {formats.mesh_format_summary()}")
         empty.label(text=f"CAD: {formats.cad_format_summary()}")
+        empty.operator("behold.import_product", icon="IMPORT")
 
     col = layout.column(align=True)
     col.prop(settings, "import_auto_studio")
@@ -339,6 +347,8 @@ def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
     col.label(text="Ctrl+Wheel — distance")
     col.label(text="1 / 2 / 3 — Reflect / Direct / Orbit")
     col.label(text="S — solo · F — false color · Esc — exit")
+    col.separator()
+    col.label(text="Open Light Draw from the pie (Shift+Alt+B) or Lights")
 
 
 def draw_shoot_parked(layout: UILayout, context: Context) -> None:
@@ -350,6 +360,7 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
     if not has_camera:
         box = layout.box()
         box.label(text=turntable_lib.EMPTY_NO_CAMERA, icon="ERROR")
+        box.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
 
     col = layout.column(align=True)
     col.label(text="Look")
@@ -405,7 +416,8 @@ class BEHOLD_PT_main(Panel):
     bl_category = "BEHOLD"
 
     def draw(self, context: Context):
-        del context
+        draw_hero(self.layout)
+        draw_flow_strip(self.layout, context)
 
 
 class BEHOLD_PT_import(Panel):
@@ -415,6 +427,10 @@ class BEHOLD_PT_import(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["import"])
 
     def draw(self, context: Context):
         draw_import_first_ship(self.layout, context)
@@ -428,6 +444,10 @@ class BEHOLD_PT_studio(Panel):
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
 
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["studio"])
+
     def draw(self, context: Context):
         draw_studio_first_ship(self.layout, context)
 
@@ -439,6 +459,10 @@ class BEHOLD_PT_shoot(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["shoot"])
 
     def draw(self, context: Context):
         draw_shoot_first_ship(self.layout, context)
@@ -452,6 +476,10 @@ class BEHOLD_PT_lights(Panel):
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
 
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["lights"])
+
     def draw(self, context: Context):
         draw_lights_section(self.layout, context)
 
@@ -464,6 +492,10 @@ class BEHOLD_PT_cameras(Panel):
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
 
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["cameras"])
+
     def draw(self, context: Context):
         draw_cameras_section(self.layout, context)
 
@@ -475,6 +507,10 @@ class BEHOLD_PT_materials(Panel):
     bl_region_type = "UI"
     bl_category = "BEHOLD"
     bl_parent_id = "BEHOLD_PT_main"
+
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["materials"])
 
     def draw(self, context: Context):
         draw_materials_section(self.layout, context)
@@ -489,21 +525,26 @@ class BEHOLD_PT_advanced(Panel):
     bl_parent_id = "BEHOLD_PT_main"
     bl_options = {"DEFAULT_CLOSED"}
 
+    def draw_header(self, context: Context):
+        del context
+        draw_section_icon(self.layout, SECTION_ICONS["advanced"])
+
     def draw(self, context: Context):
         layout = self.layout
-        layout.label(text="Import")
+        draw_parked_heading(
+            layout,
+            "Import",
+            SECTION_ICONS["import"],
+            leading_separator=False,
+        )
         draw_import_parked(layout, context)
-        layout.separator()
-        layout.label(text="Studio")
+        draw_parked_heading(layout, "Studio", SECTION_ICONS["studio"])
         draw_studio_parked(layout, context)
-        layout.separator()
-        layout.label(text="Materials / BlenderKit")
+        draw_parked_heading(layout, "Materials / BlenderKit", SECTION_ICONS["materials"])
         draw_materials_parked(layout, context)
-        layout.separator()
-        layout.label(text="Light Draw")
+        draw_parked_heading(layout, "Light Draw", SECTION_ICONS["lights"])
         draw_light_draw_parked(layout, context)
-        layout.separator()
-        layout.label(text="Shoot")
+        draw_parked_heading(layout, "Shoot", SECTION_ICONS["shoot"])
         draw_shoot_parked(layout, context)
 
 

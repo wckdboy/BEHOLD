@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import types
 from pathlib import Path
 from types import ModuleType
 
@@ -23,3 +24,24 @@ def load_module(relpath: str, name: str) -> ModuleType:
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def _ensure_namespace(dotted: str) -> None:
+    if dotted in sys.modules:
+        return
+    rel = Path(*dotted.split("."))
+    module = types.ModuleType(dotted)
+    module.__path__ = [str(ROOT / rel)]
+    module.__package__ = dotted
+    sys.modules[dotted] = module
+
+
+def load_addon_module(relpath: str, dotted: str) -> ModuleType:
+    """Load a bpy-free submodule so package-relative imports resolve.
+
+    Does not execute ``behold/__init__.py`` (that module imports bpy).
+    """
+    parts = dotted.split(".")
+    for index in range(1, len(parts)):
+        _ensure_namespace(".".join(parts[:index]))
+    return load_module(relpath, dotted)
