@@ -1,16 +1,16 @@
 schema_version = "1.0.0"
 
 id = "behold"
-version = "0.3.1"
+version = "0.4.0"
 name = "BEHOLD"
-tagline = "Product studio rendering — KeyShot-simple, free"
-maintainer = "wckdboy"
+tagline = "Product studio lighting and rendering — BEHOLD by AMIRITE.studio"
+maintainer = "AMIRITE.studio"
 type = "add-on"
 
 blender_version_min = "4.2.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
-website = "https://cursor.com/codebase/wckdboy/BEHOLD"
+website = "https://github.com/wckdboy/BEHOLD"
 tags = ["Render", "Lighting", "Material", "Camera", "Import-Export"]
 
 [permissions]

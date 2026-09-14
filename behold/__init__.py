@@ -5,13 +5,13 @@ from __future__ import annotations
 
 bl_info = {
     "name": "BEHOLD",
-    "author": "wckdboy",
-    "version": (0, 3, 1),
+    "author": "AMIRITE.studio",
+    "version": (0, 4, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD",
-    "description": "Product studio, Light Draw, materials, shoot, and product import",
+    "description": "Product studio lighting and rendering — BEHOLD by AMIRITE.studio",
     "category": "Render",
-    "doc_url": "https://cursor.com/codebase/wckdboy/BEHOLD",
+    "doc_url": "https://github.com/wckdboy/BEHOLD",
 }
 
 from . import properties

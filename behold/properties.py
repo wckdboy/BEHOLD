@@ -164,6 +164,28 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Guess a BlenderKit query from the product filename and part names",
         default=True,
     )
+    active_light_name: StringProperty(
+        name="Active Light",
+        description="BEHOLD light used by Light Draw and the intensity list",
+        default="",
+        maxlen=128,
+    )
+    new_light_energy: FloatProperty(
+        name="New Light Power",
+        description="Default wattage for lights created with Add Light / Light Draw",
+        default=200.0,
+        min=0.01,
+        soft_max=2000.0,
+    )
+    light_draw_target: EnumProperty(
+        name="Light Draw Target",
+        description="Whether Light Draw moves the active light or creates a new one",
+        items=(
+            ("ACTIVE", "Active", "Move and aim the active BEHOLD light"),
+            ("NEW", "New", "Create a new BEHOLD light and aim it"),
+        ),
+        default="ACTIVE",
+    )
 
 
 CLASSES = (BEHOLDSceneSettings,)
