@@ -183,23 +183,28 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("Light Mixer", body)
         self.assertNotIn("batch_angles", body)
 
-    def test_shoot_first_ship_is_draft_final_still_render_and_turntable(self) -> None:
+    def test_shoot_first_ship_is_draft_final_look_shots_and_turntable(self) -> None:
         body = _func_source(self.source, self.tree, "draw_shoot_first_ship")
         self.assertIn('"DRAFT"', body)
         self.assertIn('"FINAL"', body)
         self.assertIn('text="Still"', body)
         self.assertIn('text="Render"', body)
+        self.assertIn("draw_look_compact", body)
         self.assertIn("draw_shots_compact", body)
         self.assertIn("draw_turntable_compact", body)
         self.assertNotIn("batch_angles", body)
-        self.assertNotIn("exposure_ev", body)
-        self.assertNotIn("white_balance", body)
         self.assertNotIn("bookmark_camera", body)
         self.assertNotIn("output_directory", body)
         self.assertNotIn("frame_camera", body)
         self.assertNotIn("clear_cameras", body)
         self.assertNotIn("bake_turntable", body)
         self.assertNotIn("render_turntable", body)
+        look = _func_source(self.source, self.tree, "draw_look_compact")
+        self.assertIn("exposure_ev", look)
+        self.assertIn("white_balance_kelvin", look)
+        self.assertIn("false_color", look)
+        self.assertNotIn("batch_angles", look)
+        self.assertNotIn("bookmark_camera", look)
 
     def test_turntable_compact_has_setup_play_and_empty_state(self) -> None:
         body = _func_source(self.source, self.tree, "draw_turntable_compact")
@@ -232,6 +237,8 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("behold.play_turntable", shoot)
         self.assertIn("behold.apply_local_material", materials)
         self.assertIn("blenderkit", materials.lower())
+        self.assertIn("exposure_ev", shoot)
+        self.assertIn("behold.apply_exposure", shoot)
 
     def test_backend_keeps_final_quality_and_backdrop_tones(self) -> None:
         shoot = (ROOT / "behold" / "shoot" / "operators.py").read_text(encoding="utf-8")
@@ -269,8 +276,10 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.14.0", text)
         self.assertIn("0.15.0", text)
         self.assertIn("0.16.0", text)
+        self.assertIn("0.17.0", text)
         self.assertIn("Shot Manager", text)
         self.assertIn("Softbox", text)
+        self.assertIn("False Color", text)
         self.assertIn("ROADMAP.md", text)
         self.assertIn("HDRI", text)
         self.assertIn("Check for updates", text)

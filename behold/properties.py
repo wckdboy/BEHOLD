@@ -15,6 +15,7 @@ from bpy.props import (
 )
 from bpy.types import PropertyGroup, Scene
 
+from .shoot.exposure_apply import on_exposure_update
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
@@ -188,10 +189,13 @@ class BEHOLDSceneSettings(PropertyGroup):
     )
     exposure_ev: FloatProperty(
         name="EV",
-        description="Exposure compensation in stops",
+        description="Exposure compensation in stops (Color Management)",
         default=0.0,
         min=-6.0,
         max=6.0,
+        step=10,
+        precision=2,
+        update=on_exposure_update,
     )
     turntable_seconds: FloatProperty(
         name="Seconds",
@@ -226,8 +230,9 @@ class BEHOLDSceneSettings(PropertyGroup):
     )
     false_color: BoolProperty(
         name="False Color",
-        description="Toggle false-color look for exposure checks",
+        description="AgX-safe false-color heat map for exposure checks",
         default=False,
+        update=on_exposure_update,
     )
     light_draw_mode: EnumProperty(
         name="Light Draw Mode",
@@ -249,11 +254,18 @@ class BEHOLDSceneSettings(PropertyGroup):
     )
     white_balance_kelvin: FloatProperty(
         name="White Balance",
-        description="Scene white-balance temperature in Kelvin (view look)",
+        description="Scene white-balance temperature in Kelvin (Color Management)",
         default=6500.0,
         min=2000.0,
         max=10000.0,
         subtype="TEMPERATURE",
+        update=on_exposure_update,
+    )
+    view_transform_restore: StringProperty(
+        name="Saved View Transform",
+        description="View transform restored when False Color turns off",
+        default="AgX",
+        maxlen=64,
     )
     render_quality: EnumProperty(
         name="Quality",

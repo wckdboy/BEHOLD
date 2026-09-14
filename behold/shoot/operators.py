@@ -32,6 +32,7 @@ from ..ui.messages import (
 from . import shots_apply
 from . import turntable as turntable_lib
 from . import turntable_rig
+from .exposure_apply import apply_exposure
 
 
 QUALITY_SAMPLES = {
@@ -47,26 +48,6 @@ def _ensure_camera(context: Context) -> bpy.types.Object | None:
     if cam is not None:
         context.scene.camera = cam
     return cam
-
-
-def apply_exposure(context: Context) -> None:
-    settings = context.scene.behold
-    view = context.scene.view_settings
-    view.exposure = settings.exposure_ev
-    # Approximate WB via look temperature when available; otherwise leave AgX alone.
-    if hasattr(view, "temperature"):
-        # Blender 4.x+ view settings temperature is relative; map Kelvin offset from D65.
-        view.temperature = (settings.white_balance_kelvin - 6500.0) / 1000.0
-    if settings.false_color:
-        try:
-            view.view_transform = "False Color"
-        except TypeError:
-            pass
-    else:
-        try:
-            view.view_transform = "AgX"
-        except TypeError:
-            pass
 
 
 def apply_render_quality(context: Context) -> int:
@@ -113,13 +94,17 @@ def tempfile_fallback() -> str:
 class BEHOLD_OT_apply_exposure(Operator):
     bl_idname = "behold.apply_exposure"
     bl_label = "Apply Exposure"
-    bl_description = "Push EV and false-color settings to the scene view"
+    bl_description = "Push EV, white balance, and false color to Color Management"
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: Context):
-        apply_exposure(context)
-        self.report({"INFO"}, "Exposure applied")
-        return {"FINISHED"}
+        result = apply_exposure(context)
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+        else:
+            self.report(report_set(message), message)
+        return {"FINISHED"} if result["ok"] else {"CANCELLED"}
 
 
 class BEHOLD_OT_apply_quality(Operator):
