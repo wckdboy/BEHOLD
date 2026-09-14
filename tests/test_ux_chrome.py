@@ -163,18 +163,22 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("PRODUCT_CREDIT", prefs)
         self.assertIn("DOCS_URL", prefs)
         self.assertIn("RELEASES_URL", prefs)
+        self.assertIn("check_for_updates", prefs)
+        self.assertIn("behold.check_updates", prefs)
+        self.assertIn("behold.install_update", prefs)
         self.assertIn("AMIRITE.studio", _read("behold/brand.py"))
         self.assertIn("github.com/wckdboy/BEHOLD", _read("behold/brand.py"))
         self.assertIn("/releases", _read("behold/brand.py"))
         init = _read("behold/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (0, 9, 0)', init)
+        self.assertIn('"version": (0, 10, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
         source = _read("behold/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         main = _class_source(source, tree, "BEHOLD_PT_main")
         self.assertIn("draw_hero", main)
+        self.assertIn("draw_update_notice", main)
         self.assertIn("draw_flow_strip", main)
         for name in (
             "BEHOLD_PT_import",

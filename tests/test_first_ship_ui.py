@@ -68,6 +68,7 @@ class FirstShipUiTests(unittest.TestCase):
     def test_main_panel_has_hero_and_flow(self) -> None:
         body = _class_source(self.source, self.tree, "BEHOLD_PT_main")
         self.assertIn("draw_hero", body)
+        self.assertIn("draw_update_notice", body)
         self.assertIn("draw_flow_strip", body)
         self.assertNotIn("Light Mixer", body)
 
@@ -223,6 +224,8 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.7.0", text)
         self.assertIn("0.8.0", text)
         self.assertIn("0.9.0", text)
+        self.assertIn("0.10.0", text)
+        self.assertIn("Check for updates", text)
         self.assertIn("Shift+Alt+B", text)
         self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)

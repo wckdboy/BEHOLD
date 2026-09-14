@@ -5,12 +5,18 @@ from __future__ import annotations
 
 from bpy.types import Context, UILayout
 
+from ..brand import HERO_ICON, PRODUCT_CREDIT, PRODUCT_NAME
 from ..cad import material_assist
 from ..materials.presets import is_dressable_mesh_name
 from ..preferences import get_prefs
 from ..studio import cameras as camera_lib
 from ..studio import lights as light_lib
-from ..brand import HERO_ICON, PRODUCT_CREDIT, PRODUCT_NAME
+from ..updates.core import (
+    available_from_cache,
+    failure_copy,
+    installed_version,
+)
+from ..updates.runtime import notice_is_dismissed
 from .flow import (
     FLOW_STEPS,
     EmptyState,
@@ -28,6 +34,46 @@ def draw_hero(layout: UILayout) -> None:
     box = layout.box()
     box.label(text=PRODUCT_NAME, icon=HERO_ICON)
     box.label(text=PRODUCT_CREDIT)
+
+
+def draw_update_notice(layout: UILayout, context: Context) -> None:
+    """Session-dismissible notice: newer zip, or a failed check/install."""
+    if notice_is_dismissed():
+        return
+    prefs = get_prefs(context)
+    if prefs is None:
+        return
+    update = available_from_cache(
+        getattr(prefs, "update_latest_tag", "") or "",
+        installed=installed_version(),
+        html_url=getattr(prefs, "update_latest_url", "") or "",
+        zip_url=getattr(prefs, "update_latest_zip_url", "") or "",
+    )
+    error = getattr(prefs, "update_last_error", "") or ""
+    busy = bool(getattr(prefs, "update_checking", False)) or bool(
+        getattr(prefs, "update_installing", False)
+    )
+    if busy:
+        error = ""
+    if update is None and not error:
+        return
+    box = layout.box()
+    if error:
+        copy = failure_copy(
+            kind=getattr(prefs, "update_error_kind", "") or "",
+            error=error,
+        )
+        box.label(text=copy["line"], icon="ERROR")
+        box.label(text=copy["detail"])
+    elif update is not None:
+        box.label(text=f"Update available: {update['version']}", icon="INFO")
+    row = box.row(align=True)
+    if error and update is None:
+        row.operator("behold.check_updates", text="Check again", icon="FILE_REFRESH")
+    elif update is not None and update.get("zip_url"):
+        row.operator("behold.install_update", text="Install", icon="IMPORT")
+    row.operator("behold.open_release", text="Open release", icon="URL")
+    row.operator("behold.dismiss_update", text="", icon="X")
 
 
 def draw_section_icon(layout: UILayout, icon: str) -> None:

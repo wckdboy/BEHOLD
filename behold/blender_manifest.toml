@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "behold"
-version = "0.9.0"
+version = "0.10.0"
 name = "BEHOLD"
 tagline = "Product studio lighting and rendering — BEHOLD by AMIRITE.studio"
 maintainer = "AMIRITE.studio"
@@ -14,4 +14,4 @@ website = "https://github.com/wckdboy/BEHOLD"
 tags = ["Render", "Lighting", "Material", "Camera", "Import-Export"]
 
 [permissions]
-network = "Optional BlenderKit search, login, and material downloads"
+network = "Optional GitHub update check and zip download; optional BlenderKit search, login, and material downloads"

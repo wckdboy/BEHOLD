@@ -12,19 +12,20 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.8.0 |
-| **This branch / after merge** | **0.9.0** |
+| **Version on `main` (before this cut)** | 0.9.0 |
+| **This branch / after merge** | **0.10.0** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.9.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-0.10.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
 Honest inventory of what this cut ships (plus what `main` already had).
 
+- **Easy update (0.10.0)** — public GitHub Releases check for `wckdboy/BEHOLD` (no token). Preferences: **Check for updates**, last-checked status, **Update available: x.y.z** with **Install** / **Open release**. Session-dismissible notice on the main BEHOLD panel. Check/install failures are explicit (what failed + check network / Open release). Auto-check default **on**, at most once per day on a background thread + timer (cancel-safe; toggle to disable). Install downloads `behold-*.zip` to a temp path, then Blender 5.2 `extensions.package_install_files` (Install from Disk, `user_default`, overwrite, enable) with `preferences.addon_install` fallback. Always asks to **restart Blender**. Tests in `tests/test_updates.py` (fixtures, no live network).
 - **Studio chrome (0.9.0)** — branded N-panel hero (**BEHOLD** / **by AMIRITE.studio**), section header icons, box cards, one-CTA empty states. **Import → Studio → Dress → Shoot** strip checks off from scene state (product / studio kit / local look / camera). Next CTA stays on the three-click path.
 - **Pie + header (0.9.0)** — `BEHOLD_MT_pie` via `wm.call_menu_pie` (**Shift+Alt+B** in the 3D View): Import, Build Studio, Light Draw, Still, Turntable Setup. Viewport header icon cluster (pie / Import / Build / Still), hide from add-on preferences.
-- **Preferences (0.9.0)** — branding, Docs / Releases links, flow-strip and header toggles, this-scene auto-studio / Assist / quality. No new backends.
+- **Preferences (0.9.0 / 0.10.0)** — branding, Docs / Releases links, flow-strip and header toggles, this-scene auto-studio / Assist / quality. **0.10.0** adds Check for updates / last-checked / Install from the release zip.
 - **Import Product** — mesh + CAD. `.obj` `.fbx` `.stl` `.glb`/`.gltf` `.3mf` via native Blender importers (5.2 kwargs hardened). STEP/IGES/BREP via **STEPper NEXT first-class** (`import_scene.occ_import_step` with `filepath` + `override_file`); OCP only if STEPper is missing and bindings actually import. Missing CAD backend fails loudly with the STEPper Releases URL. Optional Build Studio + Material Assist from the filename. Shared `product_import_dispatch` / `run_product_import`.
 - **Import panel (0.7.0)** — **Import Product** picker plus one CAD backend line: **STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT** (opens Releases). Auto-studio, Material Assist, and the full CAD box stay in Advanced. STEPper's own import dialog is not embedded.
 - **Studio** — cyclorama / solid / HDRI, three-point or softbox, auto camera, optional shadow catcher, White / Grey / Black first-ship backdrop tones, light mixer (key / fill / rim / temperature).
@@ -38,7 +39,7 @@ Honest inventory of what this cut ships (plus what `main` already had).
 - **BlenderKit** — soft-dependency bridge with login / search / apply hooks (Advanced). Not required to dress a mesh.
 - **Shoot depth** — EV / white balance / false color; Draft · Product · Hero (and Final) sample presets; `{angle}` `{camera}` `{quality}` path tokens; main-camera bookmark; still; batch angles; turntable.
 - **CI zip** — GitHub Actions runs `make test` then builds the install zip; tags `v*` publish a GitHub Release.
-- **Tests** — `make test` (`unittest` under `tests/`, no Blender required). `tests/test_materials.py` covers rack defaults, socket aliases, Assist mapping, and wiring.
+- **Tests** — `make test` (`unittest` under `tests/`, no Blender required). `tests/test_updates.py` covers semver compare, GitHub JSON fixtures, and operator/prefs wiring (no live network). `tests/test_materials.py` covers rack defaults, socket aliases, Assist mapping, and wiring.
 
 ## First-ship chrome (Percival)
 
@@ -50,7 +51,7 @@ N-panel keeps the three-click path skinny. Lights, Cameras, and Materials are de
 4. **Lights** — inventory + Light Draw Active / New. Not a Light Wrangler clone; native Blender chrome.
 5. **Cameras** — inventory + Add / Frame / Clear. Not Blender's Properties camera dump; native BEHOLD chrome.
 6. **Materials (0.8.0)** — local rack + Assist. Empty state if no product mesh is selected. Not a BlenderKit browser.
-7. **Main shell (0.9.0)** — `BEHOLD_PT_main` draws the hero + flow strip. Child panels keep `draw_header` icons.
+7. **Main shell (0.9.0)** — `BEHOLD_PT_main` draws the hero + flow strip. Child panels keep `draw_header` icons. **0.10.0** adds a dismissible update notice on the main panel when a newer stable zip is cached — not a new first-class section.
 8. **Advanced** (`BEHOLD_PT_advanced`, `DEFAULT_CLOSED`) — mixer, CAD box, BlenderKit login/search/apply, Light Draw hotkeys, batch, turntable spin / bake / clear / render, Bookmark / Use Main.
 
 Backend operators stay registered. Pie / header / preferences do not replace the N-panel path.
@@ -74,6 +75,7 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ### 2026-09-14
 
+- v**0.10.0** Easy update: GitHub Releases check (public API, no token), preferences Check for updates + last-checked + Install / Open release, session-dismissible N-panel notice, optional daily auto-check (default on). Installs `behold-*.zip` via 5.2 Install from Disk then asks to restart Blender. Tests in `tests/test_updates.py`. Install zip `behold-0.10.0.zip`.
 - v**0.9.0** Studio chrome / enhanced UX: branded N-panel hero, Import → Studio → Dress → Shoot strip, section icons, box cards, one-CTA empty states. Pie menu `BEHOLD_MT_pie` (**Shift+Alt+B**) + 3D View header shortcuts. Add-on preferences branding / docs / chrome toggles / this-scene quality and auto-studio. Tests in `tests/test_ux_chrome.py`. Install zip `behold-0.9.0.zip`. Native `bpy.types.Panel` / `UILayout` / pie / header only — no HTML overlay.
 - v**0.8.0** Materials that apply: first-class Materials N-panel (Metal / Plastic / Rubber / Glass / Paint + Assist). Empty state if nothing is selected. Assist / Import apply a matching local Principled look without BlenderKit; search/apply/login stay in Advanced. Socket aliases cover Blender 5.2 `Transmission Weight` / `Coat Weight` and 4.2 `Transmission` / `Clearcoat`. Tests in `tests/test_materials.py`. Install zip `behold-0.8.0.zip`.
 - v**0.7.0** Import that works: first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) (`bl_ext.*.stepper_next` detect, enable-if-disabled, `import_scene.occ_import_step` with `filepath` + `override_file`). Import panel shows **STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**. Mesh native import reports which operator failed and why (Blender 5.2 kwargs). Loud fail + Releases URL when no CAD backend. Ports PR #11's CC0 `tests/fixtures/unit_cube.step`, `product_import_dispatch` / `run_product_import`, `ocp_core`, and `make smoke-step` onto current `main`. First-ship Import is picker + CAD status line (not STEPper's dialog). Does not merge PR #7.
@@ -96,7 +98,7 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ## Operating notes
 
-- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, cameras, shoot operators, turntable rig, STEP vertical smoke, STEPper NEXT first-class import, local material apply).
+- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, cameras, shoot operators, turntable rig, STEP vertical smoke, STEPper NEXT first-class import, local material apply, GitHub update check / zip install).
 - **Percival** owns panel chrome (what the N-panel shows, what stays collapsed in Advanced).
 - First-ship Import / Studio / Shoot must stay skinny even if extra operators remain registered. Import may show one CAD backend line; auto-studio / Material Assist toggle / full CAD box stay in Advanced. Turntable on Shoot is one compact row; bake / ease / render stay in Advanced.
 - Prefer parking controls in `BEHOLD_PT_advanced` over deleting them.
