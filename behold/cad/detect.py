@@ -7,6 +7,8 @@ from typing import Any
 
 import bpy
 
+from . import ocp_core
+
 
 STEPPER_INSTALL_URL = "https://github.com/Peak-Design/STEPper_NEXT"
 
@@ -53,25 +55,7 @@ def stepper_operator_available() -> str | None:
 
 def probe_ocp() -> dict[str, Any]:
     """Try importing OCP. Never raises."""
-    try:
-        import OCP  # noqa: F401
-        from OCP.STEPControl import STEPControl_Reader  # noqa: F401
-
-        return {
-            "available": True,
-            "label": "OCP ready",
-            "detail": "OpenCASCADE (OCP) bindings found — BEHOLD can import STEP itself.",
-        }
-    except Exception as exc:  # noqa: BLE001
-        return {
-            "available": False,
-            "label": "OCP not installed",
-            "detail": (
-                "Install STEPper NEXT from github.com/Peak-Design/STEPper_NEXT "
-                "(Blender 5.1+) or add cadquery-ocp / cadquery-ocp-novtk into "
-                f"Blender's Python. ({type(exc).__name__})"
-            ),
-        }
+    return ocp_core.probe_ocp()
 
 
 def cad_status() -> dict[str, Any]:

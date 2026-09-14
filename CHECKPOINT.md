@@ -12,22 +12,23 @@ Cadence: one focused feature cut, then a GitHub Release. Do not kitchen-sink.
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 0.5.0 |
-| **This branch / after merge** | **0.6.0** |
+| **Version on `main` (before this cut)** | 0.6.0 |
+| **This branch / after merge** | **0.7.0** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-0.6.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-0.7.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
 Honest inventory of what this cut ships (plus what `main` already had).
 
-- **Import Product** — mesh + CAD hybrid. `.obj` `.fbx` `.stl` `.glb`/`.gltf` `.3mf` via native Blender importers; STEP/IGES/BREP via [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) else BEHOLD OCP. Optional Build Studio + Material Assist from the filename.
+- **Import Product** — mesh + CAD hybrid. `.obj` `.fbx` `.stl` `.glb`/`.gltf` `.3mf` via native Blender importers; STEP/IGES/BREP via [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) else BEHOLD OCP. Optional Build Studio + Material Assist from the filename. Shared `product_import_dispatch` / `run_product_import` (no file-browser required).
 - **Studio** — cyclorama / solid / HDRI, three-point or softbox, auto camera, optional shadow catcher, White / Grey / Black first-ship backdrop tones, light mixer (key / fill / rim / temperature).
 - **Lights (0.4.0)** — add / remove / set active BEHOLD studio lights; per-light energy; empty-state UX; Build Studio seeds the rig and marks Key active.
 - **Light Draw** — Reflect / Direct / Orbit modal (LMB aim, wheel power/size/distance, solo). **Aim Active vs New** against the multi-light inventory.
 - **Cameras (0.5.0)** — add / remove / set active / frame / clear BEHOLD product cameras; 85 mm full-frame defaults; frames selected mesh or product bounds (studio sweep excluded); active camera is the Shoot still + main-camera bookmark. Build Studio still seeds `BEHOLD_Camera`.
 - **Turntable (0.6.0)** — compact Shoot row: seconds + Setup + Play. Default **6 s / 144 frames at 24 fps**, 360° linear loop around the product using the active BEHOLD / scene camera. Empty-state copy points at Build Studio / Add Camera / Import. Advanced: Linear vs Ease, Bake (camera keys, drop pivot), Clear (pivot / baked loc-rot only), Render.
+- **STEP vertical smoke (0.7.0)** — CC0 `tests/fixtures/unit_cube.step` + CI dispatch tests **done**. OCP tessellation runs when bindings exist, otherwise unittest skip. Blender Import → Build → Draft still script **ready** (`scripts/smoke_step_vertical.py` / `make smoke-step`) when OCP or STEPper is present. CI does not produce a still (no Blender / no CAD backend there).
 - **Materials / BlenderKit** — local PBR rack (metal, plastic, rubber, glass, paint) + BlenderKit login / search / apply bridge.
 - **Shoot depth** — EV / white balance / false color; Draft · Product · Hero (and Final) sample presets; `{angle}` `{camera}` `{quality}` path tokens; main-camera bookmark; still; batch angles; turntable.
 - **CI zip** — GitHub Actions runs `make test` then builds the install zip; tags `v*` publish a GitHub Release.
@@ -58,12 +59,14 @@ Not this PR:
 - Live tessellation regenerate (OCP / STEPper deflection without re-picking the file).
 - Defeaturing (fillet/chamfer/hole suppress before tessellate).
 - Full auto-dress grid (filename + STEP material names → applied look, not just a BlenderKit query).
-- STEP vertical smoke — open [PR #7](https://github.com/wckdboy/BEHOLD/pull/7); separate lane, do not merge into 0.6.0.
+
+Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-vertical-smoke`) sketched this STEP vertical on pre-0.4 chrome (v0.3.2). **0.7.0 ports that work** onto current `main` (0.6.0 Lights / Cameras / Turntable). Leave PR #7 as historical draft — do not merge it as-is.
 
 ## Change log
 
 ### 2026-09-14
 
+- v**0.7.0** STEP vertical smoke: CC0 `tests/fixtures/unit_cube.step` (self-generated 10 mm box) + provenance README. Import Product dispatch extracted (`product_import_dispatch`, `run_product_import`). OCP read/tessellate in `behold/cad/ocp_core.py` (no Blender). Unittest skips tessellation when OCP is missing; still asserts the fixture is CAD, not mesh. `scripts/smoke_step_vertical.py` / `make smoke-step`: Import → Build Studio → Draft still. First-ship chrome unchanged. Ports PR #7 onto 0.6.0; does not merge that branch.
 - v**0.6.0** Auto turntable: compact Shoot controls, 6 s / 24 fps default (144 frames), loop-friendly linear 360° around the product / active camera. Play / bake / clear without touching other animation. Ease parked in Advanced.
 - v**0.5.0** Cameras: create, manage, and frame product cameras from the N-panel. Shoot still uses the active / bookmarked camera.
 - Focused **Cameras** N-panel next to Lights; Import / Studio / Shoot first-ship path unchanged (0.5.0); 0.6.0 adds the compact Turntable row on Shoot only.
@@ -83,8 +86,9 @@ Not this PR:
 
 ## Operating notes
 
-- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, cameras, shoot operators, turntable rig).
+- **Galahad** owns backends and the tessellator (import, OCP/STEPper, studio build, lights, cameras, shoot operators, turntable rig, STEP vertical smoke).
 - **Percival** owns panel chrome (what the N-panel shows, what stays collapsed in Advanced).
 - First-ship Import / Studio / Shoot must stay skinny even if extra operators remain registered. Turntable on Shoot is one compact row; bake / ease / render stay in Advanced.
 - Prefer parking controls in `BEHOLD_PT_advanced` over deleting them.
 - Lights and Cameras are the extra first-class sections; do not reopen Materials here.
+- Real STEP Import → Build → Render: `blender --background --python scripts/smoke_step_vertical.py` (needs OCP or STEPper).

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any, Never
 
 import bpy
 from bpy.props import BoolProperty, FloatProperty, StringProperty
@@ -50,6 +51,47 @@ def apply_post_import(
     return notes
 
 
+def run_product_import(
+    context: Context,
+    filepath: str,
+    *,
+    deflection: float = 0.001,
+    auto_studio: bool = True,
+    auto_material_assist: bool = True,
+) -> dict[str, Any]:
+    """Same Import Product path as the file-browser operator (no GUI)."""
+    kind = formats.product_import_dispatch(filepath)
+    if kind == "unknown":
+        ext = os.path.splitext(filepath)[1] or filepath
+        return {
+            "ok": False,
+            "objects": [],
+            "route": kind,
+            "message": f"Unsupported file type: {ext}",
+        }
+    if kind == "cad":
+        result = cad_ops.import_cad_file(context, filepath, deflection=deflection)
+    elif kind == "mesh":
+        result = native.import_mesh_file(context, filepath)
+    else:
+        unreachable: Never = kind
+        raise RuntimeError(f"unhandled import kind: {unreachable}")
+
+    result = dict(result)
+    result["route"] = kind
+    if not result.get("ok"):
+        return result
+
+    notes = apply_post_import(
+        context,
+        filepath,
+        auto_studio=auto_studio,
+        auto_material_assist=auto_material_assist,
+    )
+    result["notes"] = notes
+    return result
+
+
 class BEHOLD_OT_import_product(Operator, ImportHelper):
     bl_idname = "behold.import_product"
     bl_label = "Import Product"
@@ -91,7 +133,7 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
         layout = self.layout
         layout.prop(self, "auto_studio")
         layout.prop(self, "auto_material_assist")
-        kind = formats.classify_product_file(self.filepath or "")
+        kind = formats.product_import_dispatch(self.filepath or "")
         if kind == "cad" or not self.filepath:
             layout.prop(self, "deflection")
 
@@ -105,33 +147,17 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
         settings.import_auto_studio = self.auto_studio
         settings.import_auto_material_assist = self.auto_material_assist
 
-        kind = formats.classify_product_file(filepath)
-        if kind == "unknown":
-            self.report(
-                {"ERROR"},
-                f"Unsupported file type: {os.path.splitext(filepath)[1] or filepath}",
-            )
-            return {"CANCELLED"}
-
-        if kind == "cad":
-            result = cad_ops.import_cad_file(
-                context,
-                filepath,
-                deflection=self.deflection,
-            )
-        else:
-            result = native.import_mesh_file(context, filepath)
-
-        if not result["ok"]:
-            self.report({"ERROR"}, result["message"])
-            return {"CANCELLED"}
-
-        notes = apply_post_import(
+        result = run_product_import(
             context,
             filepath,
+            deflection=self.deflection,
             auto_studio=self.auto_studio,
             auto_material_assist=self.auto_material_assist,
         )
+        if not result["ok"]:
+            self.report({"ERROR"}, result["message"])
+            return {"CANCELLED"}
+        notes = result.get("notes") or []
         suffix = f" — {'; '.join(notes)}" if notes else ""
         self.report({"INFO"}, result["message"] + suffix)
         return {"FINISHED"}
