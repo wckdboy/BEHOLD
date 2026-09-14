@@ -429,6 +429,16 @@ class BEHOLDSceneSettings(PropertyGroup):
         default=-1,
         min=-1,
     )
+    batch_include_angles: BoolProperty(
+        name="Front / ¾ / Top",
+        description="Include catalog stills: front, three-quarter, and top",
+        default=True,
+    )
+    batch_include_shots: BoolProperty(
+        name="Saved shots",
+        description="Also render each Shot Manager preset as a still",
+        default=False,
+    )
 
 
 CLASSES = (BEHOLDShotItem, BEHOLDSceneSettings)

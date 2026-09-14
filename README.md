@@ -12,9 +12,9 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.18.0)
+## What works (v0.19.0)
 
-**0.18.0 is bake studio to HDRI** on Studio. Physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
+**0.19.0 is catalog batch export** on Shoot. Bake studio to HDRI is **0.18.0**; physical exposure polish is **0.17.0**; light shaping lite is **0.16.0**; Shot Manager is **0.14.0**; **0.15.0** is test hardening + N-panel draw-pass cache (no artist chrome).
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
@@ -23,7 +23,7 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 3. **Lights** — inventory + Light Draw + **Shape** presets (Softbox / Strip / Octa / Hard / Rim)
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras
-6. **Shoot** — Draft / Final, Still, Render, compact **Look** (EV / Kelvin WB / False Color), compact **Shots** (Add / Apply / rename / Delete), compact **Turntable** (seconds + Setup + Play)
+6. **Shoot** — Draft / Final, Still, Render, compact **Look** (EV / Kelvin WB / False Color), compact **Shots** (Add / Apply / rename / Delete), compact **Batch export** (Front / ¾ / Top and optional Saved shots), compact **Turntable** (seconds + Setup + Play)
 
 Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath. Operator failures use the same copy: a short sentence plus what to do next.
 
@@ -67,6 +67,14 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - Optional **Apply after bake** loads the map as the scene world (strength 1, rotation 0). Mute Lights if you want the HDRI alone
 - Needs a BEHOLD light — empty inventory reports **Build Studio or Add Light**. Bad types report a sentence plus `.hdr` / `.exr`
 
+**Batch export (0.19.0)** — catalog stills in one click on Shoot, not buried only in Advanced:
+
+- **Front / ¾ / Top** — three stills around the product (imported mesh or selection)
+- **Saved shots** — optional; applies each Shot Manager preset and writes a still (camera / quality / HDRI / output tokens)
+- Output folder tokens `{angle}` `{camera}` `{quality}` — `{angle}` is `front` / `three_quarter` / `top`, or a slug of the shot name
+- Progress reports `Batch n/total`. Missing product / camera / shots stay a sentence plus the next step. Camera pose and scene look restore when the run finishes
+- The old Advanced **Batch Product Angles** button is the same operator (label **Batch export**). The output folder picker stays in Advanced
+
 **Shots (0.14.0)** — named shoot presets on the same Shoot panel, KeyShot Studios–skinny:
 
 - **Add** stores the current camera, quality, turntable seconds, HDRI (path / strength / rotation / reflections-only), backdrop tone, and output folder tokens
@@ -81,7 +89,7 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - **Assist** applies a matching local look from the filename / STEP hint — **no BlenderKit account required**
 - If BlenderKit is signed in, Assist still applies the local look and also runs search
 
-Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD extras, batch, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color also remain under Advanced → Shoot for people who look there.
+Parked chrome (BlenderKit login / search / apply, mixer, **Studio Margin**, CAD extras, tokens/bookmark, Light Draw hotkeys, turntable bake/ease/render) is in **Advanced**, collapsed closed. Operators stay registered. EV / WB / False Color and Batch export also remain under Advanced → Shoot for people who look there.
 
 Backends:
 
@@ -93,7 +101,7 @@ Backends:
 - **Turntable** — `BEHOLD_TurntablePivot` orbits the active camera; Clear drops the pivot only; Bake writes camera loc/rot then removes the pivot
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint) applied from the N-panel; Material Assist finishes with that look
 - **BlenderKit** — optional soft-dependency bridge (login / search / apply in Advanced). Local looks work without an account
-- **Shoot** — compact **Look** (EV / Kelvin white balance / False Color on Color Management), Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
+- **Shoot** — compact **Look** (EV / Kelvin white balance / False Color on Color Management), Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, **Batch export** (front / ¾ / top and optional saved shots), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
 - **CAD** — first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) for STEP/IGES/BREP on 5.1+/5.2 LTS (`import_scene.occ_import_step`). OCP fallback only if STEPper is missing and OpenCASCADE bindings actually import; otherwise Import fails with the [STEPper Releases](https://github.com/Peak-Design/STEPper_NEXT/releases) URL. Mesh formats stay native. Shared `product_import_dispatch` / `run_product_import`. CI-safe unit-cube STEP fixture; optional Blender smoke (`make smoke-step`) for Import → Build → Draft still.
 
 ## Coming (not this release)
@@ -273,19 +281,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.18.0.zip`).
-2. **Versioned release** — push a tag `v0.18.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.19.0.zip`).
+2. **Versioned release** — push a tag `v0.19.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.18.0
-git push origin v0.18.0
+git tag v0.19.0
+git push origin v0.19.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.18.0.zip
+# → dist/behold-0.19.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
