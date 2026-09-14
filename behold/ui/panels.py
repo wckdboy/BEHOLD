@@ -14,7 +14,9 @@ Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, batch, and
 turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
 (DEFAULT_CLOSED). Compact Studio HDRI (v0.13.0): load / strength / Z rotation
-/ reflections-only + Reset world — not a new first-class panel.
+/ reflections-only + Reset world — not a new first-class panel. Compact Shot
+Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
+backdrop + output tokens.
 """
 
 from __future__ import annotations
@@ -47,6 +49,7 @@ from .flow import (
     EMPTY_CAMERAS,
     EMPTY_LIGHTS,
     EMPTY_MATERIALS,
+    EMPTY_SHOTS,
     SECTION_ICONS,
 )
 from .messages import BATCH_NO_MESH, NO_MESH_SELECTED, NO_PRODUCT
@@ -125,7 +128,7 @@ def draw_studio_hdri(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
-    """Draft / Final, Still, Render, compact Turntable row."""
+    """Draft / Final, Still, Render, compact Shots list, compact Turntable row."""
     settings = context.scene.behold
     card = layout.box()
     row = card.row(align=True)
@@ -135,7 +138,35 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     row.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     row.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
     layout.separator()
+    draw_shots_compact(layout, context)
+    layout.separator()
     draw_turntable_compact(layout, context)
+
+
+def draw_shots_compact(layout: UILayout, context: Context) -> None:
+    """Named shots: list, Add from current, Apply, inline rename, Delete."""
+    settings = context.scene.behold
+    collection = settings.shots
+    if len(collection) == 0:
+        draw_empty_card(layout, EMPTY_SHOTS)
+        return
+    card = layout.box()
+    card.label(text="Shots", icon="SEQUENCE")
+    active_index = int(getattr(settings, "active_shot_index", -1))
+    for index, item in enumerate(collection):
+        row = card.row(align=True)
+        is_active = index == active_index
+        icon = "RADIOBUT_ON" if is_active else "RADIOBUT_OFF"
+        select = row.operator(
+            "behold.apply_shot", text="", icon=icon, emboss=False
+        )
+        select.shot_index = index
+        row.prop(item, "name", text="")
+        apply = row.operator("behold.apply_shot", text="Apply")
+        apply.shot_index = index
+        remove = row.operator("behold.remove_shot", text="", icon="X")
+        remove.shot_index = index
+    card.operator("behold.add_shot", text="Add", icon="ADD")
 
 
 def draw_turntable_compact(layout: UILayout, context: Context) -> None:

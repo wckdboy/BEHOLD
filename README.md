@@ -12,7 +12,7 @@ Primary Blender target: **5.2 LTS and newer**. Install still declares 4.2+ (`bl_
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**. Leveling path: **[ROADMAP.md](ROADMAP.md)**. Cadence: one focused feature cut, then a GitHub Release.
 
-## What works (v0.13.0)
+## What works (v0.14.0)
 
 **First-ship N-panel** — scroll top-to-bottom in work order: **Import → Studio → Lights → Materials → Cameras → Shoot → Advanced** (v0.12.0). Shoot is last so you do not scroll past it to dress, then back. The BEHOLD tab has a branded hero (**BEHOLD** / **by AMIRITE.studio**, official mark) and a compact **Import → Studio → Dress → Shoot** strip (Dress Next = **Material Assist**):
 
@@ -21,7 +21,7 @@ Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)*
 3. **Lights** — inventory + Light Draw
 4. **Materials** — local looks + Assist
 5. **Cameras** — add / frame product cameras
-6. **Shoot** — Draft / Final, Still, Render, compact **Turntable** (seconds + Setup + Play)
+6. **Shoot** — Draft / Final, Still, Render, compact **Shots** (Add / Apply / rename / Delete), compact **Turntable** (seconds + Setup + Play)
 
 Each section uses the same card rhythm (box + header icon). Empty states keep **one primary CTA** (Build Studio / Import Product) with quieter secondaries underneath. Operator failures use the same copy: a short sentence plus what to do next.
 
@@ -49,6 +49,13 @@ Each section uses the same card rhythm (box + header icon). Empty states keep **
 - Empty state if there is no camera or product yet (Build Studio / Add Camera / Import)
 - **Play** previews (Setup first if needed). **Advanced**: Linear vs Ease, Bake, Clear, Render
 
+**Shots (0.14.0)** — named shoot presets on the same Shoot panel, KeyShot Studios–skinny:
+
+- **Add** stores the current camera, quality, turntable seconds, HDRI (path / strength / rotation / reflections-only), backdrop tone, and output folder tokens
+- **Apply** restores those scene settings and the camera — it does not rebuild the studio or touch the product mesh
+- Rename inline; **X** deletes. Shots live on the `.blend` (`scene.behold.shots`)
+- Empty state until you save one: Add from the current camera, quality, and HDRI
+
 **Materials** — product looks without hunting Blender's material UI:
 
 - One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product mesh
@@ -68,12 +75,12 @@ Backends:
 - **Turntable** — `BEHOLD_TurntablePivot` orbits the active camera; Clear drops the pivot only; Bake writes camera loc/rot then removes the pivot
 - **Materials** — local PBR rack (metal, plastic, rubber, glass, paint) applied from the N-panel; Material Assist finishes with that look
 - **BlenderKit** — optional soft-dependency bridge (login / search / apply in Advanced). Local looks work without an account
-- **Shoot** — EV / white balance / false color, Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable
+- **Shoot** — EV / white balance / false color, Draft·Final·Product·Hero quality presets, output path tokens (`{angle}` `{camera}` `{quality}`), main-camera bookmark, still, batch angles (front / ¾ / top), turntable, **Shot Manager** (named camera + quality + HDRI + backdrop + output presets)
 - **CAD** — first-class [STEPper NEXT](https://github.com/Peak-Design/STEPper_NEXT) for STEP/IGES/BREP on 5.1+/5.2 LTS (`import_scene.occ_import_step`). OCP fallback only if STEPper is missing and OpenCASCADE bindings actually import; otherwise Import fails with the [STEPper Releases](https://github.com/Peak-Design/STEPper_NEXT/releases) URL. Mesh formats stay native. Shared `product_import_dispatch` / `run_product_import`. CI-safe unit-cube STEP fixture; optional Blender smoke (`make smoke-step`) for Import → Build → Draft still.
 
 ## Coming (not this release)
 
-Light shaping / softbox textures, Shot Manager, exposure / false color polish, bake-to-HDRI, gobos / IES, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
+Light shaping / softbox textures, exposure / false color polish, bake-to-HDRI, gobos / IES, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
 ## Import Product
 
@@ -167,6 +174,17 @@ Sidebar **BEHOLD → Shoot**:
 
 Clear / Bake only touch the turntable pivot (and baked camera location / rotation keys). Other objects' animation is left alone.
 
+## Shots
+
+Sidebar **BEHOLD → Shoot**:
+
+1. Set the camera, Draft/Final (or Product/Hero in Advanced), turntable seconds, HDRI, and backdrop the way you want the catalog frame.
+2. **Add** saves that as a named shot on this `.blend`. Empty state until the first one: **Add** from the current camera, quality, and HDRI.
+3. Click **Apply** (or the radio) to flip to another shot — camera, quality, HDRI world, backdrop tone, and output folder tokens come back. The product mesh stays put.
+4. Edit the name on the row to rename. **X** deletes that shot.
+
+Save two or three (hero chrome vs pack shot vs turntable) and flip without duplicating the file. Gobos, IES, and full material colorways are not stored on a shot.
+
 ## Materials
 
 Sidebar **BEHOLD → Materials**:
@@ -217,19 +235,19 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Download install zip (GitHub Actions)
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.13.0.zip`).
-2. **Versioned release** — push a tag `v0.13.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.14.0.zip`).
+2. **Versioned release** — push a tag `v0.14.0` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.13.0
-git push origin v0.13.0
+git tag v0.14.0
+git push origin v0.14.0
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.13.0.zip
+# → dist/behold-0.14.0.zip
 ```
 
 Or: `bash scripts/build_addon.sh`

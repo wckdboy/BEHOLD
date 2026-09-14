@@ -6,6 +6,9 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 
 ## Shipped
 
+- **0.14.0 Shot Manager** — named camera + quality + HDRI + backdrop +
+  output presets on Shoot. Save / recall “hero chrome” vs “pack shot”
+  without duplicating the .blend. Not a full editorial suite.
 - **0.13.0 Brand + HDRI world** — official mark in the add-on UI; Studio load /
   rotate / strength / optional reflections-only HDRI; Reset world back to a
   solid studio. Cyclorama + area lights were already here; the missing piece
@@ -23,16 +26,13 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 1. **Light shaping / softbox textures** — area lights still read as rectangles
    on chrome. KeyShot and Light Wrangler win on barn doors, softbox maps, and
    falloff. Native Blender lights first. Not an IES catalog.
-2. **Shot Manager (KeyShot Studios)** — named cameras exist; named *shots*
-   (camera + lights + world + quality) do not. Save / recall “hero chrome”
-   vs “pack shot” without duplicating the .blend. Not a full editorial suite.
-3. **Physical exposure / false color polish** — EV and false color already live
+2. **Physical exposure / false color polish** — EV and false color already live
    on Advanced. Make them trustworthy for hero chrome (metering, AgX-safe
    false color) so artists stop guessing.
-4. **Bake-to-HDRI** — studio + area lights → an environment the artist can
+3. **Bake-to-HDRI** — studio + area lights → an environment the artist can
    reuse or hand off. After Shot Manager, not before: you bake a *look*, not a
    random rig.
-5. **Gobos / IES** — window lights, practicals, photometric profiles. Last
+4. **Gobos / IES** — window lights, practicals, photometric profiles. Last
    because they need a library story and are easy to ship as a junk drawer.
 
 ## Explicitly later / maybe never

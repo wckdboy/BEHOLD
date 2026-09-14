@@ -148,6 +148,9 @@ class FlowStripTests(unittest.TestCase):
         self.assertEqual(flow.EMPTY_MATERIALS.title, presets.EMPTY_NO_MESH)
         self.assertEqual(flow.EMPTY_MATERIALS.operator, "behold.import_product")
         self.assertEqual(flow.EMPTY_MATERIALS.hint, presets.EMPTY_NO_MESH_HINT)
+        self.assertEqual(flow.EMPTY_SHOTS.title, "No shots yet")
+        self.assertEqual(flow.EMPTY_SHOTS.hint, "Add from the current camera, quality, and HDRI")
+        self.assertEqual(flow.EMPTY_SHOTS.operator, "behold.add_shot")
 
 
 class PieHeaderPrefsTests(unittest.TestCase):
@@ -194,7 +197,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("/releases", _read("behold/brand.py"))
         init = _read("behold/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (0, 13, 0)', init)
+        self.assertIn('"version": (0, 14, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
         source = _read("behold/ui/panels.py")
@@ -219,6 +222,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("EMPTY_LIGHTS", source)
         self.assertIn("EMPTY_CAMERAS", source)
         self.assertIn("EMPTY_MATERIALS", source)
+        self.assertIn("EMPTY_SHOTS", source)
         self.assertNotIn("bpy.types.HTML", source)
         self.assertNotIn("http.server", source)
 

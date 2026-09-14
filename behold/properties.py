@@ -6,6 +6,7 @@ from __future__ import annotations
 import bpy
 from bpy.props import (
     BoolProperty,
+    CollectionProperty,
     EnumProperty,
     FloatProperty,
     IntProperty,
@@ -15,6 +16,97 @@ from bpy.props import (
 from bpy.types import PropertyGroup, Scene
 
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
+
+
+class BEHOLDShotItem(PropertyGroup):
+    """Named shoot preset stored on the scene (survives save / reload)."""
+
+    name: StringProperty(
+        name="Shot",
+        description="Shot name",
+        default="Shot",
+        maxlen=128,
+    )
+    camera_name: StringProperty(
+        name="Camera",
+        description="Active / bookmarked camera object name",
+        default="",
+        maxlen=128,
+    )
+    main_camera_name: StringProperty(
+        name="Main Camera",
+        description="Bookmarked camera object name at save time",
+        default="",
+        maxlen=128,
+    )
+    render_quality: EnumProperty(
+        name="Quality",
+        description="Cycles sample preset stored with this shot",
+        items=(
+            ("DRAFT", "Draft", "Fast look-dev (32 samples)"),
+            ("FINAL", "Final", "First-ship client still (256 samples)"),
+            ("PRODUCT", "Product", "Client-ready stills (128 samples)"),
+            ("HERO", "Hero", "Chrome / glass hero shots (512 samples)"),
+        ),
+        default="DRAFT",
+    )
+    turntable_seconds: FloatProperty(
+        name="Turntable Seconds",
+        description="Turntable duration stored with this shot",
+        default=6.0,
+        min=1.0,
+        max=60.0,
+        step=10,
+        precision=1,
+    )
+    hdri_filepath: StringProperty(
+        name="HDRI",
+        description="World environment image path stored with this shot",
+        default="",
+        subtype="FILE_PATH",
+        maxlen=1024,
+    )
+    hdri_strength: FloatProperty(
+        name="HDRI Strength",
+        default=1.0,
+        min=0.0,
+        max=100.0,
+    )
+    hdri_rotation: FloatProperty(
+        name="HDRI Rotation",
+        description="HDRI Z rotation in degrees",
+        default=0.0,
+        min=-360.0,
+        max=360.0,
+        step=100,
+        precision=1,
+    )
+    hdri_reflections_only: BoolProperty(
+        name="Reflections only",
+        default=False,
+    )
+    hdri_background_strength: FloatProperty(
+        name="HDRI Background",
+        default=0.0,
+        min=0.0,
+        max=100.0,
+    )
+    studio_backdrop_tone: EnumProperty(
+        name="Backdrop",
+        items=(
+            ("WHITE", "White", "Bright product sweep"),
+            ("GREY", "Grey", "Neutral product sweep"),
+            ("BLACK", "Black", "Dark product sweep"),
+        ),
+        default="WHITE",
+    )
+    output_directory: StringProperty(
+        name="Output Folder",
+        description="Render folder token template stored with this shot",
+        default="//behold_out/",
+        subtype="DIR_PATH",
+        maxlen=1024,
+    )
 
 
 class BEHOLDSceneSettings(PropertyGroup):
@@ -278,9 +370,20 @@ class BEHOLDSceneSettings(PropertyGroup):
         max=100.0,
         update=on_hdri_values_update,
     )
+    shots: CollectionProperty(
+        type=BEHOLDShotItem,
+        name="Shots",
+        description="Named shoot presets (camera, quality, HDRI, backdrop, output)",
+    )
+    active_shot_index: IntProperty(
+        name="Active Shot",
+        description="Index of the last applied or saved shot",
+        default=-1,
+        min=-1,
+    )
 
 
-CLASSES = (BEHOLDSceneSettings,)
+CLASSES = (BEHOLDShotItem, BEHOLDSceneSettings)
 
 
 def register() -> None:
