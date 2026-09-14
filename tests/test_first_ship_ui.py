@@ -39,6 +39,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("BEHOLD_PT_shoot", self.source)
         self.assertNotIn("BEHOLD_PT_materials", self.source)
         self.assertNotIn("BEHOLD_PT_light_draw", self.source)
+        self.assertIn("BEHOLD_PT_lights", self.source)
         classes_assign = next(
             node
             for node in self.tree.body
@@ -56,6 +57,7 @@ class FirstShipUiTests(unittest.TestCase):
                 "BEHOLD_PT_import",
                 "BEHOLD_PT_studio",
                 "BEHOLD_PT_shoot",
+                "BEHOLD_PT_lights",
                 "BEHOLD_PT_advanced",
             ],
         )
@@ -88,6 +90,20 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("studio_light_rig", body)
         self.assertNotIn("include_shadow_catcher", body)
         self.assertNotIn("refresh_lights", body)
+        self.assertNotIn("add_light", body)
+        self.assertNotIn("light_draw_target", body)
+
+    def test_lights_section_has_inventory_and_draw_target(self) -> None:
+        body = _func_source(self.source, self.tree, "draw_lights_section")
+        self.assertIn("No BEHOLD lights yet", body)
+        self.assertIn("behold.add_light", body)
+        self.assertIn("behold.remove_light", body)
+        self.assertIn("behold.set_active_light", body)
+        self.assertIn("light_draw_target", body)
+        self.assertIn("behold.light_draw", body)
+        self.assertIn("new_light_energy", body)
+        self.assertNotIn("Light Mixer", body)
+        self.assertNotIn("key_power", body)
 
     def test_shoot_first_ship_is_draft_final_still_render(self) -> None:
         body = _func_source(self.source, self.tree, "draw_shoot_first_ship")
@@ -114,11 +130,11 @@ class FirstShipUiTests(unittest.TestCase):
 
     def test_backend_keeps_final_quality_and_backdrop_tones(self) -> None:
         shoot = (ROOT / "behold" / "shoot" / "operators.py").read_text(encoding="utf-8")
-        studio = (ROOT / "behold" / "studio" / "operators.py").read_text(encoding="utf-8")
+        setup = (ROOT / "behold" / "studio" / "setup.py").read_text(encoding="utf-8")
         props = (ROOT / "behold" / "properties.py").read_text(encoding="utf-8")
         tones = load_module("behold/studio/tones.py", "behold_studio_tones")
         self.assertIn('"FINAL": 256', shoot)
-        self.assertIn("backdrop_tone_rgba", studio)
+        self.assertIn("backdrop_tone_rgba", setup)
         self.assertIn("studio_backdrop_tone", (ROOT / "behold" / "studio" / "tones.py").read_text(encoding="utf-8"))
         self.assertIn('("WHITE", "White"', props)
         self.assertIn('("GREY", "Grey"', props)
@@ -135,16 +151,19 @@ class FirstShipUiTests(unittest.TestCase):
     def test_checkpoint_covers_mission_and_lanes(self) -> None:
         text = CHECKPOINT.read_text(encoding="utf-8")
         self.assertIn("KeyShot-simple OSS product renders in Blender", text)
-        self.assertIn("0.3.0", text)
-        self.assertIn("0.3.1", text)
+        self.assertIn("AMIRITE.studio", text)
+        self.assertIn("0.4.0", text)
+        self.assertIn("5.2", text)
         self.assertIn("4.2.0", text)
         self.assertIn("Import Product", text)
         self.assertIn("Light Draw", text)
+        self.assertIn("Active", text)
         self.assertIn("BlenderKit", text)
         self.assertIn("First-ship chrome", text)
-        self.assertIn("PR #5", text)
-        self.assertIn("cursor/behold-multi-light-5f2a", text)
-        self.assertIn("2026-09-13", text)
+        self.assertIn("gobos", text.lower())
+        self.assertIn("IES", text)
+        self.assertIn("turntable", text.lower())
+        self.assertIn("2026-09-14", text)
         self.assertIn("Galahad", text)
         self.assertIn("Percival", text)
         self.assertIn("live tessellation", text.lower())

@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-First-ship chrome (Percival): Import / Studio / Shoot only — three controls, no
-scroll. Parked Materials, Light Draw, mixer, CAD box, batch, and turntable live
-in BEHOLD_PT_advanced (DEFAULT_CLOSED) so the draw code stays reachable.
+First-ship chrome: Import / Studio / Shoot stay skinny. Lights is the v0.4.0
+lighting section (inventory + Light Draw). Parked mixer, CAD box, materials,
+hotkeys, batch, and turntable live in BEHOLD_PT_advanced (DEFAULT_CLOSED).
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from ..cad import detect as cad_detect
 from ..cad import material_assist
 from ..materials import blenderkit_bridge, local_rack
 from ..product_import import formats
+from ..studio import lights as light_lib
 
 
 def _has_selected_mesh(context: Context) -> bool:
@@ -49,6 +50,49 @@ def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
     row.prop_enum(settings, "render_quality", "FINAL")
     layout.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     layout.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
+
+
+def draw_lights_section(layout: UILayout, context: Context) -> None:
+    """Multi-light inventory + Light Draw Active / New."""
+    settings = context.scene.behold
+    lights = light_lib.iter_behold_lights(context)
+
+    if not lights:
+        empty = layout.box()
+        empty.label(text="No BEHOLD lights yet", icon="INFO")
+        empty.label(text="Build Studio or Add Light")
+        empty.prop(settings, "new_light_energy", text="New W")
+        row = empty.row(align=True)
+        row.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
+        row.operator("behold.add_light", text="Add Light", icon="ADD")
+    else:
+        active = light_lib.get_active_behold_light(context)
+        active_name = active.name if active is not None else ""
+        box = layout.box()
+        box.label(text="Studio lights", icon="LIGHT_AREA")
+        for light in lights:
+            row = box.row(align=True)
+            is_active = light.name == active_name
+            icon = "RADIOBUT_ON" if is_active else "RADIOBUT_OFF"
+            op = row.operator("behold.set_active_light", text="", icon=icon, emboss=False)
+            op.light_name = light.name
+            row.label(text=light_lib.display_light_name(light))
+            row.prop(light.data, "energy", text="")
+            rm = row.operator("behold.remove_light", text="", icon="X")
+            rm.light_name = light.name
+        if active is not None:
+            box.label(text=f"Active: {light_lib.display_light_name(active)}")
+        row = layout.row(align=True)
+        row.prop(settings, "new_light_energy", text="New W")
+        row.operator("behold.add_light", text="Add", icon="ADD")
+
+    layout.separator()
+    col = layout.column(align=True)
+    col.label(text="Light Draw")
+    col.prop(settings, "light_draw_target", text="Aim", expand=True)
+    col.prop(settings, "light_draw_mode", text="Mode", expand=True)
+    col.prop(settings, "light_draw_distance")
+    col.operator("behold.light_draw", icon="LIGHT_AREA")
 
 
 def draw_import_parked(layout: UILayout, context: Context) -> None:
@@ -88,7 +132,7 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_studio_parked(layout: UILayout, context: Context) -> None:
-    """Light rig, shadow catcher, mixer (parked — no multi-light chrome)."""
+    """Light rig, shadow catcher, mixer (parked)."""
     settings = context.scene.behold
     if not _has_selected_mesh(context):
         box = layout.box()
@@ -142,19 +186,8 @@ def draw_materials_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
-    """Light Draw modal controls (parked)."""
-    settings = context.scene.behold
-
-    has_light = any(obj.type == "LIGHT" for obj in context.scene.objects)
-    if not has_light:
-        box = layout.box()
-        box.label(text="Build Studio first (or add a light)", icon="INFO")
-
-    layout.prop(settings, "light_draw_mode", text="Mode")
-    layout.prop(settings, "light_draw_distance")
-    layout.operator("behold.light_draw", icon="LIGHT_AREA")
-    layout.operator("behold.light_draw_cycle_mode", icon="FILE_REFRESH")
-
+    """Light Draw hotkeys (parked — controls live on Lights)."""
+    del context
     col = layout.column(align=True)
     col.label(text="While drawing:")
     col.label(text="LMB drag — aim")
@@ -264,6 +297,18 @@ class BEHOLD_PT_shoot(Panel):
         draw_shoot_first_ship(self.layout, context)
 
 
+class BEHOLD_PT_lights(Panel):
+    bl_label = "Lights"
+    bl_idname = "BEHOLD_PT_lights"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "BEHOLD"
+    bl_parent_id = "BEHOLD_PT_main"
+
+    def draw(self, context: Context):
+        draw_lights_section(self.layout, context)
+
+
 class BEHOLD_PT_advanced(Panel):
     bl_label = "Advanced"
     bl_idname = "BEHOLD_PT_advanced"
@@ -296,6 +341,7 @@ CLASSES = (
     BEHOLD_PT_import,
     BEHOLD_PT_studio,
     BEHOLD_PT_shoot,
+    BEHOLD_PT_lights,
     BEHOLD_PT_advanced,
 )
 
