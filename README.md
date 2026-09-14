@@ -4,7 +4,7 @@ Open-source Blender add-on for KeyShot-simple product rendering — free.
 
 Living status (implemented vs coming) lives in **[CHECKPOINT.md](CHECKPOINT.md)**.
 
-## What works (v0.3.1)
+## What works (v0.3.2)
 
 **First-ship N-panel** (Percival) — three controls, no scroll:
 
@@ -51,19 +51,19 @@ STEPper NEXT is the recommended OpenCASCADE STEP/IGES/BREP importer for Blender.
 
 Once this repo is on GitHub (`wckdboy/BEHOLD`):
 
-1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.3.1.zip`).
-2. **Versioned release** — push a tag `v0.3.1` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
+1. **Every push / PR** — Actions → **Build Blender add-on zip** → download the `behold-addon` artifact (`behold-0.3.2.zip`).
+2. **Versioned release** — push a tag `v0.3.2` (or later). The same workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases) for one-click download.
 
 ```bash
-git tag v0.3.1
-git push origin v0.3.1
+git tag v0.3.2
+git push origin v0.3.2
 ```
 
 ## Build install zip locally
 
 ```bash
 make zip
-# → dist/behold-0.3.1.zip
+# → dist/behold-0.3.2.zip
 ```
 
 Or: `bash scripts/build_addon.sh`
@@ -88,7 +88,13 @@ git clone https://github.com/wckdboy/BEHOLD.git
 # Point Blender at /path/to/repo/behold via preferences or symlink into addons/
 make test
 make zip
+
+# Real STEP Import → Build → Draft still (Blender + OCP or STEPper; not CI)
+blender --background --python scripts/smoke_step_vertical.py
+# or: make smoke-step
 ```
+
+`make test` is offline and CI-safe. If OCP is missing, tessellation is skipped; the unit-cube fixture is still classified as CAD (not mesh). The smoke script fails clearly (exit 2) when no CAD backend is present.
 
 ## Remotes
 

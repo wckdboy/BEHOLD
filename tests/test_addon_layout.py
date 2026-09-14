@@ -22,8 +22,8 @@ class AddonLayoutTests(unittest.TestCase):
         init = _read(ADDON / "__init__.py")
         match = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
         self.assertIsNotNone(match)
-        self.assertEqual(match.group(1), "0.3.1")
-        self.assertIn('"version": (0, 3, 1)', init)
+        self.assertEqual(match.group(1), "0.3.2")
+        self.assertIn('"version": (0, 3, 2)', init)
 
     def test_stepper_url_documented(self) -> None:
         readme = _read(ROOT / "README.md")
@@ -34,7 +34,11 @@ class AddonLayoutTests(unittest.TestCase):
         self.assertIn("Import Product", readme)
 
     def test_python_sources_parse(self) -> None:
-        files = list(ADDON.rglob("*.py")) + list((ROOT / "tests").glob("*.py"))
+        files = (
+            list(ADDON.rglob("*.py"))
+            + list((ROOT / "tests").rglob("*.py"))
+            + list((ROOT / "scripts").glob("*.py"))
+        )
         self.assertGreater(len(files), 10)
         for path in files:
             source = _read(path)

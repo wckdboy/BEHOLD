@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "behold"
-version = "0.3.1"
+version = "0.3.2"
 name = "BEHOLD"
 tagline = "Product studio rendering — KeyShot-simple, free"
 maintainer = "wckdboy"

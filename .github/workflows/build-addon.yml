@@ -2,7 +2,7 @@ name: Build Blender add-on zip
 
 on:
   push:
-    branches: [main, master, "cursor/**"]
+    branches: [main, master, "cursor/**", "galahad/**"]
     tags: ["v*"]
   pull_request:
   workflow_dispatch:

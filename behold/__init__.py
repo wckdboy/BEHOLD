@@ -6,7 +6,7 @@ from __future__ import annotations
 bl_info = {
     "name": "BEHOLD",
     "author": "wckdboy",
-    "version": (0, 3, 1),
+    "version": (0, 3, 2),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD",
     "description": "Product studio, Light Draw, materials, shoot, and product import",
