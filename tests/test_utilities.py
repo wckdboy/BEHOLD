@@ -147,9 +147,9 @@ class FeatureFlagTests(unittest.TestCase):
         init = _read("behold/__init__.py")
         self.assertIn("from . import utilities", init)
         self.assertLess(init.index("ui,"), init.index("utilities,"))
-        self.assertIn('"version": (1, 3, 0)', init)
+        self.assertIn('"version": (1, 4, 0)', init)
         brand = _read("behold/brand.py")
-        self.assertIn("VERSION = (1, 3, 0)", brand)
+        self.assertIn("VERSION = (1, 4, 0)", brand)
 
 
 class WallMathTests(unittest.TestCase):

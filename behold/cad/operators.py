@@ -12,8 +12,10 @@ from bpy.types import Context, Operator
 from bpy_extras.io_utils import ImportHelper
 
 from . import detect
+from . import defeaturing as df_spec
 from . import material_assist
 from . import ocp_core
+from . import ocp_defeature
 from . import ocp_import
 from . import regenerate as regen_spec
 from . import regenerate_apply
@@ -144,13 +146,48 @@ def invoke_stepper_occ_import(
     }
 
 
+def scene_cleanup_plan(context: Context) -> df_spec.DefeaturingPlan:
+    settings = context.scene.behold
+    return df_spec.plan_defeaturing(
+        fillets=bool(settings.cad_cleanup_fillets),
+        chamfers=bool(settings.cad_cleanup_chamfers),
+        holes=bool(settings.cad_cleanup_holes),
+        blend_mm=float(settings.cad_blend_mm),
+        hole_mm=float(settings.cad_hole_mm),
+    )
+
+
+def _cleanup_blockers(plan: df_spec.DefeaturingPlan) -> dict[str, Any] | None:
+    if not plan.active:
+        return None
+    probe = ocp_defeature.probe_defeaturing_api()
+    blocked = df_spec.cleanup_blockers(
+        plan,
+        ocp_available=probe["ocp"],
+        has_defeaturing=probe["defeaturing"],
+        has_remove_wires=probe["remove_wires"],
+    )
+    if blocked is None:
+        return None
+    return {
+        "ok": False,
+        "objects": [],
+        "backend": "OCP" if probe["ocp"] else "NONE",
+        "message": blocked,
+    }
+
+
 def import_cad_file(
     context: Context,
     filepath: str,
     *,
     deflection: float = 0.001,
 ) -> dict[str, Any]:
-    """Hybrid CAD import: STEPper NEXT first, OCP only if STEPper is missing."""
+    """Hybrid CAD import: STEPper NEXT first, OCP only if STEPper is missing.
+
+    Cleanup (fillets / chamfers / holes) is OCP-only — STEPper has no RNA
+    for it. When cleanup is on, this path uses OCP before tessellate.
+    """
     abs_path = bpy.path.abspath(filepath)
     if not abs_path or not os.path.isfile(abs_path):
         return {
@@ -159,21 +196,28 @@ def import_cad_file(
             "backend": "NONE",
             "message": file_not_found_message(filepath),
         }
-    enabled = detect.ensure_stepper_enabled()
-    if enabled.get("installed") and not enabled.get("ok"):
-        return {
-            "ok": False,
-            "objects": [],
-            "backend": "STEPPER",
-            "message": enabled.get("error")
-            or stepper_api.stepper_enable_failed_message(
-                enabled.get("module") or "stepper_next",
-                "enable failed",
-            ),
-        }
+    cleanup = scene_cleanup_plan(context)
+    blocked = _cleanup_blockers(cleanup)
+    if blocked is not None:
+        return blocked
+    if not cleanup.active:
+        enabled = detect.ensure_stepper_enabled()
+        if enabled.get("installed") and not enabled.get("ok"):
+            return {
+                "ok": False,
+                "objects": [],
+                "backend": "STEPPER",
+                "message": enabled.get("error")
+                or stepper_api.stepper_enable_failed_message(
+                    enabled.get("module") or "stepper_next",
+                    "enable failed",
+                ),
+            }
 
     status = detect.cad_status()
     backend = status["backend"]
+    if cleanup.active:
+        backend = "OCP"
     before = {obj.as_pointer() for obj in bpy.data.objects}
 
     if backend == "STEPPER":
@@ -221,7 +265,11 @@ def import_cad_file(
                 "backend": "NONE",
                 "message": stepper_api.missing_cad_backend_message(),
             }
-        result = ocp_import.import_cad_with_ocp(filepath, deflection=deflection)
+        result = ocp_import.import_cad_with_ocp(
+            filepath,
+            deflection=deflection,
+            cleanup=cleanup,
+        )
         result["backend"] = "OCP"
         if result.get("ok"):
             _tag_imported_meshes(
@@ -299,12 +347,20 @@ def regenerate_cad_file(
             "message": plan,
         }
 
-    enable_error = _ensure_stepper_or_error()
-    if enable_error is not None:
-        return enable_error
+    cleanup = scene_cleanup_plan(context)
+    blocked = _cleanup_blockers(cleanup)
+    if blocked is not None:
+        return blocked
+
+    if not cleanup.active:
+        enable_error = _ensure_stepper_or_error()
+        if enable_error is not None:
+            return enable_error
 
     status = detect.cad_status()
     backend = regen_spec.pick_regenerate_backend(cache.backend, status["backend"])
+    if cleanup.active:
+        backend = "OCP"
     if backend == "NONE":
         return {
             "ok": False,
@@ -320,7 +376,12 @@ def regenerate_cad_file(
                 "backend": "NONE",
                 "message": stepper_api.missing_cad_backend_message(),
             }
-        return regenerate_apply.regenerate_ocp(context, cache, plan)
+        return regenerate_apply.regenerate_ocp(
+            context,
+            cache,
+            plan,
+            cleanup=cleanup,
+        )
     if backend == "STEPPER":
         return _regenerate_stepper(context, cache, plan)
 
@@ -476,7 +537,7 @@ class BEHOLD_OT_regenerate_cad(Operator):
     bl_label = "Regenerate"
     bl_description = (
         "Retessellate the last imported CAD product with the Import quality / "
-        "deflection. Keeps materials and transforms where possible"
+        "deflection and Cleanup toggles. Keeps materials and transforms where possible"
     )
     bl_options = {"REGISTER", "UNDO"}
 
