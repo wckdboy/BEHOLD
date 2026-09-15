@@ -4,15 +4,20 @@ BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
 **v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. **v1.1.0**
 is procedural gobo lite. **v1.2.0** is IES practical lite (BYO `.ies`, not a
 streamed catalog). **v1.3.0** is live tessellation regenerate. **v1.4.0** is
-defeaturing lite. **v1.5.0** is per-body auto-dress. Each later cut
+defeaturing lite. **v1.5.0** is per-body auto-dress. **v1.5.1** is the
+Install from Disk enable fix. Each later cut
 still closes one gap product artists
 actually hit, then we ship a GitHub Release. See [CHECKPOINT.md](CHECKPOINT.md)
 for living status.
 
 ## Implemented
 
-The 1.5.0 zip is this path. Nothing below is “coming” anymore.
+The 1.5.1 zip is this path. Nothing below is “coming” anymore.
 
+- **1.5.1 Install from Disk enable** — v1.5.0 failed to enable (`NameError:
+  BEHOLD_OT_cad_build_studio` after Auto-dress was merged into that class).
+  Two operator classes again, Utilities load isolated, manifest tagline /
+  permission length for Blender 5.2. Not a new artist feature.
 - **1.5.0 Per-body auto-dress** — each STEP color / body name maps onto its
   own local rack look (Metal / Plastic / Rubber / Glass / Paint). Reuses
   Material Assist filename hints. **Assist** still applies one look to the
@@ -93,7 +98,7 @@ The 1.5.0 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.5.0. None of this is in the 1.5 zip.
+Honest order after 1.5.1. None of this is in the 1.5.1 zip.
 
 Feature-flagged **Utilities** (Danish wall + balcony mounts + eave/roof
 sections, default off) is a side track, not a product release —

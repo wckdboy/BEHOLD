@@ -595,6 +595,9 @@ class BEHOLD_OT_cad_auto_dress(Operator):
             return {"CANCELLED"}
         self.report({"INFO"}, result["message"])
         return {"FINISHED"}
+
+
+class BEHOLD_OT_cad_build_studio(Operator):
     bl_idname = "behold.cad_build_studio"
     bl_label = "Studio from Import"
     bl_description = "Keep the imported product selection and run Build Studio"

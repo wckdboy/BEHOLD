@@ -61,7 +61,14 @@ from .studio.ies_apply import on_ies_filepath_update, on_ies_values_update
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
-from .utilities.settings import BEHOLDUtilitiesSettings
+
+try:
+    from .utilities.settings import BEHOLDUtilitiesSettings
+except Exception:  # noqa: BLE001 — Utilities is opt-in; core RNA still registers
+
+    class BEHOLDUtilitiesSettings(PropertyGroup):
+        """Stand-in so scene.behold registers if the Utilities track fails to import."""
+        pass
 
 
 class BEHOLDShotItem(PropertyGroup):

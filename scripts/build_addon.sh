@@ -62,4 +62,4 @@ rm -f "${OUT}"
 )
 
 echo "Built ${OUT}"
-echo "Install in Blender: Edit → Preferences → Add-ons → Install… → select this zip"
+echo "Install in Blender 5.2: Edit → Preferences → Get Extensions → Install from Disk → select this zip"

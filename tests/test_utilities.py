@@ -151,9 +151,10 @@ class FeatureFlagTests(unittest.TestCase):
         init = _read("behold/__init__.py")
         self.assertIn("from . import utilities", init)
         self.assertLess(init.index("ui,"), init.index("utilities,"))
-        self.assertIn('"version": (1, 5, 0)', init)
+        self.assertIn("_OPTIONAL_MODULES", init)
+        self.assertIn('"version": (1, 5, 1)', init)
         brand = _read("behold/brand.py")
-        self.assertIn("VERSION = (1, 5, 0)", brand)
+        self.assertIn("VERSION = (1, 5, 1)", brand)
 
 
 class WallMathTests(unittest.TestCase):
@@ -402,7 +403,7 @@ class DocsTests(unittest.TestCase):
         self.assertIn("Inddragelse af tag", text)
         self.assertIn("vejledende", text)
         self.assertIn("not a product release", text.lower())
-        self.assertIn("1.5.0", text)
+        self.assertIn("1.5.1", text)
         checkpoint = _read("CHECKPOINT.md")
         self.assertIn("eave", checkpoint.lower())
         self.assertIn("not a version bump", checkpoint.lower())

@@ -6,20 +6,21 @@ Living status for BEHOLD by AMIRITE.studio. Update this file when a slice lands 
 
 KeyShot-simple OSS product renders in Blender. Best Blender plugin for product rendering and production workflows under **BEHOLD by AMIRITE.studio**.
 
-Cadence: one focused feature cut, then a GitHub Release. **v1.0.0 is the first stable product milestone.** **v1.1.0** is procedural gobo lite. **v1.2.0** is IES practical lite. **v1.3.0** is live tessellation regenerate. **v1.4.0** is defeaturing lite. **v1.5.0** is per-body auto-dress.
+Cadence: one focused feature cut, then a GitHub Release. **v1.0.0 is the first stable product milestone.** **v1.1.0** is procedural gobo lite. **v1.2.0** is IES practical lite. **v1.3.0** is live tessellation regenerate. **v1.4.0** is defeaturing lite. **v1.5.0** is per-body auto-dress. **v1.5.1** is the Install from Disk enable fix.
 
 ## Now
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 1.4.0 (defeaturing lite) |
-| **This branch / after merge** | **1.5.0 — Per-body auto-dress** |
+| **Version on `main` (before this cut)** | 1.5.0 (per-body auto-dress; zip does not enable) |
+| **This branch / after merge** | **1.5.1 — Install from Disk enable fix** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-1.5.0.zip` (Actions artifact `behold-addon`) |
+| **Install zip** | `dist/behold-1.5.1.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
+- **Install from Disk enable (1.5.1)** — v1.5.0 zip failed to enable: `BEHOLD_OT_cad_auto_dress` was inserted by replacing the `class BEHOLD_OT_cad_build_studio` header, so `CLASSES` referenced a missing name (`NameError` on import). `compileall` stayed green. Fix restores two operator classes, isolates Utilities register/import so a helper cannot brick enable, and shortens the extension tagline / `network` permission to Blender 5.2’s 64-character strict rules. Tests in `tests/test_install.py`. Install zip `behold-1.5.1.zip`. Not a new artist feature.
 - **Per-body auto-dress (1.5.0)** — KeyShot-class body looks without a material library. Compact Materials **Auto-dress** next to **Assist**: each imported body gets its own Metal / Plastic / Rubber / Glass / Paint from **STEP color** and/or **part name** (same Material Assist regexes). Name wins; a real CAD color tints the rack look (glass stays clear). Placeholder Blender white / 0.8 grey is not a color. Bodies with no hint are skipped (`NO_BODY_HINT` — name the bodies or use Assist for one look). **Assist is unchanged** — one look on the whole selection from filename / STEP hint. CAD Import Product (and Advanced Import STEP when Assist-after-import is on) run auto-dress; mesh OBJ/FBX/STL still use Assist. Empty Materials state unchanged. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_auto_dress.py`. Not a logo redo, IES/gobo catalog, utilities expansion, or BlenderKit library download.
 - **Defeaturing lite (1.4.0)** — Product-render cleanup on Import, not a CAD editor. Compact **Cleanup** card: **Fillets / Chamfers / Holes** plus millimetre thresholds (**Blend** 2 mm default for fillet radius / chamfer width; **Hole Ø** 3 mm default). **Regenerate** (1.3.0) and Import Product run cleanup **before** tessellate when a toggle is on. **STEPper NEXT has no fillet / chamfer / hole RNA** (quality / UV / materials only) — cleanup uses **OCP** `BRepAlgoAPI_Defeaturing` (blend faces) and `ShapeUpgrade_RemoveInternalWires` (small inner loops). Missing OCP or an OCP build without those tools reports a sentence + next step (`DEFEATURE_NEEDS_OCP`, `DEFEATURE_NO_FILLET_API`, `DEFEATURE_NO_HOLE_API`). Surface-only files report `DEFEATURE_NO_SOLID`. Defaults **off** so tessellation-only regenerate is unchanged. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_defeaturing.py`. Not logo redo, IES/gobo changes, or utilities expansion.
 - **Live tessellation regenerate (1.3.0)** — Retessellate the last imported CAD product without re-picking the file. Compact Import **Tessellation** card: **Draft / Balanced / Fine / Ultra / Custom** plus **Regenerate**. Quality names match STEPper NEXT physical deflection (2 mm / 0.8 mm / 0.2 mm / 0.05 mm); Custom is `cad_deflection` (meters) passed as STEPper `lin_deflection_len` / OCP `BRepMesh_IncrementalMesh`. Scene cache (`cad_source_filepath`) plus object tags (`BEHOLD_cad_source`). **Prefer STEPper NEXT** when installed; **OCP in-place** when that is the live fallback (including OCP-imported products) **or when Cleanup is on**. Materials and transforms restored by name / Blender `.001` stem / 1:1. Empty cache, missing file, or a non-CAD path reports a sentence + next step (`NO_CAD_SOURCE`, missing/unsupported source). Unknown quality is `UNKNOWN_CAD_QUALITY`. **Apply tessellation** stays in Advanced. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_regenerate.py`. Not logo redo, IES/gobo changes, or utilities expansion.
@@ -78,11 +79,11 @@ Backend operators stay registered. Pie / header / preferences do not replace the
 
 ## Coming / In flight
 
-**Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite; **1.1.0** adds procedural gobos; **1.2.0** adds IES practical lite; **1.3.0** adds live tessellation regenerate; **1.4.0** adds defeaturing lite; **1.5.0** adds per-body auto-dress. **Coming** after that (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
+**Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite; **1.1.0** adds procedural gobos; **1.2.0** adds IES practical lite; **1.3.0** adds live tessellation regenerate; **1.4.0** adds defeaturing lite; **1.5.0** adds per-body auto-dress; **1.5.1** fixes Install from Disk enable. **Coming** after that (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
 
 **Utilities track** (not a version bump): feature-flagged Danish wall, balcony mounts, and MinAltan eave / roof section helpers, default **off**. See [docs/UTILITIES.md](docs/UTILITIES.md). Panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced stays the product-render path.
 
-Not this PR (and not 1.5.0):
+Not this PR (and not 1.5.1):
 
 - Streamed IES / gobo catalogs (photometric BYO + one CC0 sample shipped in 1.2.0; Blinds / Window / Circle gobos shipped in 1.1.0).
 - Logo redo (current wordmark is a placeholder; official mark in the UI stays).
@@ -98,7 +99,8 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ### 2026-09-15
 
-- Utilities (not a version bump): MinAltan eave / roof section presets on the feature-flagged Utilities panel (under/over eaves, optional murkrone / recessed skunk / roof inclusion). Default **off**. Addon stays **1.5.0**. Tests in `tests/test_utilities.py`. See [docs/UTILITIES.md](docs/UTILITIES.md).
+- v**1.5.1** Install from Disk enable: restore `BEHOLD_OT_cad_build_studio` as its own class (v1.5.0 NameError on enable), isolate Utilities load, Blender 5.2 manifest tagline/permission length. Tests in `tests/test_install.py`. Install zip `behold-1.5.1.zip`.
+- Utilities (not a version bump): MinAltan eave / roof section presets on the feature-flagged Utilities panel (under/over eaves, optional murkrone / recessed skunk / roof inclusion). Default **off**. Tests in `tests/test_utilities.py`. See [docs/UTILITIES.md](docs/UTILITIES.md).
 - v**1.5.0** Per-body auto-dress: Auto-dress on Materials (STEP color / part name → a local look per body). Assist still applies one look to the selection. CAD Import Product runs auto-dress; mesh files keep Assist. Tests in `tests/test_auto_dress.py`. Install zip `behold-1.5.0.zip`.
 - v**1.4.0** Defeaturing lite: compact Cleanup on Import (Fillets / Chamfers / Holes + Blend mm / Hole Ø mm) before (re)tessellate. OCP `BRepAlgoAPI_Defeaturing` / inner-wire remove; STEPper NEXT tessellates only. Defaults off. Tests in `tests/test_defeaturing.py`. Install zip `behold-1.4.0.zip`.
 - v**1.3.0** Live tessellation regenerate: compact Tessellation on Import (Draft / Balanced / Fine / Ultra / Custom + Regenerate) on the last cached CAD source. STEPper NEXT when installed; OCP in-place fallback. Materials / transforms kept where names match. Tests in `tests/test_regenerate.py`. Install zip `behold-1.3.0.zip`.

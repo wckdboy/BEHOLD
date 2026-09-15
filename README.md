@@ -6,7 +6,7 @@
 
 **BEHOLD by AMIRITE.studio** — the best product-render suite for Blender. KeyShot-simple lighting, cameras, and stills, as open source.
 
-**v1.5.0 — Per-body auto-dress.** Each STEP color / body name gets its own look. **Assist** still applies one look to the selection. **v1.4.0** is defeaturing lite. **v1.3.0** is live tessellation regenerate. **v1.2.0** is IES practical lite. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
+**v1.5.1 — Install from Disk works.** v1.5.0 failed to enable (Auto-dress swallowed the Studio-from-Import operator). **v1.5.0** is per-body auto-dress. **Assist** still applies one look to the selection. **v1.4.0** is defeaturing lite. **v1.3.0** is live tessellation regenerate. **v1.2.0** is IES practical lite. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
 
 Official mark (Blender UI): [`behold/icons/behold_icon.png`](behold/icons/behold_icon.png) · Wordmark: [`docs/brand/behold_logo.png`](docs/brand/behold_logo.png) · also [`behold/icons/behold_logo.png`](behold/icons/behold_logo.png)
 
@@ -107,7 +107,7 @@ Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / searc
 
 Off by default. Enable **Utilities panel** in add-on preferences to show a separate **Utilities** section (after Advanced) for a layered Danish wall, Legs / L-bracket balcony mounts, and MinAltan eave / roof section presets. Does not change Import → Studio → Lights → Materials → Cameras → Shoot. See **[docs/UTILITIES.md](docs/UTILITIES.md)**.
 
-## Coming (not 1.5)
+## Coming (not 1.5.1)
 
 Streamed IES / gobo catalogs, logo redo, Light Wrangler viewport-gizmo parity, full BlenderKit browser. Per-body auto-dress shipped in **1.5.0**. Defeaturing lite shipped in **1.4.0**. Live tessellation regenerate shipped in **1.3.0**. IES practical lite shipped in **1.2.0**. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
@@ -150,21 +150,23 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Install (Blender 5.2 LTS+)
 
-1. Get `behold-1.5.0.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`).
-2. Blender → Edit → Preferences → Add-ons → Install… → select the zip  
-   (or Get Extensions → Install from Disk).
+**Use `behold-1.5.1.zip`.** The v1.5.0 GitHub zip does not enable: Auto-dress was merged into the Studio-from-Import operator, so import raised `NameError: BEHOLD_OT_cad_build_studio`. `python3 -m compileall` still passed.
+
+1. Get `behold-1.5.1.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`). Do not use the v1.5.0 asset or GitHub’s “Source code (zip)”.
+2. Blender → Edit → Preferences → **Get Extensions** → **Install from Disk** → select the zip  
+   (Blender 4.2+ Add-ons → Install also works for this zip).
 3. Enable **BEHOLD**, then open the 3D Viewport sidebar (`N`) → **BEHOLD** tab.
 
 The zip also loads on **4.2+** when you need it; 5.2 LTS is the production target.
 
-**Versioned release** — push a tag `v1.5.0`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
+**Versioned release** — push a tag `v1.5.1`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
 
 ```bash
-git tag v1.5.0
-git push origin v1.5.0
+git tag v1.5.1
+git push origin v1.5.1
 
 make zip
-# → dist/behold-1.5.0.zip
+# → dist/behold-1.5.1.zip
 ```
 
 Alternate (dev): copy or symlink `behold/` into your Blender `scripts/addons/` directory.

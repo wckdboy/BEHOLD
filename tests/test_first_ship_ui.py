@@ -353,6 +353,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("1.3.0", text)
         self.assertIn("1.4.0", text)
         self.assertIn("1.5.0", text)
+        self.assertIn("1.5.1", text)
         self.assertIn("Auto-dress", text)
         self.assertIn("Regenerate", text)
         self.assertIn("tessellation", text.lower())
