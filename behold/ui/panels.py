@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
+v1.4.0 adds defeaturing lite (fillet / chamfer / hole suppress) on Import.
 v1.3.0 adds live tessellation regenerate on Import. v1.2.0 adds IES practical
 lite on Lights. v1.1.0 adds procedural gobo lite
 on Lights. v1.0.0 is first stable. Studio
@@ -11,8 +12,9 @@ is last. Easy update (v0.10.0): a dismissible GitHub notice on the main
 panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
 Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
-backend line (v0.7.0) and a compact tessellation card (v1.3.0: quality /
-deflection + Regenerate on the last CAD source). Lights is the v0.4.0 lighting section plus v0.16.0
+backend line (v0.7.0), a compact tessellation card (v1.3.0: quality /
+deflection + Regenerate on the last CAD source), and a compact Cleanup card
+(v1.4.0: fillets / chamfers / holes in mm, OCP before tessellate). Lights is the v0.4.0 lighting section plus v0.16.0
 shape presets (Apply to active), v1.1.0 gobo (None / Blinds / Window /
 Circle + scale / strength), v1.2.0 IES (Load / Sample / Clear + strength /
 scale on the active spot or point; area lights become spots while IES is
@@ -53,6 +55,7 @@ from bpy.types import Context, Panel, UILayout
 
 from ..cad import detect as cad_detect
 from ..cad.regenerate import cached_label
+from ..cad.defeaturing import DEFAULT_BLEND_MM, DEFAULT_HOLE_MM
 from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
 from ..materials.presets import EMPTY_NO_MESH, empty_state
@@ -121,11 +124,12 @@ def draw_cad_status_line(layout: UILayout, cad: dict) -> None:
 
 
 def draw_import_first_ship(layout: UILayout, context: Context) -> None:
-    """Import Product picker plus CAD backend status and tessellation."""
+    """Import Product picker plus CAD backend status, tessellation, cleanup."""
     card = layout.box()
     card.operator("behold.import_product", icon="IMPORT")
     draw_cad_status_line(layout, cad_detect.cad_status_for_draw())
     draw_import_tessellation(layout, context)
+    draw_import_cleanup(layout, context)
 
 
 def draw_import_tessellation(layout: UILayout, context: Context) -> None:
@@ -138,6 +142,35 @@ def draw_import_tessellation(layout: UILayout, context: Context) -> None:
     if settings.cad_quality == "CUSTOM":
         card.prop(settings, "cad_deflection", text="Deflection")
     card.operator("behold.regenerate_cad", icon="FILE_REFRESH")
+
+
+def draw_import_cleanup(layout: UILayout, context: Context) -> None:
+    """Fillet / chamfer / hole suppress in millimetres before (re)tessellate."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Cleanup", icon="MOD_BEVEL")
+    row = card.row(align=True)
+    row.prop(settings, "cad_cleanup_fillets", text="Fillets", toggle=True)
+    row.prop(settings, "cad_cleanup_chamfers", text="Chamfers", toggle=True)
+    row.prop(settings, "cad_cleanup_holes", text="Holes", toggle=True)
+    sizes = card.column(align=True)
+    sizes.active = (
+        settings.cad_cleanup_fillets
+        or settings.cad_cleanup_chamfers
+        or settings.cad_cleanup_holes
+    )
+    if settings.cad_cleanup_fillets or settings.cad_cleanup_chamfers:
+        sizes.prop(settings, "cad_blend_mm", text="Blend mm")
+    if settings.cad_cleanup_holes:
+        sizes.prop(settings, "cad_hole_mm", text="Hole Ø mm")
+    if not (
+        settings.cad_cleanup_fillets
+        or settings.cad_cleanup_chamfers
+        or settings.cad_cleanup_holes
+    ):
+        card.label(text=f"Off — default blend {DEFAULT_BLEND_MM:g} mm, holes Ø {DEFAULT_HOLE_MM:g} mm")
+    else:
+        card.label(text="OCP before tessellate — STEPper has no cleanup RNA")
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
@@ -502,6 +535,15 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
     tess.prop(settings, "cad_quality", text="Quality")
     tess.prop(settings, "cad_deflection", text="Deflection")
     tess.operator("behold.regenerate_cad", text="Apply tessellation", icon="FILE_REFRESH")
+
+    clean = layout.box()
+    clean.label(text="Cleanup", icon="MOD_BEVEL")
+    clean.prop(settings, "cad_cleanup_fillets")
+    clean.prop(settings, "cad_cleanup_chamfers")
+    clean.prop(settings, "cad_cleanup_holes")
+    clean.prop(settings, "cad_blend_mm", text="Blend mm")
+    clean.prop(settings, "cad_hole_mm", text="Hole Ø mm")
+    clean.operator("behold.regenerate_cad", text="Apply tessellation", icon="FILE_REFRESH")
 
 
 def draw_studio_parked(layout: UILayout, context: Context) -> None:

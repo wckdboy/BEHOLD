@@ -10,6 +10,8 @@ Verified against Peak-Design/STEPper_NEXT ``main.py`` / ``worker.py``
   path (it skips ``stepper.background_import``)
 - Optional RNA on that operator includes ``quality_preset``,
   ``lin_deflection_len``, ``lin_deflection``, ``directory``
+- No fillet / chamfer / hole / defeature RNA (``import_ui.PERSISTED_PROPS``).
+  Defeaturing lite uses the BEHOLD OCP path instead.
 
 Do not invent kwargs. Filter extras to RNA identifiers when they are known.
 """
@@ -52,6 +54,8 @@ STEPPER_OCC_OPTIONAL_KWARGS = frozenset(
         "ang_deflection_rot",
     }
 )
+# STEPper NEXT tessellates; it does not suppress fillets, chamfers, or holes.
+STEPPER_DEFEATURE_KWARGS = frozenset()
 
 DEFAULT_QUALITY_PRESET = "BALANCED"
 

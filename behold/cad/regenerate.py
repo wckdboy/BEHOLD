@@ -2,8 +2,9 @@
 """Live tessellation regenerate — quality / deflection without re-picking CAD.
 
 No Blender import. STEPper NEXT quality names match ``import_ui.QUALITY_PRESETS``
-(physical meters). OCP uses the same linear / angular pair. Gobos, IES,
-logo, defeaturing, and per-body auto-dress stay out of scope.
+(physical meters). OCP uses the same linear / angular pair. Cleanup
+(fillet / chamfer / hole suppress) is a separate OCP-only pass before
+this tessellate. Gobos, IES, logo, and per-body auto-dress stay out of scope.
 """
 
 from __future__ import annotations
@@ -361,12 +362,14 @@ def regenerated_message(
     backend: str,
     quality: QualityId,
     object_count: int,
+    cleanup: str = "",
 ) -> str:
     name = os.path.basename(filepath) or filepath or "CAD"
     via = "STEPper NEXT" if backend == "STEPPER" else "OCP"
     count = f"{object_count} mesh" if object_count == 1 else f"{object_count} meshes"
+    extra = f", {cleanup}" if cleanup else ""
     return (
-        f"Retessellated {name} via {via} ({quality_label(quality)}, {count})"
+        f"Retessellated {name} via {via} ({quality_label(quality)}{extra}, {count})"
     )
 
 

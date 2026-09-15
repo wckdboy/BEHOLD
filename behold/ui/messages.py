@@ -18,6 +18,13 @@ from ..cad.regenerate import (
     cad_source_problem_message,
     unknown_quality_message as unknown_cad_quality_message,
 )
+from ..cad.defeaturing import (
+    DEFEATURE_FAILED,
+    DEFEATURE_NEEDS_OCP,
+    DEFEATURE_NO_FILLET_API,
+    DEFEATURE_NO_HOLE_API,
+    DEFEATURE_NO_SOLID,
+)
 from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT
 from ..shoot.exposure import (
     EXPOSURE_APPLIED,
@@ -252,6 +259,10 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_IES_TYPE,
         NO_CAD_SOURCE,
         UNKNOWN_CAD_QUALITY,
+        DEFEATURE_NEEDS_OCP,
+        DEFEATURE_NO_FILLET_API,
+        DEFEATURE_NO_HOLE_API,
+        DEFEATURE_NO_SOLID,
     }
 )
 
@@ -285,6 +296,9 @@ def report_type(message: str) -> str:
             "CAD file not found:",
             "Cached source is not CAD",
             "Unknown tessellation quality",
+            "Cleanup needs OCP",
+            "This OCP build cannot",
+            "Cleanup needs a solid",
             "Shot name “",
             "Shot camera “",
             "Batch export ",

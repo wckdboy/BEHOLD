@@ -106,6 +106,8 @@ class MessageConstantTests(unittest.TestCase):
         self.assertEqual(messages.report_type(messages.NO_GOBO_TYPE), "WARNING")
         self.assertEqual(messages.report_type(messages.NO_CAD_SOURCE), "WARNING")
         self.assertEqual(messages.report_type(messages.UNKNOWN_CAD_QUALITY), "WARNING")
+        self.assertEqual(messages.report_type(messages.DEFEATURE_NEEDS_OCP), "WARNING")
+        self.assertEqual(messages.report_type(messages.DEFEATURE_FAILED), "ERROR")
         self.assertEqual(messages.report_type(messages.UNKNOWN_GOBO), "ERROR")
         self.assertEqual(messages.report_type(messages.GOBO_NODES_FAILED), "ERROR")
         self.assertEqual(messages.report_type(messages.UNKNOWN_BACKDROP), "WARNING")
@@ -203,6 +205,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("NO_FILE_SELECTED", cad)
         self.assertIn("NO_CAD_SOURCE", cad)
         self.assertIn("behold.regenerate_cad", cad)
+        self.assertIn("scene_cleanup_plan", cad)
         self.assertIn("file_not_found_message", cad)
         self.assertIn('self.report({"INFO"}, TURNTABLE_READY_PLAY)', shoot)
 

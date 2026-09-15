@@ -9,7 +9,9 @@ import bpy
 from bpy.types import Context, Object
 from mathutils import Matrix
 
+from . import defeaturing as df_spec
 from . import ocp_core
+from . import ocp_defeature
 from . import ocp_import
 from . import regenerate as spec
 
@@ -142,7 +144,9 @@ def replace_mesh_geometry(
 def tessellate_ocp(
     filepath: str,
     plan: spec.TessellationPlan,
-) -> tuple[list[tuple[float, float, float]], list[tuple[int, int, int]]] | str:
+    *,
+    cleanup: df_spec.DefeaturingPlan | None = None,
+) -> tuple[list[tuple[float, float, float]], list[tuple[int, int, int]], df_spec.CleanupStats] | str:
     try:
         ocp_core.ensure_ocp()
     except ImportError as exc:
@@ -150,6 +154,16 @@ def tessellate_ocp(
     shape, error = ocp_core.read_cad_shape(filepath)
     if error or shape is None:
         return error or "No shape"
+    stats = df_spec.CleanupStats()
+    if cleanup is not None and cleanup.active:
+        applied = ocp_defeature.apply_defeaturing(
+            shape,
+            cleanup,
+            filepath=filepath,
+        )
+        if isinstance(applied, str):
+            return applied
+        shape, stats = applied
     verts, faces = ocp_core.tessellate_shape(
         shape,
         deflection=plan.deflection,
@@ -157,19 +171,22 @@ def tessellate_ocp(
     )
     if not verts or not faces:
         return spec.REGENERATE_EMPTY
-    return verts, faces
+    return verts, faces, stats
 
 
 def regenerate_ocp(
     context: Context,
     cache: spec.CadCache,
     plan: spec.TessellationPlan,
+    *,
+    cleanup: df_spec.DefeaturingPlan | None = None,
 ) -> dict[str, Any]:
     existing = tagged_cad_meshes(context, cache.filepath)
-    tess = tessellate_ocp(cache.filepath, plan)
+    tess = tessellate_ocp(cache.filepath, plan, cleanup=cleanup)
     if isinstance(tess, str):
         return _result(False, tess, backend="OCP", objects=[])
-    verts, faces = tess
+    verts, faces, stats = tess
+    caption = df_spec.cleanup_applied_caption(cleanup, stats) if cleanup else ""
     updated = spec.cache_record(
         cache.filepath,
         "OCP",
@@ -195,15 +212,18 @@ def regenerate_ocp(
                 backend="OCP",
                 quality=plan.quality,
                 object_count=1,
+                cleanup=caption,
             ),
             backend="OCP",
             objects=[primary],
             extras=extras,
+            cleanup=stats,
         )
 
     result = ocp_import.import_cad_with_ocp(
         cache.filepath,
         deflection=plan.deflection,
+        cleanup=cleanup,
     )
     if not result.get("ok"):
         return _result(
@@ -215,6 +235,12 @@ def regenerate_ocp(
     imported = list(result.get("objects") or [])
     tag_cad_meshes(imported, updated)
     write_scene_cache(context, updated)
+    import_stats = result.get("cleanup") or stats
+    import_caption = (
+        df_spec.cleanup_applied_caption(cleanup, import_stats)
+        if cleanup and isinstance(import_stats, df_spec.CleanupStats)
+        else caption
+    )
     return _result(
         True,
         spec.regenerated_message(
@@ -222,7 +248,9 @@ def regenerate_ocp(
             backend="OCP",
             quality=plan.quality,
             object_count=len(imported),
+            cleanup=import_caption,
         ),
         backend="OCP",
         objects=imported,
+        cleanup=import_stats,
     )

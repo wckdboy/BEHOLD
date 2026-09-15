@@ -313,6 +313,7 @@ class WiringTests(unittest.TestCase):
         self.assertIn("draw_cad_status_line", body)
         self.assertIn("draw_import_tessellation", body)
         self.assertLess(body.index("behold.import_product"), body.index("draw_import_tessellation"))
+        self.assertIn("draw_import_cleanup", body)
         tess = _func_source(source, tree, "draw_import_tessellation")
         self.assertIn("cad_quality", tess)
         self.assertIn("cad_deflection", tess)
@@ -325,6 +326,7 @@ class WiringTests(unittest.TestCase):
         self.assertIn("behold.regenerate_cad", parked)
         self.assertIn("Apply tessellation", parked)
         self.assertIn("cad_quality", parked)
+        self.assertIn("cad_cleanup_fillets", parked)
         self.assertIn("light_ies_filepath", _func_source(source, tree, "draw_lights_section"))
         self.assertNotIn("behold.regenerate_cad", _func_source(source, tree, "draw_lights_section"))
 

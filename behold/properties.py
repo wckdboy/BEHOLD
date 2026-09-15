@@ -15,6 +15,10 @@ from bpy.props import (
 )
 from bpy.types import PropertyGroup, Scene
 
+from .cad.defeaturing import DEFAULT_BLEND_MM as CAD_BLEND_DEFAULT
+from .cad.defeaturing import DEFAULT_HOLE_MM as CAD_HOLE_DEFAULT
+from .cad.defeaturing import MAX_SIZE_MM as CAD_SIZE_MAX
+from .cad.defeaturing import MIN_SIZE_MM as CAD_SIZE_MIN
 from .cad.regenerate import DEFAULT_DEFLECTION as CAD_DEFAULT_DEFLECTION
 from .cad.regenerate import DEFAULT_QUALITY as CAD_QUALITY_DEFAULT
 from .cad.regenerate import MAX_DEFLECTION as CAD_DEFLECTION_MAX
@@ -400,6 +404,52 @@ class BEHOLDSceneSettings(PropertyGroup):
         soft_max=0.002,
         precision=5,
         step=1,
+    )
+    cad_cleanup_fillets: BoolProperty(
+        name="Fillets",
+        description=(
+            "Suppress small constant-radius fillets (cylinders / tori / spheres) "
+            "before tessellate. OCP only — STEPper NEXT has no cleanup RNA"
+        ),
+        default=False,
+    )
+    cad_cleanup_chamfers: BoolProperty(
+        name="Chamfers",
+        description=(
+            "Suppress small planar chamfer strips before tessellate. "
+            "OCP only — STEPper NEXT has no cleanup RNA"
+        ),
+        default=False,
+    )
+    cad_cleanup_holes: BoolProperty(
+        name="Holes",
+        description=(
+            "Suppress small cylindrical holes and inner loops before tessellate. "
+            "OCP only — STEPper NEXT has no cleanup RNA"
+        ),
+        default=False,
+    )
+    cad_blend_mm: FloatProperty(
+        name="Blend",
+        description="Fillet radius / chamfer width to suppress, in millimetres",
+        default=CAD_BLEND_DEFAULT,
+        min=CAD_SIZE_MIN,
+        max=CAD_SIZE_MAX,
+        soft_min=0.5,
+        soft_max=10.0,
+        precision=2,
+        step=10,
+    )
+    cad_hole_mm: FloatProperty(
+        name="Hole Ø",
+        description="Hole diameter to suppress, in millimetres",
+        default=CAD_HOLE_DEFAULT,
+        min=CAD_SIZE_MIN,
+        max=CAD_SIZE_MAX,
+        soft_min=0.5,
+        soft_max=12.0,
+        precision=2,
+        step=10,
     )
     active_light_name: StringProperty(
         name="Active Light",

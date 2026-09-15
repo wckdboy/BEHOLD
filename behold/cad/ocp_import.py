@@ -8,7 +8,9 @@ from typing import Any
 
 import bpy
 
+from . import defeaturing as df_spec
 from . import ocp_core
+from . import ocp_defeature
 from ..product_import.invoke import format_file_not_found_message
 
 
@@ -17,6 +19,7 @@ def import_cad_with_ocp(
     *,
     deflection: float = 0.001,
     collection_name: str | None = None,
+    cleanup: df_spec.DefeaturingPlan | None = None,
 ) -> dict[str, Any]:
     """Read a STEP / IGES / BREP file via OCP, tessellate, and create mesh objects."""
     path = bpy.path.abspath(filepath)
@@ -35,6 +38,17 @@ def import_cad_with_ocp(
     shape, error = ocp_core.read_cad_shape(path)
     if error or shape is None:
         return {"ok": False, "objects": [], "message": error or "No shape"}
+
+    stats = df_spec.CleanupStats()
+    if cleanup is not None and cleanup.active:
+        applied = ocp_defeature.apply_defeaturing(
+            shape,
+            cleanup,
+            filepath=path,
+        )
+        if isinstance(applied, str):
+            return {"ok": False, "objects": [], "message": applied}
+        shape, stats = applied
 
     all_verts, all_faces = ocp_core.tessellate_shape(shape, deflection=deflection)
     if not all_verts or not all_faces:
@@ -67,10 +81,13 @@ def import_cad_with_ocp(
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
 
+    extra = df_spec.cleanup_applied_caption(cleanup, stats) if cleanup else ""
+    suffix = f", {extra}" if extra else ""
     return {
         "ok": True,
         "objects": [obj],
-        "message": f"Imported “{stem}” via OCP ({len(all_faces)} tris)",
+        "message": f"Imported “{stem}” via OCP ({len(all_faces)} tris{suffix})",
+        "cleanup": stats,
     }
 
 
@@ -79,10 +96,12 @@ def import_step_with_ocp(
     *,
     deflection: float = 0.001,
     collection_name: str | None = None,
+    cleanup: df_spec.DefeaturingPlan | None = None,
 ) -> dict[str, Any]:
     """Backward-compatible alias for STEP-oriented callers."""
     return import_cad_with_ocp(
         filepath,
         deflection=deflection,
         collection_name=collection_name,
+        cleanup=cleanup,
     )
