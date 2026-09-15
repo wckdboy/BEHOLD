@@ -364,7 +364,8 @@ class BEHOLDSceneSettings(PropertyGroup):
     import_auto_material_assist: BoolProperty(
         name="Material Assist after Import",
         description=(
-            "Apply a local product look from the filename and part names. "
+            "After CAD import, auto-dress each body from STEP color / name. "
+            "Mesh files still get one Assist look from the filename. "
             "Searches BlenderKit only when signed in — no account needed locally"
         ),
         default=True,

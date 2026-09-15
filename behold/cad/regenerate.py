@@ -4,7 +4,7 @@
 No Blender import. STEPper NEXT quality names match ``import_ui.QUALITY_PRESETS``
 (physical meters). OCP uses the same linear / angular pair. Cleanup
 (fillet / chamfer / hole suppress) is a separate OCP-only pass before
-this tessellate. Gobos, IES, logo, and per-body auto-dress stay out of scope.
+this tessellate. Gobos, IES, logo, and utilities expansion stay out of scope.
 """
 
 from __future__ import annotations

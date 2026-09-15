@@ -201,6 +201,7 @@ class MaterialsWiringTests(unittest.TestCase):
         source = _read("behold/materials/local_rack.py")
         self.assertIn('bl_idname = "behold.apply_local_material"', source)
         self.assertIn("def apply_to_objects", source)
+        self.assertIn("def apply_look_to_objects", source)
         self.assertIn("def dressable_meshes", source)
         self.assertIn("apply_preset_to_sockets", source)
         self.assertIn("EMPTY_NO_MESH", source)
@@ -220,6 +221,7 @@ class MaterialsWiringTests(unittest.TestCase):
         self.assertIn('bl_idname = "behold.cad_material_assist"', ops)
         post = _read("behold/product_import/operators.py")
         self.assertIn("run_material_assist", post)
+        self.assertIn("run_auto_dress", post)
         self.assertNotIn("Material Assist query", post)
 
     def test_panel_registers_materials_section(self) -> None:
@@ -228,6 +230,7 @@ class MaterialsWiringTests(unittest.TestCase):
         self.assertIn("draw_materials_section", source)
         self.assertIn("behold.apply_local_material", source)
         self.assertIn("behold.cad_material_assist", source)
+        self.assertIn("behold.cad_auto_dress", source)
         self.assertIn("EMPTY_NO_MESH", source)
         self.assertIn("no BlenderKit account needed", source)
         self.assertIn("blenderkit_search", source)

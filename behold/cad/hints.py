@@ -77,10 +77,37 @@ def suggest_query_from_parts(
     filepath: str = "",
 ) -> str:
     """Same ranking as Material Assist, without bpy objects."""
+    hit = suggest_query_from_parts_or_none(
+        custom_hints=custom_hints,
+        names=names,
+        material_names=material_names,
+    )
+    if hit:
+        return hit
+    if filepath:
+        return suggest_query_for_path(filepath)
+    return DEFAULT_QUERY
+
+
+def suggest_query_from_parts_or_none(
+    *,
+    custom_hints: list[str] | tuple[str, ...] = (),
+    names: list[str] | tuple[str, ...] = (),
+    material_names: list[str] | tuple[str, ...] = (),
+) -> str | None:
+    """Assist ranking without the filename / brushed-metal default.
+
+    Per-body auto-dress uses this so a generic CAD stem does not paint every
+    solid the same look. Assist still falls back via ``suggest_query_from_parts``.
+    """
     for value in custom_hints:
         if isinstance(value, str) and value.strip():
-            hinted = suggest_query_for_text(value) or value.strip()
-            return hinted
+            hinted = suggest_query_for_text(value)
+            if hinted:
+                return hinted
+            cleaned = value.strip()
+            if cleaned.lower() != DEFAULT_QUERY:
+                return cleaned
 
     for name in names:
         hit = suggest_query_for_text(name)
@@ -97,6 +124,4 @@ def suggest_query_from_parts(
         if clean and clean.lower() not in {"material", "material.001"}:
             return clean
 
-    if filepath:
-        return suggest_query_for_path(filepath)
-    return DEFAULT_QUERY
+    return None

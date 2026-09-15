@@ -36,7 +36,11 @@ def apply_post_import(
 
     if auto_material_assist and meshes:
         try:
-            assist = material_assist.run_material_assist(context, meshes, filepath)
+            kind = formats.product_import_dispatch(filepath)
+            if kind == "cad":
+                assist = material_assist.run_auto_dress(context, meshes)
+            else:
+                assist = material_assist.run_material_assist(context, meshes, filepath)
             if assist.get("ok"):
                 notes.append(assist["message"])
             else:
@@ -119,7 +123,8 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
     auto_material_assist: BoolProperty(
         name="Material Assist",
         description=(
-            "Apply a local rack look from the filename / part names. "
+            "After CAD import, auto-dress each body from STEP color / name. "
+            "Mesh files still get one Assist look. "
             "Searches BlenderKit only when signed in"
         ),
         default=True,

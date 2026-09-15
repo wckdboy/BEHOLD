@@ -95,8 +95,22 @@ def apply_preset_to_material(mat: Material, preset: dict) -> dict[str, str]:
 
 
 def apply_to_objects(objects: list[Object], preset_id: str) -> int:
-    preset = PRESETS[preset_id]
-    mat_name = material_name_for(preset_id)
+    return apply_look_to_objects(objects, preset_id)
+
+
+def apply_look_to_objects(
+    objects: list[Object],
+    preset_id: str,
+    *,
+    material_name: str | None = None,
+    base_color: tuple[float, float, float] | None = None,
+) -> int:
+    """Assign a rack look. Optional STEP tint does not mutate the shared mat."""
+    preset = dict(PRESETS[preset_id])
+    if base_color is not None:
+        red, green, blue = base_color
+        preset["base_color"] = (float(red), float(green), float(blue), 1.0)
+    mat_name = material_name or material_name_for(preset_id)
     mat = bpy.data.materials.get(mat_name) or bpy.data.materials.new(name=mat_name)
     apply_preset_to_material(mat, preset)
     count = 0
