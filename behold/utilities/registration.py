@@ -6,8 +6,10 @@ from __future__ import annotations
 import bpy
 
 from .flag import gated_ui_ids, show_utilities_panel
+from .operators import CLASSES as OPERATOR_CLASSES
+from .panel import CLASSES as PANEL_CLASSES
 
-_CLASSES: tuple = ()
+_CLASSES = OPERATOR_CLASSES + PANEL_CLASSES
 _registered = False
 
 
@@ -20,21 +22,11 @@ def _prefs_enabled() -> bool:
         return False
 
 
-def _gated_classes() -> tuple:
-    # Imported only when enabling so a Utilities operator/build error cannot
-    # fail product-render Install from Disk / enable (circular-safe lazy load).
-    from .operators import CLASSES as OPERATOR_CLASSES
-    from .panel import CLASSES as PANEL_CLASSES
-
-    return OPERATOR_CLASSES + PANEL_CLASSES
-
-
 def sync_registration(enabled: bool) -> None:
     """Register or unregister Utilities UI/operators to match the flag."""
-    global _CLASSES, _registered
+    global _registered
     ids = gated_ui_ids(enabled=enabled)
     if enabled and ids and not _registered:
-        _CLASSES = _gated_classes()
         for cls in _CLASSES:
             bpy.utils.register_class(cls)
         _registered = True
@@ -45,7 +37,6 @@ def sync_registration(enabled: bool) -> None:
                 bpy.utils.unregister_class(cls)
             except RuntimeError:
                 pass
-        _CLASSES = ()
         _registered = False
 
 

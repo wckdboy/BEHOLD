@@ -16,8 +16,8 @@ The 1.5.1 zip is this path. Nothing below is “coming” anymore.
 
 - **1.5.1 Install from Disk enable** — v1.5.0 failed to enable (`NameError:
   BEHOLD_OT_cad_build_studio` after Auto-dress was merged into that class).
-  Two operator classes again, Utilities load isolated, manifest tagline /
-  permission length for Blender 5.2. Not a new artist feature.
+  Two operator classes again; manifest tagline / permission length for
+  Blender 5.2. Not a new artist feature. Not a registration-graph refactor.
 - **1.5.0 Per-body auto-dress** — each STEP color / body name maps onto its
   own local rack look (Metal / Plastic / Rubber / Glass / Paint). Reuses
   Material Assist filename hints. **Assist** still applies one look to the

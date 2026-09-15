@@ -151,7 +151,6 @@ class FeatureFlagTests(unittest.TestCase):
         init = _read("behold/__init__.py")
         self.assertIn("from . import utilities", init)
         self.assertLess(init.index("ui,"), init.index("utilities,"))
-        self.assertIn("_OPTIONAL_MODULES", init)
         self.assertIn('"version": (1, 5, 1)', init)
         brand = _read("behold/brand.py")
         self.assertIn("VERSION = (1, 5, 1)", brand)

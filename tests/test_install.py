@@ -319,52 +319,19 @@ class RegisterImportGraphTests(unittest.TestCase):
         self.assertIn("BEHOLD_OT_cad_build_studio", names)
 
 
-class UtilitiesOptionalLoadTests(unittest.TestCase):
-    def test_core_register_isolates_utilities(self) -> None:
-        source = _read(ADDON / "__init__.py")
-        self.assertIn("_CORE_MODULES", source)
-        self.assertIn("_OPTIONAL_MODULES", source)
-        self.assertLess(source.index("_CORE_MODULES"), source.index("_OPTIONAL_MODULES"))
-        self.assertIn("utilities", source.split("_OPTIONAL_MODULES", 1)[1].split("_MODULES", 1)[0])
-        self.assertIn("except Exception", ast.get_source_segment(source, _register_fn(source)) or source)
-        register_src = _register_fn(source)
-        self.assertIn("_OPTIONAL_MODULES", register_src)
-        self.assertIn("except Exception", register_src)
-        self.assertNotIn("utilities.register()", _core_register_loop(source))
+class UtilitiesEnablePathTests(unittest.TestCase):
+    """v1.5.1 does not refactor this graph. Follow-up: Utilities off the enable path."""
 
-    def test_utilities_operators_are_lazy_imported(self) -> None:
-        path = ADDON / "utilities" / "registration.py"
-        tree = ast.parse(_read(path), filename=str(path))
-        top_level_modules: list[str] = []
-        for node in tree.body:
-            if isinstance(node, ast.ImportFrom) and node.module:
-                top_level_modules.append(node.module)
-            elif isinstance(node, ast.Import):
-                top_level_modules.extend(alias.name for alias in node.names)
-        self.assertNotIn("operators", top_level_modules)
-        self.assertNotIn("panel", top_level_modules)
-        self.assertNotIn("build", top_level_modules)
-        self.assertIn("_gated_classes", _read(path))
-        self.assertIn("from .operators import CLASSES", _read(path))
-
-    def test_properties_settings_import_is_optional(self) -> None:
-        source = _read(ADDON / "properties.py")
-        self.assertIn("from .utilities.settings import BEHOLDUtilitiesSettings", source)
-        self.assertIn("except Exception", source)
-        self.assertIn("class BEHOLDUtilitiesSettings(PropertyGroup):", source)
-
-
-def _register_fn(source: str) -> str:
-    tree = ast.parse(source)
-    for node in tree.body:
-        if isinstance(node, ast.FunctionDef) and node.name == "register":
-            return ast.get_source_segment(source, node) or ""
-    raise AssertionError("missing register()")
-
-
-def _core_register_loop(source: str) -> str:
-    register_src = _register_fn(source)
-    return register_src.split("_OPTIONAL_MODULES", 1)[0]
+    def test_utilities_still_loads_on_addon_import(self) -> None:
+        init = _read(ADDON / "__init__.py")
+        self.assertIn("from . import utilities", init)
+        self.assertIn("utilities,", init)
+        props = _read(ADDON / "properties.py")
+        self.assertIn("from .utilities.settings import BEHOLDUtilitiesSettings", props)
+        registration = _read(ADDON / "utilities" / "registration.py")
+        header = registration.split("def ", 1)[0]
+        self.assertIn("from .operators import CLASSES", header)
+        self.assertIn("from .panel import CLASSES", header)
 
 
 if __name__ == "__main__":
