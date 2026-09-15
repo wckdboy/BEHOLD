@@ -4,25 +4,30 @@ BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
 **v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. **v1.1.0**
 is procedural gobo lite. **v1.2.0** is IES practical lite (BYO `.ies`, not a
 streamed catalog). **v1.3.0** is live tessellation regenerate. **v1.4.0** is
-defeaturing lite. Each later cut
+defeaturing lite. **v1.5.0** is per-body auto-dress. Each later cut
 still closes one gap product artists
 actually hit, then we ship a GitHub Release. See [CHECKPOINT.md](CHECKPOINT.md)
 for living status.
 
 ## Implemented
 
-The 1.4.0 zip is this path. Nothing below is “coming” anymore.
+The 1.5.0 zip is this path. Nothing below is “coming” anymore.
 
+- **1.5.0 Per-body auto-dress** — each STEP color / body name maps onto its
+  own local rack look (Metal / Plastic / Rubber / Glass / Paint). Reuses
+  Material Assist filename hints. **Assist** still applies one look to the
+  selection. After CAD import (or Auto-dress on demand). Not a material
+  library download.
 - **1.4.0 Defeaturing lite** — suppress small fillets / chamfers / holes
   (artist millimetres) before (re)tessellate. OCP `BRepAlgoAPI_Defeaturing` /
   `ShapeUpgrade_RemoveInternalWires`. STEPper NEXT has no cleanup RNA —
   tessellation-only when Cleanup is off; OCP when a toggle is on. Not a CAD
-  editor or per-body auto-dress.
+  editor.
 - **1.3.0 Live tessellation regenerate** — Regenerate the last imported
   STEP / IGES / BREP with Draft / Balanced / Fine / Ultra / Custom deflection
   without re-picking the file. STEPper NEXT when installed; OCP fallback when
   that is what imported. Materials / transforms kept where names match. Not
-  per-body auto-dress, or a logo redo.
+  a logo redo.
 - **1.2.0 IES practical lite** — Load / Sample / Clear a photometric `.ies` on
   the active BEHOLD spot or point (area lights become spots while IES is on).
   Strength / scale. Clear restores prior type / Shape / Gobo. One CC0 sample;
@@ -88,15 +93,13 @@ The 1.4.0 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.4.0. None of this is in the 1.4 zip.
+Honest order after 1.5.0. None of this is in the 1.5 zip.
 
 Feature-flagged **Utilities** (Danish wall + balcony mounts, default off) is a
 side track, not a product release — [docs/UTILITIES.md](docs/UTILITIES.md).
 
 1. **Logo redo** — replace the placeholder wordmark. Official mark in the
    N-panel can stay until the new art is ready.
-2. **Per-body auto-dress** — each STEP color/name → its own look (Assist still
-   applies one look to the selection in 1.0).
 
 ## Explicitly later / maybe never
 

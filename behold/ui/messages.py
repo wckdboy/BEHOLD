@@ -25,6 +25,7 @@ from ..cad.defeaturing import (
     DEFEATURE_NO_HOLE_API,
     DEFEATURE_NO_SOLID,
 )
+from ..cad.auto_dress import AUTO_DRESS_FAILED, NO_BODY_HINT
 from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT
 from ..shoot.exposure import (
     EXPOSURE_APPLIED,
@@ -263,6 +264,7 @@ EMPTY_STATE_MESSAGES = frozenset(
         DEFEATURE_NO_FILLET_API,
         DEFEATURE_NO_HOLE_API,
         DEFEATURE_NO_SOLID,
+        NO_BODY_HINT,
     }
 )
 
@@ -299,6 +301,7 @@ def report_type(message: str) -> str:
             "Cleanup needs OCP",
             "This OCP build cannot",
             "Cleanup needs a solid",
+            "No STEP color",
             "Shot name “",
             "Shot camera “",
             "Batch export ",

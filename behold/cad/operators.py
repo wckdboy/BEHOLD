@@ -527,8 +527,14 @@ class BEHOLD_OT_import_step(Operator, ImportHelper):
         if not result["ok"]:
             self.report(report_set(result["message"]), result["message"])
             return {"CANCELLED"}
+        imported = list(result.get("objects") or [])
         material_assist.tag_selection_for_assist(context)
-        self.report({"INFO"}, result["message"] + " — Material Assist ready")
+        extra = "Material Assist ready"
+        settings = context.scene.behold
+        if imported and bool(settings.import_auto_material_assist):
+            dress = material_assist.run_auto_dress(context, imported)
+            extra = dress.get("message") or extra
+        self.report({"INFO"}, result["message"] + " — " + extra)
         return {"FINISHED"}
 
 
@@ -569,7 +575,26 @@ class BEHOLD_OT_cad_material_assist(Operator):
         return {"FINISHED"}
 
 
-class BEHOLD_OT_cad_build_studio(Operator):
+class BEHOLD_OT_cad_auto_dress(Operator):
+    bl_idname = "behold.cad_auto_dress"
+    bl_label = "Auto-dress"
+    bl_description = (
+        "Assign a local look per body from STEP color and part names. "
+        "Assist still applies one look to the whole selection"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        meshes = [obj for obj in context.selected_objects if obj.type == "MESH"]
+        if not meshes:
+            meshes = scene_product_meshes(context)
+            _select_meshes(context, meshes)
+        result = material_assist.run_auto_dress(context, meshes)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
     bl_idname = "behold.cad_build_studio"
     bl_label = "Studio from Import"
     bl_description = "Keep the imported product selection and run Build Studio"
@@ -604,6 +629,7 @@ CLASSES = (
     BEHOLD_OT_import_step,
     BEHOLD_OT_regenerate_cad,
     BEHOLD_OT_cad_material_assist,
+    BEHOLD_OT_cad_auto_dress,
     BEHOLD_OT_cad_build_studio,
 )
 

@@ -48,6 +48,11 @@ class HintTests(unittest.TestCase):
             hints.suggest_query_from_parts(filepath="prototype.stl"),
             "abs plastic",
         )
+        self.assertIsNone(hints.suggest_query_from_parts_or_none(names=["Solid1"]))
+        self.assertEqual(
+            hints.suggest_query_from_parts_or_none(names=["cap_abs"]),
+            "abs plastic",
+        )
 
     def test_empty_text(self) -> None:
         self.assertIsNone(hints.suggest_query_for_text(""))

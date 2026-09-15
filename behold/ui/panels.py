@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
+v1.5.0 adds per-body auto-dress on Materials (STEP color / name → a look each).
 v1.4.0 adds defeaturing lite (fillet / chamfer / hole suppress) on Import.
 v1.3.0 adds live tessellation regenerate on Import. v1.2.0 adds IES practical
 lite on Lights. v1.1.0 adds procedural gobo lite
@@ -26,7 +27,8 @@ compact Look (v0.17.0 / v0.20.0 compositor presets), compact Batch export
 (v0.19.0), compact Size (v0.25.0 catalog resolution presets: Square 1:1 /
 Portrait 4:5 / Landscape 16:9 + 2048² / 1080p / 4K), and v0.23.0
 EEVEE Draft / Cycles Final (quality-linked engine).
-Materials is the v0.8.0 local-look rack (Assist applies without BlenderKit).
+Materials is the v0.8.0 local-look rack (Assist applies one look without
+BlenderKit) plus v1.5.0 Auto-dress (per body from STEP color / name).
 Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, tokens / bookmark,
 and turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
 (DEFAULT_CLOSED). Compact Studio HDRI (v0.13.0): load / strength / Z rotation
@@ -415,7 +417,7 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
 
 
 def draw_materials_section(layout: UILayout, context: Context) -> None:
-    """Local PBR rack + Assist. Empty-state if nothing dressable is selected."""
+    """Local PBR rack + Assist + Auto-dress. Empty-state if nothing dressable is selected."""
     meshes = local_rack.dressable_meshes(context.selected_objects)
     message = empty_state(has_product_mesh=bool(meshes))
     if message == EMPTY_NO_MESH:
@@ -432,7 +434,9 @@ def draw_materials_section(layout: UILayout, context: Context) -> None:
     for key, data in local_rack.PRESETS.items():
         op = grid.operator("behold.apply_local_material", text=data["label"])
         op.preset = key
-    card.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
+    row = card.row(align=True)
+    row.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
+    row.operator("behold.cad_auto_dress", text="Auto-dress", icon="NODE_MATERIAL")
 
     status = blenderkit_bridge.blenderkit_status()
     if status["installed"] and status["logged_in"]:
@@ -509,6 +513,7 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
 
     row = layout.row(align=True)
     row.operator("behold.cad_material_assist", icon="MATERIAL")
+    row.operator("behold.cad_auto_dress", text="Auto-dress", icon="NODE_MATERIAL")
     row.operator("behold.cad_build_studio", icon="OUTLINER_OB_LIGHT")
 
     box = layout.box()
@@ -578,6 +583,7 @@ def draw_materials_parked(layout: UILayout, context: Context) -> None:
         op = grid.operator("behold.apply_local_material", text=data["label"])
         op.preset = key
     layout.operator("behold.cad_material_assist", text="Assist", icon="MATERIAL")
+    layout.operator("behold.cad_auto_dress", text="Auto-dress", icon="NODE_MATERIAL")
 
     layout.separator()
     status = blenderkit_bridge.blenderkit_status()
