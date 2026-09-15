@@ -55,6 +55,17 @@ STEPPER_OCC_OPTIONAL_KWARGS = frozenset(
 
 DEFAULT_QUALITY_PRESET = "BALANCED"
 
+# Physical linear deflection in meters + angular deflection in radians.
+# Matches Peak-Design/STEPper_NEXT ``import_ui.QUALITY_PRESETS`` (2.4.0+).
+STEPPER_QUALITY_PRESETS: dict[str, tuple[float, float]] = {
+    "DRAFT": (0.002, 0.6),
+    "BALANCED": (0.0008, 0.5),
+    "FINE": (0.0002, 0.25),
+    "ULTRA": (0.00005, 0.1),
+}
+
+STEPPER_QUALITY_IDS = ("DRAFT", "BALANCED", "FINE", "ULTRA", "CUSTOM")
+
 
 def is_stepper_module_name(name: str) -> bool:
     """True for STEPper NEXT extension / legacy module ids."""

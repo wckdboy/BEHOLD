@@ -211,10 +211,11 @@ def tessellate_shape(
     shape: Any,
     *,
     deflection: float = 0.001,
+    angular_deflection: float = 0.5,
 ) -> tuple[list[tuple[float, float, float]], list[tuple[int, int, int]]]:
     """Mesh an OpenCASCADE shape. Returns (vertices, triangle indices)."""
     ocp = ensure_ocp()
-    ocp["BRepMesh_IncrementalMesh"](shape, deflection, False, 0.5, True)
+    ocp["BRepMesh_IncrementalMesh"](shape, deflection, False, angular_deflection, True)
 
     all_verts: list[tuple[float, float, float]] = []
     all_faces: list[tuple[int, int, int]] = []

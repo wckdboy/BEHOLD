@@ -68,6 +68,7 @@ class StepperKwargsTests(unittest.TestCase):
         self.assertEqual(kwargs["quality_preset"], "BALANCED")
         self.assertNotIn("lin_deflection", kwargs)
         self.assertNotIn("ang_deflection", kwargs)
+        self.assertEqual(stepper_api.STEPPER_QUALITY_PRESETS["BALANCED"][0], 0.0008)
 
     def test_unknown_rna_props_are_stripped(self) -> None:
         kwargs = stepper_api.stepper_occ_import_kwargs(
@@ -154,6 +155,8 @@ class StepperWiringTests(unittest.TestCase):
         names = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}
         self.assertIn("invoke_stepper_occ_import", names)
         self.assertIn("import_cad_file", names)
+        self.assertIn("regenerate_cad_file", names)
+        self.assertIn("behold.regenerate_cad", source)
 
     def test_detect_reexports_constants(self) -> None:
         source = (ROOT / "behold" / "cad" / "detect.py").read_text(encoding="utf-8")

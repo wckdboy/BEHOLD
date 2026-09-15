@@ -6,7 +6,7 @@
 
 **BEHOLD by AMIRITE.studio** — the best product-render suite for Blender. KeyShot-simple lighting, cameras, and stills, as open source.
 
-**v1.2.0 — IES practical lite.** Put a real photometric `.ies` on the active BEHOLD light (spot / point; area becomes a spot while IES is on). Bring your own file, plus one tiny CC0 sample. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
+**v1.3.0 — Live tessellation regenerate.** Retessellate the last imported CAD product (STEPper NEXT or OCP) without re-picking the file. Quality / deflection on Import. **v1.2.0** is IES practical lite. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
 
 Official mark (Blender UI): [`behold/icons/behold_icon.png`](behold/icons/behold_icon.png) · Wordmark: [`docs/brand/behold_logo.png`](docs/brand/behold_logo.png) · also [`behold/icons/behold_logo.png`](behold/icons/behold_logo.png)
 
@@ -32,7 +32,7 @@ N-panel order: **Import → Studio → Lights → Materials → Cameras → Shoo
 
 | Panel | What you get |
 | --- | --- |
-| **Import** | **Import Product** file picker + CAD line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**) |
+| **Import** | **Import Product** file picker + CAD line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**) + **Tessellation** (**Regenerate**) |
 | **Studio** | White / Grey / Black + **Build** + **Catcher**, compact **HDRI**, compact **Bake HDRI** |
 | **Lights** | Inventory + Light Draw + **Shape** + **Gobo** + **IES** (Load / Sample / Clear) + **Linking** |
 | **Materials** | Metal / Plastic / Rubber / Glass / Paint + **Assist** (no BlenderKit account) |
@@ -45,6 +45,8 @@ N-panel order: **Import → Studio → Lights → Materials → Cameras → Shoo
 Mesh `.obj` `.fbx` `.stl` `.glb` `.gltf` (native 4.2+ / 5.2 LTS). `.3mf` when Blender has an importer. CAD `.step` `.stp` `.iges` `.igs` `.brep` `.brp` via **STEPper NEXT** (production on 5.1+/5.2 LTS) or OCP if STEPper is missing and bindings import. Mesh never requires STEPper. Missing CAD backend **fails loudly** with the STEPper Releases URL.
 
 After import: optional **Build Studio** around the new mesh, optional **Material Assist** from the filename (`housing_aluminum.step` → **Metal**).
+
+**Tessellation (1.3.0)** — **Regenerate** the last STEP / IGES / BREP without re-picking the file. **Draft / Balanced / Fine / Ultra** match STEPper NEXT physical deflection (2 mm / 0.8 mm / 0.2 mm / 0.05 mm); **Custom** is the slider. STEPper NEXT is used when it is installed; OCP is the fallback when that is what imported (or STEPper is missing). Materials and transforms stay on the product where names still match. No CAD source cached reports a sentence plus the next step. **Apply tessellation** stays in Advanced. Mesh OBJ/FBX/STL/GLB/3MF is not retessellated.
 
 ### Studio
 
@@ -97,15 +99,15 @@ One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product m
 
 ### Advanced
 
-Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / search / apply, Light Draw hotkeys, tokens / bookmark, turntable bake / ease / render, Apply Catcher / DoF / Quality / Size / Exposure / Look / Gobo / IES. Operators stay registered.
+Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / search / apply, Light Draw hotkeys, tokens / bookmark, turntable bake / ease / render, Apply Catcher / DoF / Quality / Size / Exposure / Look / Gobo / IES / tessellation. Operators stay registered.
 
 ### Utilities (opt-in, not a product release)
 
 Off by default. Enable **Utilities panel** in add-on preferences to show a separate **Utilities** section (after Advanced) for a layered Danish wall and Legs / L-bracket balcony mounts. Does not change Import → Studio → Lights → Materials → Cameras → Shoot. See **[docs/UTILITIES.md](docs/UTILITIES.md)**.
 
-## Coming (not 1.2)
+## Coming (not 1.3)
 
-Streamed IES / gobo catalogs, logo redo, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. IES practical lite shipped in **1.2.0**. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
+Streamed IES / gobo catalogs, logo redo, Light Wrangler viewport-gizmo parity, defeaturing, per-body auto-dress, full BlenderKit browser. Live tessellation regenerate shipped in **1.3.0**. IES practical lite shipped in **1.2.0**. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
 ## STEPper NEXT
 
@@ -146,21 +148,21 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Install (Blender 5.2 LTS+)
 
-1. Get `behold-1.2.0.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`).
+1. Get `behold-1.3.0.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`).
 2. Blender → Edit → Preferences → Add-ons → Install… → select the zip  
    (or Get Extensions → Install from Disk).
 3. Enable **BEHOLD**, then open the 3D Viewport sidebar (`N`) → **BEHOLD** tab.
 
 The zip also loads on **4.2+** when you need it; 5.2 LTS is the production target.
 
-**Versioned release** — push a tag `v1.2.0`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
+**Versioned release** — push a tag `v1.3.0`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.3.0
+git push origin v1.3.0
 
 make zip
-# → dist/behold-1.2.0.zip
+# → dist/behold-1.3.0.zip
 ```
 
 Alternate (dev): copy or symlink `behold/` into your Blender `scripts/addons/` directory.

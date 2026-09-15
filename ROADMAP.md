@@ -3,14 +3,20 @@
 BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
 **v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. **v1.1.0**
 is procedural gobo lite. **v1.2.0** is IES practical lite (BYO `.ies`, not a
-streamed catalog). Each later cut still closes one gap product artists
+streamed catalog). **v1.3.0** is live tessellation regenerate. Each later cut
+still closes one gap product artists
 actually hit, then we ship a GitHub Release. See [CHECKPOINT.md](CHECKPOINT.md)
 for living status.
 
 ## Implemented
 
-The 1.2.0 zip is this path. Nothing below is “coming” anymore.
+The 1.3.0 zip is this path. Nothing below is “coming” anymore.
 
+- **1.3.0 Live tessellation regenerate** — Regenerate the last imported
+  STEP / IGES / BREP with Draft / Balanced / Fine / Ultra / Custom deflection
+  without re-picking the file. STEPper NEXT when installed; OCP fallback when
+  that is what imported. Materials / transforms kept where names match. Not
+  defeaturing, per-body auto-dress, or a logo redo.
 - **1.2.0 IES practical lite** — Load / Sample / Clear a photometric `.ies` on
   the active BEHOLD spot or point (area lights become spots while IES is on).
   Strength / scale. Clear restores prior type / Shape / Gobo. One CC0 sample;
@@ -76,17 +82,15 @@ The 1.2.0 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.2.0. None of this is in the 1.2 zip.
+Honest order after 1.3.0. None of this is in the 1.3 zip.
 
 Feature-flagged **Utilities** (Danish wall + balcony mounts, default off) is a
 side track, not a product release — [docs/UTILITIES.md](docs/UTILITIES.md).
 
 1. **Logo redo** — replace the placeholder wordmark. Official mark in the
    N-panel can stay until the new art is ready.
-2. **Live tessellation regenerate** — OCP / STEPper deflection without
-   re-picking the CAD file.
-3. **Defeaturing** — fillet / chamfer / hole suppress before tessellate.
-4. **Per-body auto-dress** — each STEP color/name → its own look (Assist still
+2. **Defeaturing** — fillet / chamfer / hole suppress before tessellate.
+3. **Per-body auto-dress** — each STEP color/name → its own look (Assist still
    applies one look to the selection in 1.0).
 
 ## Explicitly later / maybe never

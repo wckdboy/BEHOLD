@@ -15,6 +15,11 @@ from bpy.props import (
 )
 from bpy.types import PropertyGroup, Scene
 
+from .cad.regenerate import DEFAULT_DEFLECTION as CAD_DEFAULT_DEFLECTION
+from .cad.regenerate import DEFAULT_QUALITY as CAD_QUALITY_DEFAULT
+from .cad.regenerate import MAX_DEFLECTION as CAD_DEFLECTION_MAX
+from .cad.regenerate import MIN_DEFLECTION as CAD_DEFLECTION_MIN
+from .cad.regenerate import quality_enum_items as cad_quality_enum_items
 from .shoot.exposure_apply import on_exposure_update
 from .shoot.looks import DEFAULT_PRESET as LOOK_DEFAULT
 from .shoot.looks import preset_enum_items as look_preset_enum_items
@@ -359,6 +364,42 @@ class BEHOLDSceneSettings(PropertyGroup):
             "Searches BlenderKit only when signed in — no account needed locally"
         ),
         default=True,
+    )
+    cad_source_filepath: StringProperty(
+        name="CAD Source",
+        description="Last imported STEP / IGES / BREP path (Regenerate uses this)",
+        default="",
+        subtype="FILE_PATH",
+        maxlen=1024,
+    )
+    cad_source_backend: StringProperty(
+        name="CAD Backend",
+        description="Backend that imported the cached CAD (STEPPER or OCP)",
+        default="",
+        maxlen=16,
+    )
+    cad_quality: EnumProperty(
+        name="Quality",
+        description=(
+            "Tessellation quality for Regenerate. Draft / Balanced / Fine / Ultra "
+            "match STEPper NEXT physical deflection; Custom uses the slider"
+        ),
+        items=cad_quality_enum_items(),
+        default=CAD_QUALITY_DEFAULT,
+    )
+    cad_deflection: FloatProperty(
+        name="Deflection",
+        description=(
+            "Linear deflection in meters when Quality is Custom. "
+            "OCP uses it directly; STEPper gets lin_deflection_len on Custom"
+        ),
+        default=CAD_DEFAULT_DEFLECTION,
+        min=CAD_DEFLECTION_MIN,
+        max=CAD_DEFLECTION_MAX,
+        soft_min=0.00005,
+        soft_max=0.002,
+        precision=5,
+        step=1,
     )
     active_light_name: StringProperty(
         name="Active Light",
