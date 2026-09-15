@@ -671,7 +671,7 @@ class BEHOLDSceneSettings(PropertyGroup):
     utilities: PointerProperty(
         type=BEHOLDUtilitiesSettings,
         name="Utilities",
-        description="Feature-flagged Danish wall and balcony-mount helpers",
+        description="Feature-flagged Danish wall, balcony-mount, and eave helpers",
     )
 
 

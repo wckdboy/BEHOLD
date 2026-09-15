@@ -6,6 +6,7 @@ from __future__ import annotations
 from bpy.props import BoolProperty, EnumProperty, FloatProperty
 from bpy.types import PropertyGroup
 
+from .eaves import DEFAULT_PITCH_DEG, PITCH_MAX_DEG, PITCH_MIN_DEG, section_enum_items
 from .mounts import DEFAULT_INSET_M, DEFAULT_LEG_HEIGHT_M
 from .wall import (
     DEFAULT_DOOR_HEIGHT_M,
@@ -105,4 +106,21 @@ class BEHOLDUtilitiesSettings(PropertyGroup):
         min=0.05,
         max=1.0,
         unit="LENGTH",
+    )
+    eave_section: EnumProperty(
+        name="Eave / roof",
+        description=(
+            "MinAltan snit preset: under/over eaves, optional murkrone / "
+            "skunk / roof-inclusion (vejledende)"
+        ),
+        items=section_enum_items(),
+        default="UNDER_EAVE",
+    )
+    eave_pitch: FloatProperty(
+        name="Roof pitch",
+        description="Roof pitch in degrees (vejledende, default 45)",
+        default=DEFAULT_PITCH_DEG,
+        min=PITCH_MIN_DEG,
+        max=PITCH_MAX_DEG,
+        precision=0,
     )

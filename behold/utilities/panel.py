@@ -67,7 +67,14 @@ class BEHOLD_PT_utilities(Panel):
         row.operator("behold.build_balcony_legs", icon="EMPTY_SINGLE_ARROW")
         row.operator("behold.build_balcony_bracket", icon="MOD_TRIANGULATE")
         mount.label(text="Needs a wall + balcony mesh")
-        layout.label(text="MinAltan snit are reference only")
+
+        eave = layout.box()
+        eave.label(text="Eave / roof", icon="LINCURVE")
+        eave.prop(settings, "eave_section", text="")
+        eave.prop(settings, "eave_pitch")
+        eave.operator("behold.build_eave_section", icon="MESH_CUBE")
+        eave.label(text="Needs a wall · balcony mesh optional")
+        layout.label(text="MinAltan snit are vejledende")
 
 
 CLASSES = (BEHOLD_PT_utilities,)

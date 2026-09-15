@@ -95,8 +95,9 @@ The 1.5.0 zip is this path. Nothing below is “coming” anymore.
 
 Honest order after 1.5.0. None of this is in the 1.5 zip.
 
-Feature-flagged **Utilities** (Danish wall + balcony mounts, default off) is a
-side track, not a product release — [docs/UTILITIES.md](docs/UTILITIES.md).
+Feature-flagged **Utilities** (Danish wall + balcony mounts + eave/roof
+sections, default off) is a side track, not a product release —
+[docs/UTILITIES.md](docs/UTILITIES.md).
 
 1. **Logo redo** — replace the placeholder wordmark. Official mark in the
    N-panel can stay until the new art is ready.

@@ -176,7 +176,7 @@ def is_dressable_mesh_name(name: str) -> bool:
     base = name.split(".", 1)[0]
     if base in STUDIO_SKIP_MESHES:
         return False
-    # Utilities wall / mount kits (see behold.utilities.ids.UTIL_PREFIX).
+    # Utilities wall / mount / eave kits (see behold.utilities.ids.UTIL_PREFIX).
     return not base.startswith("BEHOLD_Util_")
 
 
