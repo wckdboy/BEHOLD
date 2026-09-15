@@ -121,13 +121,12 @@ class BEHOLD_OT_import_product(Operator, ImportHelper):
         default=True,
     )
     auto_material_assist: BoolProperty(
-        name="Material Assist",
+        name="Dress after import",
         description=(
-            "After CAD import, auto-dress each body from STEP color / name. "
-            "Mesh files still get one Assist look. "
-            "Searches BlenderKit only when signed in"
+            "Optional. After CAD import, Auto-dress each body. Mesh files get "
+            "one Assist look. Off by default — dress on Materials"
         ),
-        default=True,
+        default=False,
     )
     deflection: FloatProperty(
         name="CAD Deflection",

@@ -156,7 +156,9 @@ class StepperWiringTests(unittest.TestCase):
         self.assertIn("invoke_stepper_occ_import", names)
         self.assertIn("import_cad_file", names)
         self.assertIn("regenerate_cad_file", names)
+        self.assertIn("cleanup_cad_file", names)
         self.assertIn("behold.regenerate_cad", source)
+        self.assertIn("behold.cleanup_cad", source)
 
     def test_detect_reexports_constants(self) -> None:
         source = (ROOT / "behold" / "cad" / "detect.py").read_text(encoding="utf-8")

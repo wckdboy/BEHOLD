@@ -182,11 +182,12 @@ def import_cad_file(
     filepath: str,
     *,
     deflection: float = 0.001,
+    apply_cleanup: bool = False,
 ) -> dict[str, Any]:
     """Hybrid CAD import: STEPper NEXT first, OCP only if STEPper is missing.
 
-    Cleanup (fillets / chamfers / holes) is OCP-only — STEPper has no RNA
-    for it. When cleanup is on, this path uses OCP before tessellate.
+    Import tessellates. Cleanup is a separate operator (Apply cleanup) unless
+    ``apply_cleanup`` is True.
     """
     abs_path = bpy.path.abspath(filepath)
     if not abs_path or not os.path.isfile(abs_path):
@@ -196,7 +197,7 @@ def import_cad_file(
             "backend": "NONE",
             "message": file_not_found_message(filepath),
         }
-    cleanup = scene_cleanup_plan(context)
+    cleanup = scene_cleanup_plan(context) if apply_cleanup else df_spec.inactive_plan()
     blocked = _cleanup_blockers(cleanup)
     if blocked is not None:
         return blocked
@@ -293,6 +294,19 @@ def import_cad_file(
     raise RuntimeError(f"unhandled CAD backend: {unreachable}")
 
 
+def cleanup_cad_file(context: Context) -> dict[str, Any]:
+    """Suppress fillets / chamfers / holes, then retessellate the last CAD import."""
+    cleanup = scene_cleanup_plan(context)
+    if not cleanup.active:
+        return {
+            "ok": False,
+            "objects": [],
+            "backend": "NONE",
+            "message": df_spec.CLEANUP_OFF,
+        }
+    return regenerate_cad_file(context, apply_cleanup=True)
+
+
 def _ensure_stepper_or_error() -> dict[str, Any] | None:
     enabled = detect.ensure_stepper_enabled()
     if enabled.get("installed") and not enabled.get("ok"):
@@ -314,8 +328,12 @@ def regenerate_cad_file(
     *,
     quality: str | None = None,
     deflection: float | None = None,
+    apply_cleanup: bool = False,
 ) -> dict[str, Any]:
-    """Retessellate the cached CAD product. Does not open a file picker."""
+    """Retessellate the cached CAD product. Does not open a file picker.
+
+    Tessellation-only by default. Pass apply_cleanup=True from Apply cleanup.
+    """
     settings = context.scene.behold
     cache = regenerate_apply.scene_cache_from_settings(context)
     if cache is None:
@@ -347,7 +365,7 @@ def regenerate_cad_file(
             "message": plan,
         }
 
-    cleanup = scene_cleanup_plan(context)
+    cleanup = scene_cleanup_plan(context) if apply_cleanup else df_spec.inactive_plan()
     blocked = _cleanup_blockers(cleanup)
     if blocked is not None:
         return blocked
@@ -542,13 +560,31 @@ class BEHOLD_OT_regenerate_cad(Operator):
     bl_idname = "behold.regenerate_cad"
     bl_label = "Regenerate"
     bl_description = (
-        "Retessellate the last imported CAD product with the Import quality / "
-        "deflection and Cleanup toggles. Keeps materials and transforms where possible"
+        "Retessellate the last imported CAD product with the Import quality. "
+        "Does not run Cleanup — use Apply cleanup for fillets / holes"
     )
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context: Context):
         result = regenerate_cad_file(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_cleanup_cad(Operator):
+    bl_idname = "behold.cleanup_cad"
+    bl_label = "Apply cleanup"
+    bl_description = (
+        "Suppress fillets / chamfers / holes on the last CAD import, then "
+        "retessellate. Needs OCP — STEPper has no cleanup RNA"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = cleanup_cad_file(context)
         if not result["ok"]:
             self.report(report_set(result["message"]), result["message"])
             return {"CANCELLED"}
@@ -631,6 +667,7 @@ CLASSES = (
     BEHOLD_OT_open_stepper_install,
     BEHOLD_OT_import_step,
     BEHOLD_OT_regenerate_cad,
+    BEHOLD_OT_cleanup_cad,
     BEHOLD_OT_cad_material_assist,
     BEHOLD_OT_cad_auto_dress,
     BEHOLD_OT_cad_build_studio,

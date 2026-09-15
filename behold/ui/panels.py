@@ -143,11 +143,12 @@ def draw_import_tessellation(layout: UILayout, context: Context) -> None:
     card.prop(settings, "cad_quality", text="Quality", expand=True)
     if settings.cad_quality == "CUSTOM":
         card.prop(settings, "cad_deflection", text="Deflection")
+    card.label(text="Tessellate only — Cleanup is the next card")
     card.operator("behold.regenerate_cad", icon="FILE_REFRESH")
 
 
 def draw_import_cleanup(layout: UILayout, context: Context) -> None:
-    """Fillet / chamfer / hole suppress in millimetres before (re)tessellate."""
+    """Fillet / chamfer / hole suppress in millimetres, then retessellate."""
     settings = context.scene.behold
     card = layout.box()
     card.label(text="Cleanup", icon="MOD_BEVEL")
@@ -173,6 +174,7 @@ def draw_import_cleanup(layout: UILayout, context: Context) -> None:
         card.label(text=f"Off — default blend {DEFAULT_BLEND_MM:g} mm, holes Ø {DEFAULT_HOLE_MM:g} mm")
     else:
         card.label(text="OCP before tessellate — STEPper has no cleanup RNA")
+    card.operator("behold.cleanup_cad", text="Apply cleanup", icon="MOD_BEVEL")
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
@@ -218,18 +220,18 @@ def draw_studio_bake(layout: UILayout, context: Context) -> None:
 
 
 def draw_shoot_first_ship(layout: UILayout, context: Context) -> None:
-    """Draft / Final, Size, Still, Render, Look, Shots, Batch export, Turntable."""
+    """Draft / Final, Size, Still, Exposure, Look, Shots, Batch export, Turntable."""
     settings = context.scene.behold
     card = layout.box()
     row = card.row(align=True)
     row.prop_enum(settings, "render_quality", "DRAFT")
     row.prop_enum(settings, "render_quality", "FINAL")
     card.label(text=SHOOT_ENGINE_HINT)
-    row = card.row(align=True)
-    row.operator("behold.render_still", text="Still", icon="RENDER_STILL")
-    row.operator("behold.render_still", text="Render", icon="RENDER_RESULT")
+    card.operator("behold.render_still", text="Still", icon="RENDER_STILL")
     layout.separator()
     draw_resolution_compact(layout, context)
+    layout.separator()
+    draw_exposure_compact(layout, context)
     layout.separator()
     draw_look_compact(layout, context)
     layout.separator()
@@ -257,15 +259,22 @@ def draw_resolution_compact(layout: UILayout, context: Context) -> None:
     )
 
 
-def draw_look_compact(layout: UILayout, context: Context) -> None:
-    """EV, WB, False Color, plus Clean / Catalog / Dramatic compositor presets."""
+def draw_exposure_compact(layout: UILayout, context: Context) -> None:
+    """EV, WB, False Color — Color Management, not compositor looks."""
     settings = context.scene.behold
     card = layout.box()
-    card.label(text="Look", icon="COLOR")
+    card.label(text="Exposure", icon="COLOR")
     row = card.row(align=True)
     row.prop(settings, "exposure_ev", text="EV")
     row.prop(settings, "white_balance_kelvin", text="WB")
     card.prop(settings, "false_color", text="False Color", toggle=True)
+
+
+def draw_look_compact(layout: UILayout, context: Context) -> None:
+    """Clean / Catalog / Dramatic compositor presets."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Look", icon="NODE_COMPOSITING")
     row = card.row(align=True)
     row.prop(settings, "look_preset", text="", expand=True)
     card.prop(settings, "look_enabled", text="Compositor", toggle=True)
@@ -367,42 +376,10 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
             rm.light_name = light.name
         if active is not None:
             box.label(text=f"Active: {light_lib.display_light_name(active)}")
-        shape = layout.box()
-        shape.label(text="Shape", icon="LIGHT_AREA")
-        shape.prop(settings, "light_shape_preset", text="", expand=True)
-        apply = shape.operator(
-            "behold.apply_light_preset",
-            text="Apply to active",
-            icon="CHECKMARK",
-        )
-        apply.preset = settings.light_shape_preset
-        gobo = layout.box()
-        gobo.label(text="Gobo", icon="TEXTURE")
-        gobo.prop(settings, "light_gobo_preset", text="", expand=True)
-        if settings.light_gobo_preset != "NONE":
-            row = gobo.row(align=True)
-            row.prop(settings, "light_gobo_scale", text="Scale")
-            row.prop(settings, "light_gobo_strength", text="Strength")
-        ies = layout.box()
-        ies.label(text="IES", icon="LIGHT_SPOT")
-        ies.prop(settings, "light_ies_filepath", text="")
-        row = ies.row(align=True)
-        row.operator("behold.load_ies", text="Load", icon="FILE_FOLDER")
-        row.operator("behold.load_ies_sample", text="Sample")
-        row.operator("behold.clear_ies", text="Clear", icon="X")
-        if settings.light_ies_filepath:
-            row = ies.row(align=True)
-            row.prop(settings, "light_ies_strength", text="Strength")
-            row.prop(settings, "light_ies_scale", text="Scale")
-        linking = layout.box()
-        linking.label(text="Linking", icon="LINKED")
-        linking.prop(settings, "light_linking_kind", text="", expand=True)
-        row = linking.row(align=True)
-        link = row.operator("behold.link_selected", text="Link Selected")
-        link.kind = settings.light_linking_kind
-        unlink = row.operator("behold.unlink_selected", text="Unlink")
-        unlink.kind = settings.light_linking_kind
-        row.operator("behold.solo_product_link", text="Solo product")
+        draw_lights_shape(layout, context)
+        draw_lights_gobo(layout, context)
+        draw_lights_ies(layout, context)
+        draw_lights_linking(layout, context)
         row = layout.row(align=True)
         row.prop(settings, "new_light_energy", text="New W")
         row.operator("behold.add_light", text="Add", icon="ADD")
@@ -414,6 +391,66 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
     col.prop(settings, "light_draw_mode", text="Mode", expand=True)
     col.prop(settings, "light_draw_distance")
     col.operator("behold.light_draw", icon="LIGHT_AREA")
+
+
+def draw_lights_shape(layout: UILayout, context: Context) -> None:
+    """Size and spread on this light. Falloff waits until Gobo and IES are off."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Shape", icon="LIGHT_AREA")
+    card.label(text="Size and spread. Falloff waits until Gobo and IES are off")
+    card.prop(settings, "light_shape_preset", text="", expand=True)
+    apply = card.operator(
+        "behold.apply_light_preset",
+        text="Apply to active",
+        icon="CHECKMARK",
+    )
+    apply.preset = settings.light_shape_preset
+
+
+def draw_lights_gobo(layout: UILayout, context: Context) -> None:
+    """Cookie on this light. Turns IES off."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Gobo", icon="TEXTURE")
+    card.label(text="Cookie on this light. Turns IES off")
+    card.prop(settings, "light_gobo_preset", text="", expand=True)
+    if settings.light_gobo_preset != "NONE":
+        row = card.row(align=True)
+        row.prop(settings, "light_gobo_scale", text="Scale")
+        row.prop(settings, "light_gobo_strength", text="Strength")
+
+
+def draw_lights_ies(layout: UILayout, context: Context) -> None:
+    """Photometric profile. Turns Gobo off."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="IES", icon="LIGHT_SPOT")
+    card.label(text="Photometric profile. Turns Gobo off")
+    card.prop(settings, "light_ies_filepath", text="")
+    row = card.row(align=True)
+    row.operator("behold.load_ies", text="Load", icon="FILE_FOLDER")
+    row.operator("behold.load_ies_sample", text="Sample")
+    row.operator("behold.clear_ies", text="Clear", icon="X")
+    if settings.light_ies_filepath:
+        row = card.row(align=True)
+        row.prop(settings, "light_ies_strength", text="Strength")
+        row.prop(settings, "light_ies_scale", text="Scale")
+
+
+def draw_lights_linking(layout: UILayout, context: Context) -> None:
+    """Who this light hits. Independent of Shape / Gobo / IES."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Linking", icon="LINKED")
+    card.label(text="Who this light hits — not the beam shape")
+    card.prop(settings, "light_linking_kind", text="", expand=True)
+    row = card.row(align=True)
+    link = row.operator("behold.link_selected", text="Link Selected")
+    link.kind = settings.light_linking_kind
+    unlink = row.operator("behold.unlink_selected", text="Unlink")
+    unlink.kind = settings.light_linking_kind
+    row.operator("behold.solo_product_link", text="Solo product")
 
 
 def draw_materials_section(layout: UILayout, context: Context) -> None:
@@ -548,7 +585,7 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
     clean.prop(settings, "cad_cleanup_holes")
     clean.prop(settings, "cad_blend_mm", text="Blend mm")
     clean.prop(settings, "cad_hole_mm", text="Hole Ø mm")
-    clean.operator("behold.regenerate_cad", text="Apply tessellation", icon="FILE_REFRESH")
+    clean.operator("behold.cleanup_cad", text="Apply cleanup", icon="MOD_BEVEL")
 
 
 def draw_studio_parked(layout: UILayout, context: Context) -> None:
@@ -651,14 +688,18 @@ def draw_shoot_parked(layout: UILayout, context: Context) -> None:
         box.operator("behold.build_studio", text="Build Studio", icon="OUTLINER_OB_LIGHT")
 
     col = layout.column(align=True)
-    col.label(text="Look")
+    col.label(text="Exposure")
     col.prop(settings, "exposure_ev")
     col.prop(settings, "white_balance_kelvin")
     col.prop(settings, "false_color", toggle=True)
+    col.operator("behold.apply_exposure", icon="COLOR")
+
+    layout.separator()
+    col = layout.column(align=True)
+    col.label(text="Look")
     col.prop(settings, "look_preset", text="", expand=True)
     col.prop(settings, "look_enabled", text="Compositor", toggle=True)
     col.operator("behold.apply_look", icon="NODE_COMPOSITING")
-    col.operator("behold.apply_exposure", icon="COLOR")
 
     layout.separator()
     col = layout.column(align=True)

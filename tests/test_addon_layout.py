@@ -22,12 +22,12 @@ class AddonLayoutTests(unittest.TestCase):
         init = _read(ADDON / "__init__.py")
         match = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
         self.assertIsNotNone(match)
-        self.assertEqual(match.group(1), "1.5.1")
-        self.assertIn('"version": (1, 5, 1)', init)
+        self.assertEqual(match.group(1), "1.6.0")
+        self.assertIn('"version": (1, 6, 0)', init)
         self.assertIn('"blender": (4, 2, 0)', init)
         self.assertIn('blender_version_min = "4.2.0"', manifest)
         self.assertIn("AMIRITE.studio", init)
-        self.assertIn("VERSION = (1, 5, 1)", _read(ADDON / "brand.py"))
+        self.assertIn("VERSION = (1, 6, 0)", _read(ADDON / "brand.py"))
 
     def test_stepper_url_documented(self) -> None:
         readme = _read(ROOT / "README.md")
@@ -49,6 +49,8 @@ class AddonLayoutTests(unittest.TestCase):
         self.assertIn("1.4.0", readme)
         self.assertIn("1.5.0", readme)
         self.assertIn("1.5.1", readme)
+        self.assertIn("1.6.0", readme)
+        self.assertIn("simplified", readme.lower())
         self.assertIn("Auto-dress", readme)
         self.assertIn("Cleanup", readme)
         self.assertIn("fillet", readme.lower())
@@ -151,6 +153,7 @@ class AddonLayoutTests(unittest.TestCase):
         cad_ops = _read(ADDON / "cad" / "operators.py")
         self.assertIn('bl_idname = "behold.open_stepper_install"', cad_ops)
         self.assertIn('bl_idname = "behold.regenerate_cad"', cad_ops)
+        self.assertIn('bl_idname = "behold.cleanup_cad"', cad_ops)
         self.assertIn("class BEHOLD_OT_cad_auto_dress", cad_ops)
         self.assertIn("class BEHOLD_OT_cad_build_studio", cad_ops)
 

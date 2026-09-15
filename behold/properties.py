@@ -61,6 +61,7 @@ from .studio.ies_apply import on_ies_filepath_update, on_ies_values_update
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
+# RNA only. Utilities operators/panel stay behind enable_utilities.
 from .utilities.settings import BEHOLDUtilitiesSettings
 
 
@@ -362,13 +363,12 @@ class BEHOLDSceneSettings(PropertyGroup):
         default=True,
     )
     import_auto_material_assist: BoolProperty(
-        name="Material Assist after Import",
+        name="Dress after Import",
         description=(
-            "After CAD import, auto-dress each body from STEP color / name. "
-            "Mesh files still get one Assist look from the filename. "
-            "Searches BlenderKit only when signed in — no account needed locally"
+            "Optional. After CAD import, Auto-dress each body. Mesh files get "
+            "one Assist look. Off by default — Import is import; dress on Materials"
         ),
-        default=True,
+        default=False,
     )
     cad_source_filepath: StringProperty(
         name="CAD Source",

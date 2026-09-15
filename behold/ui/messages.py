@@ -19,6 +19,7 @@ from ..cad.regenerate import (
     unknown_quality_message as unknown_cad_quality_message,
 )
 from ..cad.defeaturing import (
+    CLEANUP_OFF,
     DEFEATURE_FAILED,
     DEFEATURE_NEEDS_OCP,
     DEFEATURE_NO_FILLET_API,
@@ -264,6 +265,7 @@ EMPTY_STATE_MESSAGES = frozenset(
         DEFEATURE_NO_FILLET_API,
         DEFEATURE_NO_HOLE_API,
         DEFEATURE_NO_SOLID,
+        CLEANUP_OFF,
         NO_BODY_HINT,
     }
 )

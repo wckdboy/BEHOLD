@@ -278,7 +278,9 @@ class WiringTests(unittest.TestCase):
         props = _read("behold/properties.py")
         apply_src = _read("behold/cad/regenerate_apply.py")
         self.assertIn('bl_idname = "behold.regenerate_cad"', ops)
+        self.assertIn('bl_idname = "behold.cleanup_cad"', ops)
         self.assertIn("def regenerate_cad_file", ops)
+        self.assertIn("def cleanup_cad_file", ops)
         self.assertIn("invoke_stepper_occ_import", ops)
         self.assertIn("quality_preset", ops)
         self.assertIn("regenerate_ocp", ops)
@@ -325,9 +327,11 @@ class WiringTests(unittest.TestCase):
         parked = _func_source(source, tree, "draw_import_parked")
         self.assertIn("behold.regenerate_cad", parked)
         self.assertIn("Apply tessellation", parked)
+        self.assertIn("behold.cleanup_cad", parked)
+        self.assertIn("Apply cleanup", parked)
         self.assertIn("cad_quality", parked)
         self.assertIn("cad_cleanup_fillets", parked)
-        self.assertIn("light_ies_filepath", _func_source(source, tree, "draw_lights_section"))
+        self.assertIn("light_ies_filepath", _func_source(source, tree, "draw_lights_ies"))
         self.assertNotIn("behold.regenerate_cad", _func_source(source, tree, "draw_lights_section"))
 
 

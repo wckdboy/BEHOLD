@@ -2,8 +2,8 @@
 """IES practical lite — BYO photometric profile on a spot / point (no Blender).
 
 Cycles only honors IES on point and spot lights. Area lights become spots
-while a profile is on; Clear restores the prior type plus Shape / Gobo.
-Not a streamed manufacturer catalog.
+while a profile is on. IES owns the light node tree (turns Gobo off).
+Clear restores the prior type and Shape. Not a streamed manufacturer catalog.
 """
 
 from __future__ import annotations
@@ -72,7 +72,7 @@ IES_NODES_FAILED = (
     "Could not build that IES graph — this Blender build is missing a light "
     "node. Try Clear, or update Blender"
 )
-IES_CLEARED = "IES off — the light is back to its prior Shape / Gobo"
+IES_CLEARED = "IES off — the light is back to its prior type and Shape"
 IES_LOAD_FAILED = "Could not load that IES — pick another .ies and try Load"
 
 

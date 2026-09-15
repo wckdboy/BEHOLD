@@ -31,22 +31,25 @@ MAX_FACE_FRACTION_OF_DIAG = 0.2
 
 DEFEATURE_NEEDS_OCP = (
     "Cleanup needs OCP (cadquery-ocp). STEPper NEXT tessellates only — "
-    "install OCP or turn off Fillets / Chamfers / Holes, then Regenerate"
+    "install OCP or turn off Fillets / Chamfers / Holes, then Apply cleanup"
 )
 DEFEATURE_NO_FILLET_API = (
     "This OCP build cannot remove fillets or chamfers — "
-    "turn off Fillets / Chamfers or update cadquery-ocp, then Regenerate"
+    "turn off Fillets / Chamfers or update cadquery-ocp, then Apply cleanup"
 )
 DEFEATURE_NO_HOLE_API = (
     "This OCP build cannot suppress holes — "
-    "turn off Holes or update cadquery-ocp, then Regenerate"
+    "turn off Holes or update cadquery-ocp, then Apply cleanup"
 )
 DEFEATURE_NO_SOLID = (
     "Cleanup needs a solid body — this file is a surface or shell, "
-    "turn off Fillets / Chamfers / Holes, then Regenerate"
+    "turn off Fillets / Chamfers / Holes, then Apply cleanup"
 )
 DEFEATURE_FAILED = (
-    "Could not suppress those fillets / holes — try a smaller size, then Regenerate"
+    "Could not suppress those fillets / holes — try a smaller size, then Apply cleanup"
+)
+CLEANUP_OFF = (
+    "Turn on Fillets, Chamfers, or Holes — then Apply cleanup"
 )
 STEPPER_NO_DEFEATURE = DEFEATURE_NEEDS_OCP
 
@@ -124,6 +127,17 @@ def plan_defeaturing(
         holes=bool(holes),
         blend_mm=clamp_size_mm(blend_mm),
         hole_mm=clamp_size_mm(hole_mm),
+    )
+
+
+def inactive_plan() -> DefeaturingPlan:
+    """Tessellation-only — Cleanup is a separate operator."""
+    return plan_defeaturing(
+        fillets=False,
+        chamfers=False,
+        holes=False,
+        blend_mm=DEFAULT_BLEND_MM,
+        hole_mm=DEFAULT_HOLE_MM,
     )
 
 

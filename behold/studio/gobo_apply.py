@@ -8,10 +8,11 @@ from typing import Any, Iterable
 from bpy.types import Context, Node, NodeSocket, NodeTree, Object
 
 from . import gobos as spec
+from . import ies as ies_spec
+from . import ies_apply
 from . import light_presets
 from . import light_shape
 from . import lights as light_lib
-from .ies_apply import release_ies_if_active
 from ..ui.messages import NO_LIGHTS
 
 _SocketKey = str | int
@@ -68,7 +69,7 @@ def apply_gobo_to_object(
     data = getattr(obj, "data", None)
     if data is None:
         return _result(False, NO_LIGHTS)
-    release_ies_if_active(context, obj)
+    ies_apply.release_ies_if_active(context, obj)
     data = getattr(obj, "data", None)
     if data is None:
         return _result(False, NO_LIGHTS)
@@ -110,7 +111,14 @@ def apply_gobo_to_object(
 
 
 def teardown_gobo(context: Context, obj: Object) -> dict[str, Any]:
-    """Drop gobo nodes and restore the light's Shape falloff when present."""
+    """Drop gobo nodes and restore Shape falloff when IES is not on."""
+    _store_preset(obj, "NONE")
+    try:
+        ies_on = bool(obj.get(ies_spec.ACTIVE_KEY, False))
+    except (TypeError, AttributeError):
+        ies_on = False
+    if ies_on:
+        return _result(True, spec.cleared_message(), light=obj, restored_shape=False)
     data = getattr(obj, "data", None)
     if data is not None:
         tree = getattr(data, "node_tree", None)
@@ -118,7 +126,6 @@ def teardown_gobo(context: Context, obj: Object) -> dict[str, Any]:
             tree.nodes.clear()
         if hasattr(data, "use_nodes"):
             data.use_nodes = False
-    _store_preset(obj, "NONE")
     restored = _restore_shape(context, obj)
     return _result(
         True,

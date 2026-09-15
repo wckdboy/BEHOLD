@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "behold"
-version = "1.5.1"
+version = "1.6.0"
 name = "BEHOLD"
 tagline = "Product studio lighting and rendering by AMIRITE.studio"
 maintainer = "AMIRITE.studio"

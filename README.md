@@ -6,7 +6,7 @@
 
 **BEHOLD by AMIRITE.studio** — the best product-render suite for Blender. KeyShot-simple lighting, cameras, and stills, as open source.
 
-**v1.5.1 — Install from Disk works.** v1.5.0 failed to enable (Auto-dress swallowed the Studio-from-Import operator). **v1.5.0** is per-body auto-dress. **Assist** still applies one look to the selection. **v1.4.0** is defeaturing lite. **v1.3.0** is live tessellation regenerate. **v1.2.0** is IES practical lite. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
+**v1.6.0 — simplified.** One card, one job. Utilities stay optional (flag off: operators/panel are not imported). **v1.5.1 — Install from Disk works.** v1.5.0 failed to enable (Auto-dress swallowed the Studio-from-Import operator). **v1.5.0** is per-body auto-dress. **Assist** still applies one look to the selection. **v1.4.0** is defeaturing lite. **v1.3.0** is live tessellation regenerate. **v1.2.0** is IES practical lite. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
 
 Official mark (Blender UI): [`behold/icons/behold_icon.png`](behold/icons/behold_icon.png) · Wordmark: [`docs/brand/behold_logo.png`](docs/brand/behold_logo.png) · also [`behold/icons/behold_logo.png`](behold/icons/behold_logo.png)
 
@@ -32,23 +32,23 @@ N-panel order: **Import → Studio → Lights → Materials → Cameras → Shoo
 
 | Panel | What you get |
 | --- | --- |
-| **Import** | **Import Product** file picker + CAD line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**) + **Tessellation** (**Regenerate**) + **Cleanup** (fillets / chamfers / holes in mm) |
+| **Import** | **Import Product** file picker + CAD line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**) + **Tessellation** (**Regenerate**, tessellate only) + **Cleanup** (**Apply cleanup**) |
 | **Studio** | White / Grey / Black + **Build** + **Catcher**, compact **HDRI**, compact **Bake HDRI** |
-| **Lights** | Inventory + Light Draw + **Shape** + **Gobo** + **IES** (Load / Sample / Clear) + **Linking** |
+| **Lights** | Inventory + Light Draw + **Shape** + **Gobo** + **IES** (Load / Sample / Clear) + **Linking** — each card one job; Gobo and IES do not restore each other |
 | **Materials** | Metal / Plastic / Rubber / Glass / Paint + **Assist** (one look) + **Auto-dress** (per body) |
 | **Cameras** | Add / frame product cameras + **DoF** |
-| **Shoot** | Draft / Final, Still, **Size**, **Look**, **Shots**, **Batch export**, **Turntable** |
+| **Shoot** | Draft / Final, **Still**, **Size**, **Exposure**, **Look**, **Shots**, **Batch export**, **Turntable** |
 | **Advanced** | Parked extras (mixer, **Studio Margin**, CAD box, BlenderKit, bake/ease, Apply buttons) |
 
 ### Import
 
 Mesh `.obj` `.fbx` `.stl` `.glb` `.gltf` (native 4.2+ / 5.2 LTS). `.3mf` when Blender has an importer. CAD `.step` `.stp` `.iges` `.igs` `.brep` `.brp` via **STEPper NEXT** (production on 5.1+/5.2 LTS) or OCP if STEPper is missing and bindings import. Mesh never requires STEPper. Missing CAD backend **fails loudly** with the STEPper Releases URL.
 
-After import: optional **Build Studio** around the new mesh. Mesh files get optional **Material Assist** from the filename (`housing_aluminum.step` → **Metal**). CAD files **auto-dress per body** from STEP color and part names.
+After import: optional **Build Studio** around the new mesh (file-browser checkbox). Dressing is a **Materials** step: **Auto-dress** per body, or **Assist** for one look. Optional dress-after-import lives in Advanced (default **off**).
 
-**Tessellation (1.3.0)** — **Regenerate** the last STEP / IGES / BREP without re-picking the file. **Draft / Balanced / Fine / Ultra** match STEPper NEXT physical deflection (2 mm / 0.8 mm / 0.2 mm / 0.05 mm); **Custom** is the slider. STEPper NEXT is used when it is installed; OCP is the fallback when that is what imported (or STEPper is missing). Materials and transforms stay on the product where names still match. No CAD source cached reports a sentence plus the next step. **Apply tessellation** stays in Advanced. Mesh OBJ/FBX/STL/GLB/3MF is not retessellated.
+**Tessellation (1.3.0 / 1.6.0)** — **Regenerate** the last STEP / IGES / BREP without re-picking the file. Tessellate only — Cleanup is the next card. **Draft / Balanced / Fine / Ultra** match STEPper NEXT physical deflection (2 mm / 0.8 mm / 0.2 mm / 0.05 mm); **Custom** is the slider. STEPper NEXT is used when it is installed; OCP is the fallback when that is what imported (or STEPper is missing). Materials and transforms stay on the product where names still match. No CAD source cached reports a sentence plus the next step. **Apply tessellation** stays in Advanced. Mesh OBJ/FBX/STL/GLB/3MF is not retessellated.
 
-**Cleanup (1.4.0)** — product-render defeaturing lite on the same Import path, not a CAD editor. **Fillets / Chamfers / Holes** toggles plus millimetre thresholds (**Blend** default 2 mm radius/width, **Hole Ø** default 3 mm). **Regenerate** (or Import Product) runs cleanup **before** tessellate when a toggle is on. **STEPper NEXT has no fillet / chamfer / hole RNA** — cleanup needs **OCP** (`cadquery-ocp`). Missing OCP or an unsupported OCP build reports a sentence plus the next step. Defaults off so 1.3 tessellation-only regenerate stays unchanged. Not a kernel UI.
+**Cleanup (1.4.0 / 1.6.0)** — product-render defeaturing lite, not a CAD editor. **Fillets / Chamfers / Holes** toggles plus millimetre thresholds (**Blend** default 2 mm radius/width, **Hole Ø** default 3 mm) and **Apply cleanup** (then retessellates). **STEPper NEXT has no fillet / chamfer / hole RNA** — cleanup needs **OCP** (`cadquery-ocp`). Missing OCP or an unsupported OCP build reports a sentence plus the next step. Defaults off. Not a kernel UI.
 
 ### Studio
 
@@ -67,17 +67,17 @@ Select the product → **Build**. The cyclorama auto-fits the world AABB (floor 
 
 Add / remove / set active BEHOLD area lights. Per-light energy. Build Studio seeds Key / Fill / Rim.
 
-- **Shape** — Softbox, Strip, Octa, Hard, Rim on the active light (size / spread / procedural falloff). **Apply to active**.
-- **Gobo (1.1.0)** — **None / Blinds / Window / Circle** on the active BEHOLD **area or spot** light. Procedural nodes on the light (Wave bands / Brick panes / circular cookie). **Scale** and **Strength** when a pattern is on. **None** tears the graph down and restores the Shape falloff. Live RNA update; **Apply Gobo** stays in Advanced. Missing lights or a point/sun reports a sentence plus the next step. Empty Lights state unchanged.
-- **IES (1.2.0)** — **Load** / **Sample** / **Clear** a photometric `.ies` on the active BEHOLD light. Cycles IES works on **spot and point**; area lights become spots while the profile is on. **Strength** and **Scale** when a file is set. **Clear** restores the prior type plus Shape / Gobo. Missing file or a sun reports a sentence plus the next step. One bundled CC0 `sample_spot.ies` — **bring your own `.ies`** for a real fixture. Not a streamed manufacturer catalog. **Apply IES** stays in Advanced.
-- **Linking** — **Link Selected** cycles include → exclude (Cycles **light linking**). **Unlink** drops the selection, or clears the light if nothing is selected. **Solo product** includes only the product (cyclorama stays unlit). **Light / Shadow** picks receiver vs blocker collection when the 5.2 API is present.
+- **Shape** — Softbox, Strip, Octa, Hard, Rim on the active light (size / spread). Falloff waits until Gobo and IES are off. **Apply to active**.
+- **Gobo (1.1.0 / 1.6.0)** — **None / Blinds / Window / Circle** on the active BEHOLD **area or spot** light. Owns the light node tree (**turns IES off**). **Scale** and **Strength** when a pattern is on. **None** restores Shape falloff. Live RNA update; **Apply Gobo** stays in Advanced.
+- **IES (1.2.0 / 1.6.0)** — **Load** / **Sample** / **Clear** a photometric `.ies` on the active BEHOLD light. Owns the light node tree (**turns Gobo off**). Cycles IES works on **spot and point**; area lights become spots while the profile is on. **Clear** restores the prior type and Shape. One bundled CC0 `sample_spot.ies` — **bring your own `.ies`**. **Apply IES** stays in Advanced.
+- **Linking** — **Link Selected** cycles include → exclude (Cycles **light linking**). Independent of Shape / Gobo / IES. **Unlink** / **Solo product**. **Light / Shadow** picks receiver vs blocker collection when the 5.2 API is present.
 - **Light Draw** — Aim: Active | New. Reflect / Direct / Orbit (LMB aim, scroll power/size/distance, solo).
 
 Empty state until you Build Studio or Add Light.
 
 ### Materials
 
-One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product mesh (not the cyclorama / catcher). **Assist** maps the filename / STEP hint onto that rack and applies **one look** to the selection — **no BlenderKit account required**. **Auto-dress (1.5.0)** assigns a look **per body** from STEP color and/or part name (same name hints as Assist). After CAD import, or on demand. Bodies with no color or name hint are skipped (sentence + next step: use Assist for one look). Signed-in BlenderKit still searches after Assist's local look lands. Empty state if nothing dressable is selected.
+One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product mesh (not the cyclorama / catcher). **Assist** maps the filename / STEP hint onto that rack and applies **one look** to the selection — **no BlenderKit account required**. **Auto-dress (1.5.0)** assigns a look **per body** from STEP color and/or part name (same name hints as Assist). On demand on Materials (Import does not auto-dress unless you turn on the Advanced checkbox). Bodies with no color or name hint are skipped (sentence + next step: use Assist for one look). Signed-in BlenderKit still searches after Assist's local look lands. Empty state if nothing dressable is selected.
 
 ### Cameras
 
@@ -91,7 +91,9 @@ One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product m
 
 **Size** — **Square 1:1**, **Portrait 4:5**, **Landscape 16:9** with **2048²** / **1080p** / **4K** (long edge 2048 / 1920 / 3840). Writes render resolution at 100% with square pixels. Default Square 1:1 at 2048². Landscape + 1080p = 1920×1080; Landscape + 4K = 3840×2160.
 
-**Look** — **EV** (−6 to +6), **WB** in Kelvin (D65 = 6500 K), AgX-safe **False Color**. **Clean / Catalog / Dramatic** compositor stills (Catalog = mild **vignette** + grain, bloom off; Dramatic adds stronger edges + mild bloom-safe glare). **Compositor** toggle builds / tears down BEHOLD nodes; custom trees are left alone. Light Draw **F** still toggles False Color.
+**Exposure** — **EV** (−6 to +6), **WB** in Kelvin (D65 = 6500 K), AgX-safe **False Color**. Color Management, not compositor. Light Draw **F** still toggles False Color.
+
+**Look** — **Clean / Catalog / Dramatic** compositor stills (Catalog = mild **vignette** + grain, bloom off; Dramatic adds stronger edges + mild bloom-safe glare). **Compositor** toggle builds / tears down BEHOLD nodes; custom trees are left alone.
 
 **Shot Manager** — named presets (camera, quality, turntable seconds, HDRI, backdrop, output tokens). **Add / Apply / rename / Delete**. Apply does not touch the product mesh.
 
@@ -105,9 +107,9 @@ Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / searc
 
 ### Utilities (opt-in, not a product release)
 
-Off by default. Enable **Utilities panel** in add-on preferences to show a separate **Utilities** section (after Advanced) for a layered Danish wall, Legs / L-bracket balcony mounts, and MinAltan eave / roof section presets. Does not change Import → Studio → Lights → Materials → Cameras → Shoot. See **[docs/UTILITIES.md](docs/UTILITIES.md)**.
+Off by default. When the flag is off, Utilities operators and the panel are **not imported** (they cannot NameError core enable). Enable **Utilities panel** in add-on preferences to show a separate **Utilities** section (after Advanced) for a layered Danish wall, Legs / L-bracket balcony mounts, and MinAltan eave / roof section presets. Does not change Import → Studio → Lights → Materials → Cameras → Shoot. See **[docs/UTILITIES.md](docs/UTILITIES.md)**.
 
-## Coming (not 1.5.1)
+## Coming (not 1.6.0)
 
 Streamed IES / gobo catalogs, logo redo, Light Wrangler viewport-gizmo parity, full BlenderKit browser. Per-body auto-dress shipped in **1.5.0**. Defeaturing lite shipped in **1.4.0**. Live tessellation regenerate shipped in **1.3.0**. IES practical lite shipped in **1.2.0**. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
@@ -150,23 +152,23 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Install (Blender 5.2 LTS+)
 
-**Use `behold-1.5.1.zip`.** The v1.5.0 GitHub zip does not enable: Auto-dress was merged into the Studio-from-Import operator, so import raised `NameError: BEHOLD_OT_cad_build_studio`. `python3 -m compileall` still passed.
+**Use `behold-1.6.0.zip`.** v1.5.1 already enabled; v1.5.0 did not (`NameError: BEHOLD_OT_cad_build_studio`).
 
-1. Get `behold-1.5.1.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`). Do not use the v1.5.0 asset or GitHub’s “Source code (zip)”.
+1. Get `behold-1.6.0.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`). Do not use GitHub’s “Source code (zip)”.
 2. Blender → Edit → Preferences → **Get Extensions** → **Install from Disk** → select the zip  
    (Blender 4.2+ Add-ons → Install also works for this zip).
 3. Enable **BEHOLD**, then open the 3D Viewport sidebar (`N`) → **BEHOLD** tab.
 
 The zip also loads on **4.2+** when you need it; 5.2 LTS is the production target.
 
-**Versioned release** — push a tag `v1.5.1`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
+**Versioned release** — push a tag `v1.6.0`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
 
 ```bash
-git tag v1.5.1
-git push origin v1.5.1
+git tag v1.6.0
+git push origin v1.6.0
 
 make zip
-# → dist/behold-1.5.1.zip
+# → dist/behold-1.6.0.zip
 ```
 
 Alternate (dev): copy or symlink `behold/` into your Blender `scripts/addons/` directory.

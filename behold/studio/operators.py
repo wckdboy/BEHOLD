@@ -11,7 +11,6 @@ from bpy_extras.io_utils import ImportHelper
 from . import bake_apply
 from . import catcher_apply
 from . import gobo_apply
-from . import gobos as gobos_lib
 from . import ies as ies_lib
 from . import ies_apply
 from . import light_linking
@@ -134,22 +133,12 @@ class BEHOLD_OT_apply_light_preset(Operator):
             message = unknown_light_preset_message(self.preset)
             self.report(report_set(message), message)
             return {"CANCELLED"}
-        ies_path = str(getattr(context.scene.behold, "light_ies_filepath", "") or "")
-        active = light_lib.get_active_behold_light(context)
-        if active is not None:
-            ies_apply.release_ies_if_active(context, active)
         result = light_shape.apply_preset_in_scene(context, preset.id)
         if not result["ok"]:
             message = NO_LIGHTS if result["message"] == "NO_LIGHTS" else result["message"]
             self.report(report_set(message), message)
             return {"CANCELLED"}
         context.scene.behold.light_shape_preset = preset.id
-        gobo_id = str(getattr(context.scene.behold, "light_gobo_preset", "") or "")
-        if gobo_id and gobo_id != gobos_lib.DEFAULT_PRESET:
-            gobo_apply.apply_gobo_in_scene(context)
-        if ies_path:
-            context.scene.behold.light_ies_filepath = ies_path
-            ies_apply.apply_ies_in_scene(context)
         self.report({"INFO"}, result["message"])
         return {"FINISHED"}
 

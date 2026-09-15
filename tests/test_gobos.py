@@ -178,7 +178,7 @@ class GoboWiringTests(unittest.TestCase):
         self.assertIn("on_gobo_update", props)
         self.assertIn("gobo_apply.apply_gobo_in_scene", ops)
 
-    def test_shape_apply_reapplies_active_gobo(self) -> None:
+    def test_shape_apply_does_not_reapply_gobo(self) -> None:
         ops = _read("behold/studio/operators.py")
         tree = ast.parse(ops, filename="operators.py")
         shape_cls = None
@@ -194,28 +194,28 @@ class GoboWiringTests(unittest.TestCase):
             if isinstance(child, ast.FunctionDef) and child.name == "execute"
         )
         src = ast.get_source_segment(ops, execute) or ""
-        self.assertIn("light_gobo_preset", src)
-        self.assertIn("apply_gobo_in_scene", src)
+        self.assertIn("apply_preset_in_scene", src)
+        self.assertNotIn("apply_gobo_in_scene", src)
+        self.assertNotIn("light_gobo_preset", src)
 
     def test_panel_gobo_row_stays_off_empty_state(self) -> None:
         source = _read("behold/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_lights_section")
+        gobo = _func_source(source, tree, "draw_lights_gobo")
         self.assertIn("EMPTY_LIGHTS", body)
         self.assertIn("draw_empty_card", body)
-        self.assertIn("light_gobo_preset", body)
-        self.assertIn("light_gobo_scale", body)
-        self.assertIn("light_gobo_strength", body)
-        self.assertIn('text="Gobo"', body)
+        self.assertIn("draw_lights_gobo", body)
+        self.assertIn("light_gobo_preset", gobo)
+        self.assertIn("light_gobo_scale", gobo)
+        self.assertIn("light_gobo_strength", gobo)
+        self.assertIn('text="Gobo"', gobo)
         self.assertIn("Blinds", _read("behold/studio/gobos.py"))
         empty_idx = body.index("draw_empty_card")
-        gobo_idx = body.index("light_gobo_preset")
-        shape_idx = body.index("light_shape_preset")
-        link_idx = body.index("behold.link_selected")
-        self.assertLess(empty_idx, gobo_idx)
-        self.assertLess(shape_idx, gobo_idx)
-        self.assertLess(gobo_idx, body.index("light_ies_filepath"))
-        self.assertLess(body.index("light_ies_filepath"), link_idx)
+        self.assertLess(empty_idx, body.index("draw_lights_gobo"))
+        self.assertLess(body.index("draw_lights_shape"), body.index("draw_lights_gobo"))
+        self.assertLess(body.index("draw_lights_gobo"), body.index("draw_lights_ies"))
+        self.assertLess(body.index("draw_lights_ies"), body.index("draw_lights_linking"))
         self.assertNotIn("BEHOLD_PT_gobo", source)
         parked = _func_source(source, tree, "draw_light_draw_parked")
         self.assertIn("behold.apply_gobo", parked)
