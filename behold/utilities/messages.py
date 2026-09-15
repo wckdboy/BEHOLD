@@ -16,9 +16,21 @@ NO_PRODUCT = (
 WALL_NEEDS_SIZE = "Wall width and height must be greater than zero"
 UNKNOWN_STOREY = "Unknown storey preset — pick Foundation, Ground–2, or Top floors"
 UNKNOWN_MOUNT = "Unknown mount method — pick Legs or L-bracket"
+UNKNOWN_EAVE = (
+    "Unknown eave preset — pick Under eaves, Over eaves, "
+    "Wall crown off, Recessed skunk, or Roof inclusion"
+)
 
 PREREQUISITE_MESSAGES = frozenset(
-    {NO_UTILITIES, NO_WALL, NO_PRODUCT, WALL_NEEDS_SIZE, UNKNOWN_STOREY, UNKNOWN_MOUNT}
+    {
+        NO_UTILITIES,
+        NO_WALL,
+        NO_PRODUCT,
+        WALL_NEEDS_SIZE,
+        UNKNOWN_STOREY,
+        UNKNOWN_MOUNT,
+        UNKNOWN_EAVE,
+    }
 )
 
 
@@ -43,3 +55,7 @@ def mount_built_message(method_label: str) -> str:
 def scad_exported_message(path: str) -> str:
     shown = path.strip() or "a text block"
     return f"Wrote wall stack OpenSCAD to {shown}"
+
+
+def eave_built_message(section_label: str) -> str:
+    return f"Built {section_label} eave section against the wall"

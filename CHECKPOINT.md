@@ -80,7 +80,7 @@ Backend operators stay registered. Pie / header / preferences do not replace the
 
 **Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite; **1.1.0** adds procedural gobos; **1.2.0** adds IES practical lite; **1.3.0** adds live tessellation regenerate; **1.4.0** adds defeaturing lite; **1.5.0** adds per-body auto-dress. **Coming** after that (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
 
-**Utilities track** (not a version bump): feature-flagged Danish wall + balcony mounts, default **off**. See [docs/UTILITIES.md](docs/UTILITIES.md). Panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced stays the product-render path.
+**Utilities track** (not a version bump): feature-flagged Danish wall, balcony mounts, and MinAltan eave / roof section helpers, default **off**. See [docs/UTILITIES.md](docs/UTILITIES.md). Panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced stays the product-render path.
 
 Not this PR (and not 1.5.0):
 
@@ -90,7 +90,7 @@ Not this PR (and not 1.5.0):
 - Light / shadow linking changes (lite shipped in 0.21.0).
 - Full Light Wrangler viewport HDRI gizmo parity.
 - Full BlenderKit browser / apply-from-search-results (login/search/apply hooks stay; no in-panel library).
-- Utilities expansion (Danish wall / balcony stays feature-flagged and off).
+- Utilities stays feature-flagged and off (eave / roof helpers are on that track, not a product cut).
 
 Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-vertical-smoke`) sketched STEP vertical on pre-0.4 chrome (v0.3.2). Leave PR #7 as historical draft — do not merge it as-is. [PR #11](https://github.com/wckdboy/BEHOLD/pull/11) is the 0.7.0 **smoke-only** fixture/tests/script; **0.7.0 supersedes #11** as the real STEPper NEXT first-class + mesh reliability + first-ship Import UX.
 
@@ -98,6 +98,7 @@ Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-ve
 
 ### 2026-09-15
 
+- Utilities (not a version bump): MinAltan eave / roof section presets on the feature-flagged Utilities panel (under/over eaves, optional murkrone / recessed skunk / roof inclusion). Default **off**. Addon stays **1.5.0**. Tests in `tests/test_utilities.py`. See [docs/UTILITIES.md](docs/UTILITIES.md).
 - v**1.5.0** Per-body auto-dress: Auto-dress on Materials (STEP color / part name → a local look per body). Assist still applies one look to the selection. CAD Import Product runs auto-dress; mesh files keep Assist. Tests in `tests/test_auto_dress.py`. Install zip `behold-1.5.0.zip`.
 - v**1.4.0** Defeaturing lite: compact Cleanup on Import (Fillets / Chamfers / Holes + Blend mm / Hole Ø mm) before (re)tessellate. OCP `BRepAlgoAPI_Defeaturing` / inner-wire remove; STEPper NEXT tessellates only. Defaults off. Tests in `tests/test_defeaturing.py`. Install zip `behold-1.4.0.zip`.
 - v**1.3.0** Live tessellation regenerate: compact Tessellation on Import (Draft / Balanced / Fine / Ultra / Custom + Regenerate) on the last cached CAD source. STEPper NEXT when installed; OCP in-place fallback. Materials / transforms kept where names match. Tests in `tests/test_regenerate.py`. Install zip `behold-1.3.0.zip`.

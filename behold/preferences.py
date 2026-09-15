@@ -76,7 +76,8 @@ class BEHOLDAddonPreferences(AddonPreferences):
     enable_utilities: BoolProperty(
         name="Utilities panel",
         description=(
-            "Show the Utilities N-panel (Danish wall + balcony mounts). "
+            "Show the Utilities N-panel (Danish wall, balcony mounts, "
+            "eave / roof sections). "
             "Off by default — not part of Import → Studio → Lights → "
             "Materials → Cameras → Shoot"
         ),

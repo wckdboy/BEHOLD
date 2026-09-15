@@ -77,6 +77,29 @@ class BEHOLD_OT_build_balcony_bracket(Operator):
         return {"FINISHED"} if result["ok"] else {"CANCELLED"}
 
 
+class BEHOLD_OT_build_eave_section(Operator):
+    bl_idname = "behold.build_eave_section"
+    bl_label = "Build eave section"
+    bl_description = (
+        "Build a MinAltan roof / eave context mesh against the Danish wall "
+        "(under/over eaves and related snit presets)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context: Context) -> bool:
+        return _enabled(context)
+
+    def execute(self, context: Context):
+        if not _enabled(context):
+            self.report(report_set(NO_UTILITIES), NO_UTILITIES)
+            return {"CANCELLED"}
+        section = context.scene.behold.utilities.eave_section
+        result = build_lib.build_eave(context, section)
+        self.report(report_set(result["message"]) if not result["ok"] else {"INFO"}, result["message"])
+        return {"FINISHED"} if result["ok"] else {"CANCELLED"}
+
+
 class BEHOLD_OT_export_wall_scad(Operator):
     bl_idname = "behold.export_wall_scad"
     bl_label = "Export wall .scad"
@@ -110,5 +133,6 @@ CLASSES = (
     BEHOLD_OT_build_danish_wall,
     BEHOLD_OT_build_balcony_legs,
     BEHOLD_OT_build_balcony_bracket,
+    BEHOLD_OT_build_eave_section,
     BEHOLD_OT_export_wall_scad,
 )

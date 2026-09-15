@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Utilities object names — no Blender import.
 
-Walls and mount kits use the BEHOLD_Util_ prefix so they never count as the
-imported product or the studio cyclorama.
+Walls, mount kits, and eave sections use the BEHOLD_Util_ prefix so they
+never count as the imported product or the studio cyclorama.
 """
 
 from __future__ import annotations
@@ -14,7 +14,9 @@ WALL_ROOT_NAME = f"{UTIL_PREFIX}Wall"
 WALL_FACE_EMPTY = f"{UTIL_PREFIX}WallFace"
 MOUNT_LEGS_ROOT = f"{UTIL_PREFIX}Mount_Legs"
 MOUNT_BRACKET_ROOT = f"{UTIL_PREFIX}Mount_Bracket"
+EAVE_ROOT = f"{UTIL_PREFIX}Eave"
 PRODUCT_SNAP_EMPTY = f"{UTIL_PREFIX}Snap"
+EAVE_SNAP_EMPTY = f"{UTIL_PREFIX}EaveSnap"
 
 WALL_LAYER_NAMES = {
     "exterior": f"{UTIL_PREFIX}Wall_Exterior",

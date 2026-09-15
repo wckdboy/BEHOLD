@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Utilities track: wall math, mount kits, feature-flag gating (no bpy)."""
+"""Utilities track: wall math, mount kits, eave sections, feature-flag gating (no bpy)."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ ids = load_module("behold/utilities/ids.py", "behold_utilities_ids")
 messages = load_module("behold/utilities/messages.py", "behold_utilities_messages")
 wall = load_addon_module("behold/utilities/wall.py", "behold.utilities.wall")
 mounts = load_module("behold/utilities/mounts.py", "behold_utilities_mounts")
+eaves = load_module("behold/utilities/eaves.py", "behold_utilities_eaves")
 openscad = load_addon_module(
     "behold/utilities/openscad/__init__.py", "behold.utilities.openscad"
 )
@@ -71,6 +72,7 @@ class FeatureFlagTests(unittest.TestCase):
         self.assertIn(flag.OPERATOR_BUILD_WALL, enabled)
         self.assertIn(flag.OPERATOR_BUILD_LEGS, enabled)
         self.assertIn(flag.OPERATOR_BUILD_BRACKET, enabled)
+        self.assertIn(flag.OPERATOR_BUILD_EAVE, enabled)
         self.assertIn(flag.OPERATOR_EXPORT_SCAD, enabled)
         self.assertNotIn(flag.PANEL_ID, flag.gated_ui_ids(enabled=False))
 
@@ -142,6 +144,8 @@ class FeatureFlagTests(unittest.TestCase):
         self.assertIn("behold.build_danish_wall", body)
         self.assertIn("behold.build_balcony_legs", body)
         self.assertIn("behold.build_balcony_bracket", body)
+        self.assertIn("behold.build_eave_section", body)
+        self.assertIn("eave_section", body)
 
     def test_addon_registers_utilities_after_ui(self) -> None:
         init = _read("behold/__init__.py")
@@ -261,6 +265,75 @@ class MountKitTests(unittest.TestCase):
         self.assertGreaterEqual(floor.deck_z, mounts.MIN_LEG_HEIGHT_M)
 
 
+class EaveSectionTests(unittest.TestCase):
+    def test_presets_match_snit_variants(self) -> None:
+        ids = (
+            "UNDER_EAVE",
+            "OVER_EAVE",
+            "MURKRONE_REMOVED",
+            "RECESSED_SKUNK",
+            "ROOF_INCLUSION",
+        )
+        self.assertEqual(tuple(eaves.SECTION_LABELS), ids)
+        for section in ids:
+            spec = eaves.make_eave_spec(section, width_m=3.0, deck_z=2.8)
+            parts = eaves.eave_parts(spec)
+            names = [part.name for part in parts]
+            self.assertIn("Deck", names)
+            self.assertIn("Gutter", names)
+            self.assertIn("Roof", names)
+            roof = next(part for part in parts if part.name == "Roof")
+            self.assertGreater(abs(roof.rotation_euler[0]), 0.5)
+            gutter = next(part for part in parts if part.name == "Gutter")
+            if spec.under_eaves:
+                self.assertGreater(gutter.center[1], spec.projection_m)
+            else:
+                self.assertLess(gutter.center[1], 0.4)
+                self.assertIn("BackWall", names)
+        with self.assertRaises(ValueError):
+            eaves.make_eave_spec("KVISTALTAN", width_m=3.0, deck_z=2.8)
+
+    def test_murkrone_skunk_and_inclusion(self) -> None:
+        under = eaves.make_eave_spec("UNDER_EAVE", width_m=4.0, deck_z=2.8)
+        under_names = [part.name for part in eaves.eave_parts(under)]
+        self.assertIn("Parapet", under_names)
+        self.assertNotIn("Cheek_L", under_names)
+
+        removed = eaves.make_eave_spec("MURKRONE_REMOVED", width_m=4.0, deck_z=2.8)
+        removed_names = [part.name for part in eaves.eave_parts(removed)]
+        self.assertNotIn("Parapet", removed_names)
+        self.assertGreater(removed.headroom_m, under.headroom_m)
+        self.assertTrue(removed.under_eaves)
+
+        skunk = eaves.make_eave_spec("RECESSED_SKUNK", width_m=4.0, deck_z=2.8)
+        back = next(part for part in eaves.eave_parts(skunk) if part.name == "BackWall")
+        self.assertLess(back.center[1], 0.0)
+        self.assertAlmostEqual(skunk.recess_m, eaves.RECESS_SKUNK_M)
+        deck = next(part for part in eaves.eave_parts(skunk) if part.name == "Deck")
+        self.assertGreater(deck.size[1], skunk.projection_m)
+
+        inclusion = eaves.make_eave_spec("ROOF_INCLUSION", width_m=4.0, deck_z=2.8)
+        names = [part.name for part in eaves.eave_parts(inclusion)]
+        self.assertIn("Cheek_L", names)
+        self.assertIn("Cheek_R", names)
+        self.assertFalse(inclusion.under_eaves)
+
+    def test_bounds_and_pitch_clamp(self) -> None:
+        spec = eaves.eave_spec_from_bounds(
+            "OVER_EAVE",
+            (-1.5, 0.0, 2.4),
+            (1.5, 1.2, 3.4),
+            deck_z=2.8,
+            pitch_deg=90.0,
+        )
+        self.assertAlmostEqual(spec.width_m, 3.0)
+        self.assertAlmostEqual(spec.projection_m, 1.2)
+        self.assertEqual(spec.pitch_deg, eaves.PITCH_MAX_DEG)
+        self.assertEqual(eaves.clamp_pitch_deg(10.0), eaves.PITCH_MIN_DEG)
+        enum_ids = [item[0] for item in eaves.section_enum_items()]
+        self.assertEqual(enum_ids, list(eaves.SECTION_LABELS))
+
+
 class OpenScadAndCopyTests(unittest.TestCase):
     def test_scad_export_uses_millimetres(self) -> None:
         spec = wall.make_wall_spec("MID", include_door=True)
@@ -284,12 +357,16 @@ class OpenScadAndCopyTests(unittest.TestCase):
         self.assertIn("preferences", messages.NO_UTILITIES.lower())
         self.assertEqual(messages.report_type(messages.NO_WALL), "WARNING")
         self.assertIn("Legs", messages.mount_built_message("Legs"))
+        self.assertIn("Under eaves", messages.eave_built_message("Under eaves"))
+        self.assertIn("eave preset", messages.UNKNOWN_EAVE)
 
 
 class ProductIsolationTests(unittest.TestCase):
     def test_utility_meshes_are_not_the_product(self) -> None:
         self.assertTrue(ids.is_utility_mesh_name("BEHOLD_Util_Wall"))
         self.assertTrue(ids.is_utility_mesh_name("BEHOLD_Util_Wall_Exterior.001"))
+        self.assertTrue(ids.is_utility_mesh_name("BEHOLD_Util_Eave"))
+        self.assertTrue(ids.is_utility_mesh_name("BEHOLD_Util_Roof"))
         self.assertFalse(ids.is_utility_mesh_name("housing"))
         self.assertFalse(ids.is_utility_mesh_name("BEHOLD_Cyclorama"))
         self.assertFalse(
@@ -302,6 +379,8 @@ class ProductIsolationTests(unittest.TestCase):
         )
         self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_Util_Wall"))
         self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_Util_Mount_Legs"))
+        self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_Util_Eave"))
+        self.assertFalse(presets.is_dressable_mesh_name("BEHOLD_Util_Roof"))
         self.assertTrue(presets.is_dressable_mesh_name("housing_aluminum"))
 
 
@@ -314,12 +393,26 @@ class DocsTests(unittest.TestCase):
         self.assertIn("360 mm", text)
         self.assertIn("Legs", text)
         self.assertIn("L-bracket", text)
-        self.assertIn("MinAltan", text)
-        self.assertIn("reference only", text.lower())
+        self.assertIn("Under eaves", text)
+        self.assertIn("Over eaves", text)
+        self.assertIn("Altan under tagrende", text)
+        self.assertIn("Altan over tagrende", text)
+        self.assertIn("Murkrone fjernet", text)
+        self.assertIn("Indraget skunk", text)
+        self.assertIn("Inddragelse af tag", text)
+        self.assertIn("vejledende", text)
         self.assertIn("not a product release", text.lower())
+        self.assertIn("1.5.0", text)
+        checkpoint = _read("CHECKPOINT.md")
+        self.assertIn("eave", checkpoint.lower())
+        self.assertIn("not a version bump", checkpoint.lower())
+        roadmap = _read("ROADMAP.md")
+        self.assertIn("eave", roadmap.lower())
+        self.assertIn("Logo redo", roadmap)
         readme = _read("README.md")
         self.assertIn("docs/UTILITIES.md", readme)
         self.assertIn("Utilities panel", readme)
+        self.assertIn("eave", readme.lower())
 
 
 if __name__ == "__main__":
