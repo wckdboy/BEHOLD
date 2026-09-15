@@ -36,6 +36,13 @@ from .studio.dof import FSTOP_MIN as DOF_FSTOP_MIN
 from .studio.dof_apply import on_dof_update
 from .studio.light_linking import DEFAULT_KIND as LIGHT_LINKING_DEFAULT
 from .studio.light_linking import kind_enum_items as light_linking_kind_enum_items
+from .studio.gobo_apply import on_gobo_update
+from .studio.gobos import DEFAULT_PRESET as LIGHT_GOBO_DEFAULT
+from .studio.gobos import DEFAULT_SCALE as LIGHT_GOBO_SCALE_DEFAULT
+from .studio.gobos import DEFAULT_STRENGTH as LIGHT_GOBO_STRENGTH_DEFAULT
+from .studio.gobos import MAX_SCALE as LIGHT_GOBO_SCALE_MAX
+from .studio.gobos import MIN_SCALE as LIGHT_GOBO_SCALE_MIN
+from .studio.gobos import preset_enum_items as light_gobo_enum_items
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
@@ -373,6 +380,34 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Softbox / area look applied to the active BEHOLD light",
         items=light_shape_enum_items(),
         default=LIGHT_SHAPE_DEFAULT,
+    )
+    light_gobo_preset: EnumProperty(
+        name="Gobo",
+        description="Procedural gobo on the active BEHOLD area / spot light",
+        items=light_gobo_enum_items(),
+        default=LIGHT_GOBO_DEFAULT,
+        update=on_gobo_update,
+    )
+    light_gobo_scale: FloatProperty(
+        name="Gobo Scale",
+        description="Repeat / size of the gobo pattern on the active light",
+        default=LIGHT_GOBO_SCALE_DEFAULT,
+        min=LIGHT_GOBO_SCALE_MIN,
+        max=LIGHT_GOBO_SCALE_MAX,
+        soft_min=0.25,
+        soft_max=4.0,
+        step=10,
+        precision=2,
+        update=on_gobo_update,
+    )
+    light_gobo_strength: FloatProperty(
+        name="Gobo Strength",
+        description="How hard the gobo cuts (0 = open, 1 = full pattern)",
+        default=LIGHT_GOBO_STRENGTH_DEFAULT,
+        min=0.0,
+        max=1.0,
+        subtype="FACTOR",
+        update=on_gobo_update,
     )
     light_linking_kind: EnumProperty(
         name="Linking",

@@ -79,6 +79,7 @@ class MultiLightWiringTests(unittest.TestCase):
             "behold.remove_light",
             "behold.set_active_light",
             "behold.apply_light_preset",
+            "behold.apply_gobo",
             "behold.link_selected",
             "behold.exclude_selected",
             "behold.unlink_selected",
@@ -92,6 +93,7 @@ class MultiLightWiringTests(unittest.TestCase):
         self.assertIn("new_light_energy", source)
         self.assertIn("light_draw_target", source)
         self.assertIn("light_shape_preset", source)
+        self.assertIn("light_gobo_preset", source)
         self.assertIn("light_linking_kind", source)
         self.assertIn('("ACTIVE", "Active"', source)
         self.assertIn('("NEW", "New"', source)
