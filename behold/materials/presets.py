@@ -173,7 +173,11 @@ def material_name_for(preset_id: str) -> str:
 
 
 def is_dressable_mesh_name(name: str) -> bool:
-    return name.split(".", 1)[0] not in STUDIO_SKIP_MESHES
+    base = name.split(".", 1)[0]
+    if base in STUDIO_SKIP_MESHES:
+        return False
+    # Utilities wall / mount kits (see behold.utilities.ids.UTIL_PREFIX).
+    return not base.startswith("BEHOLD_Util_")
 
 
 def empty_state(*, has_product_mesh: bool) -> str | None:

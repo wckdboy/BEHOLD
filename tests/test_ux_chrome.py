@@ -185,6 +185,7 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("AddonPreferences", prefs)
         self.assertIn("show_header_shortcuts", prefs)
         self.assertIn("show_flow_strip", prefs)
+        self.assertIn("enable_utilities", prefs)
         self.assertIn("import_auto_studio", prefs)
         self.assertIn("render_quality", prefs)
         self.assertIn("PRODUCT_CREDIT", prefs)

@@ -15,6 +15,7 @@ from ..brand import (
 )
 from ..materials.presets import PRESETS, material_name_for
 from ..studio.camera_ids import is_studio_mesh_name
+from ..utilities.ids import is_utility_mesh_name
 from .messages import (
     EMPTY_NO_MESH,
     EMPTY_NO_MESH_HINT,
@@ -182,7 +183,10 @@ def is_look_material_name(name: str) -> bool:
 def product_present(*, mesh_names: Iterable[str], tagged_product: bool) -> bool:
     if tagged_product:
         return True
-    return any(not is_studio_mesh_name(name) for name in mesh_names)
+    return any(
+        not is_studio_mesh_name(name) and not is_utility_mesh_name(name)
+        for name in mesh_names
+    )
 
 
 def studio_present(*, mesh_names: Iterable[str], has_behold_light: bool) -> bool:

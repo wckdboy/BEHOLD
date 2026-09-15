@@ -46,6 +46,7 @@ from .studio.gobos import preset_enum_items as light_gobo_enum_items
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
+from .utilities.settings import BEHOLDUtilitiesSettings
 
 
 class BEHOLDShotItem(PropertyGroup):
@@ -538,9 +539,14 @@ class BEHOLDSceneSettings(PropertyGroup):
         description="Also render each Shot Manager preset as a still",
         default=False,
     )
+    utilities: PointerProperty(
+        type=BEHOLDUtilitiesSettings,
+        name="Utilities",
+        description="Feature-flagged Danish wall and balcony-mount helpers",
+    )
 
 
-CLASSES = (BEHOLDShotItem, BEHOLDSceneSettings)
+CLASSES = (BEHOLDShotItem, BEHOLDUtilitiesSettings, BEHOLDSceneSettings)
 
 
 def register() -> None:

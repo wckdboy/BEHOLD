@@ -24,6 +24,23 @@ from .updates.core import (
 )
 
 
+def _on_enable_utilities(self, context: Context) -> None:
+    # Imported here to avoid a preferences ↔ utilities import cycle.
+    from . import utilities
+
+    utilities.sync_registration(bool(self.enable_utilities))
+    window_manager = getattr(context, "window_manager", None)
+    if window_manager is None:
+        return
+    for window in window_manager.windows:
+        screen = window.screen
+        if screen is None:
+            continue
+        for area in screen.areas:
+            if area.type == "VIEW_3D":
+                area.tag_redraw()
+
+
 def addon_id() -> str:
     """Classic `behold` or Blender 4.2+ extension `bl_ext.<repo>.behold`."""
     pkg = __package__ or "behold"
@@ -55,6 +72,16 @@ class BEHOLDAddonPreferences(AddonPreferences):
         name="Workflow strip",
         description="Show Import → Studio → Dress → Shoot on the BEHOLD sidebar",
         default=True,
+    )
+    enable_utilities: BoolProperty(
+        name="Utilities panel",
+        description=(
+            "Show the Utilities N-panel (Danish wall + balcony mounts). "
+            "Off by default — not part of Import → Studio → Lights → "
+            "Materials → Cameras → Shoot"
+        ),
+        default=False,
+        update=_on_enable_utilities,
     )
     check_for_updates: BoolProperty(
         name="Check for updates",
@@ -174,6 +201,7 @@ def _draw_chrome_toggles(layout: UILayout, prefs: AddonPreferences) -> None:
     box.label(text="Chrome", icon="PREFERENCES")
     box.prop(prefs, "show_flow_strip")
     box.prop(prefs, "show_header_shortcuts")
+    box.prop(prefs, "enable_utilities")
 
 
 def _draw_scene_defaults(layout: UILayout, context: Context) -> None:

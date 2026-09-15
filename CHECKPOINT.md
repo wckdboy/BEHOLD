@@ -76,6 +76,8 @@ Backend operators stay registered. Pie / header / preferences do not replace the
 
 **Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite; **1.1.0** adds procedural gobos. **Coming** after that (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
 
+**Utilities track** (not a version bump): feature-flagged Danish wall + balcony mounts, default **off**. See [docs/UTILITIES.md](docs/UTILITIES.md). Panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced stays the product-render path.
+
 Not this PR (and not 1.1.0):
 
 - IES libraries (photometric profiles / practicals). Procedural gobos (Blinds / Window / Circle) shipped in 1.1.0; a streamed texture catalog is still Coming.

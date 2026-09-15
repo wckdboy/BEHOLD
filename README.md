@@ -98,6 +98,10 @@ One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product m
 
 Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / search / apply, Light Draw hotkeys, tokens / bookmark, turntable bake / ease / render, Apply Catcher / DoF / Quality / Size / Exposure / Look / Gobo. Operators stay registered.
 
+### Utilities (opt-in, not a product release)
+
+Off by default. Enable **Utilities panel** in add-on preferences to show a separate **Utilities** section (after Advanced) for a layered Danish wall and Legs / L-bracket balcony mounts. Does not change Import → Studio → Lights → Materials → Cameras → Shoot. See **[docs/UTILITIES.md](docs/UTILITIES.md)**.
+
 ## Coming (not 1.1)
 
 IES libraries, logo redo, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
