@@ -323,6 +323,8 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("0.23.0", text)
         self.assertIn("0.24.0", text)
         self.assertIn("0.25.0", text)
+        self.assertIn("1.0.0", text)
+        self.assertIn("First stable", text)
         self.assertIn("Square 1:1", text)
         self.assertIn("Portrait 4:5", text)
         self.assertIn("Landscape 16:9", text)

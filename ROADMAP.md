@@ -1,11 +1,16 @@
 # ROADMAP
 
-BEHOLD is not a KeyShot clone and not Light Wrangler parity theater. Each cut
-closes one gap product artists actually hit in Studio, then we ship a GitHub
-Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
+BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
+**v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. Each later
+cut still closes one gap product artists actually hit, then we ship a GitHub
+Release. See [CHECKPOINT.md](CHECKPOINT.md) for living status.
 
-## Shipped
+## Implemented
 
+The 1.0.0 zip is this path. Nothing below is “coming” anymore.
+
+- **1.0.0 First stable** — artist README, version 1.0.0 everywhere, honest
+  Implemented vs Coming. No new operators. Logo stays a placeholder.
 - **0.25.0 Catalog resolution presets** — Square 1:1, Portrait 4:5, Landscape 16:9
   plus 2048² / 1080p / 4K on Shoot. Size is the long edge; writes
   `scene.render.resolution_*` at 100% with square pixel aspect. Not gobos,
@@ -59,17 +64,24 @@ Release. See [CHECKPOINT.md](CHECKPOINT.md) for what is on `main` today.
 - **0.7.0** Import that works (STEPper NEXT).
 - **0.6.0–0.4.0** Turntable, cameras, multi-light + Light Draw.
 
-## Next (honest order)
+## Coming
 
-1. **Gobos / IES** — window lights, practicals, photometric profiles. Last
-   because they need a library story and are easy to ship as a junk drawer.
+Honest order after 1.0.0. None of this is in the 1.0 zip.
+
+1. **Gobos / IES libraries** — window lights, practicals, photometric profiles.
+   Last because they need a library story and are easy to ship as a junk drawer.
+2. **Logo redo** — replace the placeholder wordmark. Official mark in the
+   N-panel can stay until the new art is ready.
+3. **Live tessellation regenerate** — OCP / STEPper deflection without
+   re-picking the CAD file.
+4. **Defeaturing** — fillet / chamfer / hole suppress before tessellate.
+5. **Per-body auto-dress** — each STEP color/name → its own look (Assist still
+   applies one look to the selection in 1.0).
 
 ## Explicitly later / maybe never
 
 - Full Light Wrangler viewport HDRI gizmo parity (rotate in the 3D View with a
   custom manipulator). Studio Z-rotation is the 0.13.0 cut.
 - In-panel BlenderKit browser.
-- Live tessellation regenerate, defeaturing, per-body auto-dress from STEP
-  names.
 
-Cadence stays one focused feature cut, then a release.
+Cadence after 1.0.0 stays one focused feature cut, then a release.
