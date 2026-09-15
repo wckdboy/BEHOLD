@@ -182,7 +182,7 @@ class ShotWiringTests(unittest.TestCase):
         self.assertIn("hdri_rotation", props)
         self.assertIn("studio_backdrop_tone", props)
         self.assertIn("output_directory", props)
-        self.assertIn("CLASSES = (BEHOLDShotItem, BEHOLDSceneSettings)", props)
+        self.assertIn("CLASSES = (BEHOLDShotItem, BEHOLDUtilitiesSettings, BEHOLDSceneSettings)", props)
 
     def test_operators_register_crud(self) -> None:
         source = _read("behold/shoot/operators.py")

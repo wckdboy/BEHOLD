@@ -73,6 +73,9 @@ The 1.1.0 zip is this path. Nothing below is “coming” anymore.
 
 Honest order after 1.1.0. None of this is in the 1.1 zip.
 
+Feature-flagged **Utilities** (Danish wall + balcony mounts, default off) is a
+side track, not a product release — [docs/UTILITIES.md](docs/UTILITIES.md).
+
 1. **IES libraries** — photometric profiles / practicals. A library story is
    easy to ship as a junk drawer; gobos lite already landed in 1.1.0.
 2. **Logo redo** — replace the placeholder wordmark. Official mark in the

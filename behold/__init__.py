@@ -25,6 +25,7 @@ from .cad import operators as cad_ops
 from .product_import import operators as product_ops
 from .shoot import operators as shoot_ops
 from .studio import operators as studio_ops
+from . import utilities
 
 
 _MODULES = (
@@ -40,6 +41,7 @@ _MODULES = (
     cad_ops,
     product_ops,
     ui,
+    utilities,
 )
 
 
