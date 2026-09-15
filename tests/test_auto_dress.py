@@ -207,6 +207,8 @@ class WiringTests(unittest.TestCase):
         ops = _read("behold/cad/operators.py")
         self.assertIn('bl_idname = "behold.cad_auto_dress"', ops)
         self.assertIn('bl_idname = "behold.cad_material_assist"', ops)
+        self.assertIn("class BEHOLD_OT_cad_auto_dress", ops)
+        self.assertIn("class BEHOLD_OT_cad_build_studio", ops)
         self.assertIn("BEHOLD_OT_cad_auto_dress", ops)
         self.assertIn("run_auto_dress", ops)
         self.assertIn("run_material_assist", ops)

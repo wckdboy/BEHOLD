@@ -6,7 +6,7 @@ wall — not as structural engineering, and **not** as part of the default
 product-render path.
 
 This track is **not a product release**. Addon version is independent of this
-track (currently v1.5.0). Do not treat Utilities as a product milestone.
+track (currently v1.5.1). Do not treat Utilities as a product milestone.
 
 ## Enable
 
