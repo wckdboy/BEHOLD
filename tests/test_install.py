@@ -195,7 +195,7 @@ class ManifestTests(unittest.TestCase):
         data = tomllib.loads(_read(ADDON / "blender_manifest.toml"))
         self.assertEqual(data["schema_version"], "1.0.0")
         self.assertEqual(data["id"], "behold")
-        self.assertEqual(data["version"], "1.5.1")
+        self.assertEqual(data["version"], "1.6.0")
         self.assertEqual(data["type"], "add-on")
         self.assertTrue(data["id"].isidentifier())
         self.assertNotIn("__", data["id"])
@@ -221,6 +221,8 @@ class ZipLayoutTests(unittest.TestCase):
         self.assertIn('zip -r -q "${OUT}" behold', script)
         self.assertIn("blender_manifest.toml", script)
         self.assertIn('OUT="${DIST}/behold-${VERSION}.zip"', script)
+        self.assertIn("Install from Disk", script)
+        self.assertIn("extension build", script)
 
     def test_zip_payload_has_manifest_and_init(self) -> None:
         files = {path.relative_to(ADDON).as_posix() for path in _zip_source_files()}
@@ -268,6 +270,10 @@ class RegisterImportGraphTests(unittest.TestCase):
             if not names:
                 continue
             bound = _module_bound_names(tree)
+            if len(names) != len(set(names)):
+                failures.append(
+                    f"{path.relative_to(ROOT)}: CLASSES has duplicate names"
+                )
             for name in names:
                 if name not in bound:
                     failures.append(f"{path.relative_to(ROOT)}: CLASSES name {name} is not defined")
@@ -304,6 +310,7 @@ class RegisterImportGraphTests(unittest.TestCase):
         }
         self.assertIn("BEHOLD_OT_cad_auto_dress", by_name)
         self.assertIn("BEHOLD_OT_cad_build_studio", by_name)
+        self.assertIn("BEHOLD_OT_cleanup_cad", by_name)
         self.assertEqual(
             _class_bl_idnames(by_name["BEHOLD_OT_cad_auto_dress"]),
             ["behold.cad_auto_dress"],
@@ -312,26 +319,91 @@ class RegisterImportGraphTests(unittest.TestCase):
             _class_bl_idnames(by_name["BEHOLD_OT_cad_build_studio"]),
             ["behold.cad_build_studio"],
         )
+        self.assertEqual(
+            _class_bl_idnames(by_name["BEHOLD_OT_cleanup_cad"]),
+            ["behold.cleanup_cad"],
+        )
         names = _classes_tuple_names(tree)
         self.assertIsNotNone(names)
         assert names is not None
         self.assertIn("BEHOLD_OT_cad_auto_dress", names)
         self.assertIn("BEHOLD_OT_cad_build_studio", names)
+        self.assertIn("BEHOLD_OT_cleanup_cad", names)
+        self.assertEqual(len(names), len(set(names)))
 
 
 class UtilitiesEnablePathTests(unittest.TestCase):
-    """v1.5.1 does not refactor this graph. Follow-up: Utilities off the enable path."""
+    """Flag off: operators/panel stay off the enable import graph."""
 
-    def test_utilities_still_loads_on_addon_import(self) -> None:
+    def test_utilities_operators_are_not_on_the_core_modules_tuple(self) -> None:
         init = _read(ADDON / "__init__.py")
+        tree = ast.parse(init, filename="__init__.py")
+        modules: list[str] = []
+        for node in tree.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            if not any(
+                isinstance(target, ast.Name) and target.id == "_MODULES"
+                for target in node.targets
+            ):
+                continue
+            if not isinstance(node.value, ast.Tuple):
+                self.fail("_MODULES is not a tuple")
+            for elt in node.value.elts:
+                if isinstance(elt, ast.Name):
+                    modules.append(elt.id)
+        self.assertIn("ui", modules)
+        self.assertIn("cad_ops", modules)
+        self.assertNotIn("utilities", modules)
+        self.assertEqual(len(modules), len(set(modules)))
+
+    def test_utilities_package_is_lazy_after_core_register(self) -> None:
+        init = _read(ADDON / "__init__.py")
+        tree = ast.parse(init, filename="__init__.py")
+        top_imports = [
+            ast.unparse(node)
+            for node in tree.body
+            if isinstance(node, ast.ImportFrom)
+        ]
+        self.assertFalse(
+            any("utilities" in item and "import utilities" in item for item in top_imports)
+        )
+        self.assertIn("def _sync_utilities", init)
         self.assertIn("from . import utilities", init)
-        self.assertIn("utilities,", init)
+        register_src = None
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "register":
+                register_src = ast.get_source_segment(init, node) or ""
+        self.assertIsNotNone(register_src)
+        assert register_src is not None
+        self.assertIn("_sync_utilities()", register_src)
+        self.assertIn("try:", register_src)
+
+    def test_registration_does_not_import_operators_at_module_level(self) -> None:
+        registration = _read(ADDON / "utilities" / "registration.py")
+        tree = ast.parse(registration, filename="registration.py")
+        for node in tree.body:
+            if isinstance(node, ast.ImportFrom) and node.module in {"operators", "panel"}:
+                self.fail(f"module-level import of utilities.{node.module}")
+        self.assertIn("def _classes", registration)
+        self.assertIn("from .operators import CLASSES", registration)
+        self.assertIn("from .panel import CLASSES", registration)
+        classes_fn = None
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef) and node.name == "_classes":
+                classes_fn = ast.get_source_segment(registration, node) or ""
+        self.assertIsNotNone(classes_fn)
+        assert classes_fn is not None
+        self.assertIn("from .operators import CLASSES", classes_fn)
+        self.assertIn("from .panel import CLASSES", classes_fn)
+
+    def test_properties_imports_settings_rna_not_operators(self) -> None:
         props = _read(ADDON / "properties.py")
         self.assertIn("from .utilities.settings import BEHOLDUtilitiesSettings", props)
-        registration = _read(ADDON / "utilities" / "registration.py")
-        header = registration.split("def ", 1)[0]
-        self.assertIn("from .operators import CLASSES", header)
-        self.assertIn("from .panel import CLASSES", header)
+        self.assertNotIn("utilities.operators", props)
+        self.assertNotIn("utilities.panel", props)
+        self.assertNotIn("from .utilities.operators", props)
+        self.assertNotIn("from .utilities.panel", props)
 
 
 if __name__ == "__main__":

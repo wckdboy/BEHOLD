@@ -6,7 +6,7 @@ from __future__ import annotations
 bl_info = {
     "name": "BEHOLD",
     "author": "AMIRITE.studio",
-        "version": (1, 5, 1),
+        "version": (1, 6, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > BEHOLD | Shift+Alt+B pie",
     "description": "Product studio lighting and rendering — BEHOLD by AMIRITE.studio",
@@ -25,9 +25,10 @@ from .cad import operators as cad_ops
 from .product_import import operators as product_ops
 from .shoot import operators as shoot_ops
 from .studio import operators as studio_ops
-from . import utilities
 
 
+# Core enable path. Utilities operators/panels stay off this tuple and load
+# only when enable_utilities is on (see _sync_utilities).
 _MODULES = (
     previews,
     properties,
@@ -41,16 +42,36 @@ _MODULES = (
     cad_ops,
     product_ops,
     ui,
-    utilities,
 )
+
+
+def _sync_utilities() -> None:
+    from . import utilities
+
+    utilities.register()
+
+
+def _unsync_utilities() -> None:
+    from . import utilities
+
+    utilities.unregister()
 
 
 def register() -> None:
     for module in _MODULES:
         module.register()
+    try:
+        _sync_utilities()
+    except Exception:
+        # Optional track: a utilities import error must not brick core enable.
+        pass
 
 
 def unregister() -> None:
+    try:
+        _unsync_utilities()
+    except Exception:
+        pass
     for module in reversed(_MODULES):
         module.unregister()
 

@@ -207,6 +207,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("NO_FILE_SELECTED", cad)
         self.assertIn("NO_CAD_SOURCE", cad)
         self.assertIn("behold.regenerate_cad", cad)
+        self.assertIn("behold.cleanup_cad", cad)
         self.assertIn("behold.cad_auto_dress", cad)
         self.assertIn("scene_cleanup_plan", cad)
         self.assertIn("file_not_found_message", cad)

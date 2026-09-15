@@ -6,13 +6,14 @@ wall — not as structural engineering, and **not** as part of the default
 product-render path.
 
 This track is **not a product release**. Addon version is independent of this
-track (currently v1.5.1). Do not treat Utilities as a product milestone.
+track (currently v1.6.0). Do not treat Utilities as a product milestone.
 
 ## Enable
 
 Default **off**. When off, there is no Utilities N-panel and the wall / mount /
-eave operators are not registered (they do not appear on Import → Studio →
-Lights → Materials → Cameras → Shoot).
+eave operators are **not imported or registered** (a bug in those modules
+cannot brick core enable). They do not appear on Import → Studio →
+Lights → Materials → Cameras → Shoot.
 
 1. Edit → Preferences → Add-ons → **BEHOLD**
 2. Chrome → **Utilities panel** (`enable_utilities`)

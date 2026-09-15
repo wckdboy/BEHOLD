@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # Build an installable Blender add-on zip for BEHOLD.
+#
+# Install in Blender 5.2 LTS:
+#   Edit → Preferences → Get Extensions → Install from Disk → behold-x.y.z.zip
+# Do not use GitHub's "Source code (zip)". The payload is one `behold/` folder
+# with blender_manifest.toml inside.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -56,10 +61,26 @@ if [[ -z "$(find "${STAGE}/assets" -mindepth 1 -maxdepth 1 2>/dev/null || true)"
 fi
 
 rm -f "${OUT}"
-(
-  cd "${TMP}"
-  zip -r -q "${OUT}" behold
-)
 
-echo "Built ${OUT}"
+# Prefer Blender's extension packager when the CLI exists (CI often has no Blender).
+built=0
+if command -v blender >/dev/null 2>&1; then
+  if blender --command extension build --help >/dev/null 2>&1; then
+    if blender --command extension build \
+      --source-dir "${STAGE}" \
+      --output-filepath "${OUT}" >/dev/null 2>&1; then
+      built=1
+      echo "Built ${OUT} with blender --command extension build"
+    fi
+  fi
+fi
+
+if [[ "${built}" -eq 0 ]]; then
+  (
+    cd "${TMP}"
+    zip -r -q "${OUT}" behold
+  )
+  echo "Built ${OUT}"
+fi
+
 echo "Install in Blender 5.2: Edit → Preferences → Get Extensions → Install from Disk → select this zip"

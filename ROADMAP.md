@@ -5,15 +5,21 @@ BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
 is procedural gobo lite. **v1.2.0** is IES practical lite (BYO `.ies`, not a
 streamed catalog). **v1.3.0** is live tessellation regenerate. **v1.4.0** is
 defeaturing lite. **v1.5.0** is per-body auto-dress. **v1.5.1** is the
-Install from Disk enable fix. Each later cut
+Install from Disk enable fix. **v1.6.0** is the deep simplify
+(one card / one job, utilities isolation). Each later cut
 still closes one gap product artists
 actually hit, then we ship a GitHub Release. See [CHECKPOINT.md](CHECKPOINT.md)
 for living status.
 
 ## Implemented
 
-The 1.5.1 zip is this path. Nothing below is “coming” anymore.
+The 1.6.0 zip is this path. Nothing below is “coming” anymore.
 
+- **1.6.0 Deep simplify** — subtract overlap. Utilities operators/panel stay
+  off the enable import graph until the flag is on. Lights Shape / Gobo / IES
+  teardown no longer restore each other. Tessellation, Cleanup, and Auto-dress
+  are separate steps. Shoot: one Still; Exposure vs Look. Not new artist toys.
+  Not a logo redo.
 - **1.5.1 Install from Disk enable** — v1.5.0 failed to enable (`NameError:
   BEHOLD_OT_cad_build_studio` after Auto-dress was merged into that class).
   Two operator classes again; manifest tagline / permission length for
@@ -98,7 +104,7 @@ The 1.5.1 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.5.1. None of this is in the 1.5.1 zip.
+Honest order after 1.6.0. None of this is in the 1.6.0 zip.
 
 Feature-flagged **Utilities** (Danish wall + balcony mounts + eave/roof
 sections, default off) is a side track, not a product release —

@@ -119,6 +119,7 @@ def apply_ies_to_object(
 
     _store(obj, spec.ACTIVE_KEY, True)
     _store(obj, spec.FILE_KEY, resolved)
+    _clear_gobo_marker(context, obj)
     light_lib.set_active_behold_light(context, obj)
     return _result(
         True,
@@ -133,7 +134,7 @@ def apply_ies_to_object(
 
 
 def teardown_ies(context: Context, obj: Object) -> dict[str, Any]:
-    """Drop IES nodes and restore the prior type / Shape / Gobo."""
+    """Drop IES nodes and restore the prior type / Shape. Does not restore Gobo."""
     data = getattr(obj, "data", None)
     if data is not None:
         tree = getattr(data, "node_tree", None)
@@ -144,7 +145,6 @@ def teardown_ies(context: Context, obj: Object) -> dict[str, Any]:
     restored_type = _restore_prior_type(obj, data)
     _clear_ies_keys(obj)
     restored_shape = _restore_shape(context, obj)
-    restored_gobo = _restore_gobo(context, obj)
     _sync_scene_path(context, "")
     return _result(
         True,
@@ -152,7 +152,6 @@ def teardown_ies(context: Context, obj: Object) -> dict[str, Any]:
         light=obj,
         restored_type=restored_type,
         restored_shape=restored_shape,
-        restored_gobo=restored_gobo,
     )
 
 
@@ -328,30 +327,22 @@ def _restore_shape(context: Context, obj: Object) -> bool:
     return bool(result.get("ok"))
 
 
-def _restore_gobo(context: Context, obj: Object) -> bool:
+def _clear_gobo_marker(context: Context, obj: Object) -> None:
+    """IES owns the node tree — Gobo enum goes to None without RNA teardown."""
+    _store(obj, gobos_lib.PRESET_ID_KEY, gobos_lib.DEFAULT_PRESET)
     settings = getattr(context.scene, "behold", None)
-    preset_id = gobos_lib.DEFAULT_PRESET
-    if settings is not None:
-        preset_id = str(
-            getattr(settings, "light_gobo_preset", preset_id) or preset_id
-        )
-    if not preset_id or preset_id == gobos_lib.DEFAULT_PRESET:
-        return False
-    from . import gobo_apply  # circular: gobo_apply releases IES first
-
-    scale = gobos_lib.DEFAULT_SCALE
-    strength = gobos_lib.DEFAULT_STRENGTH
-    if settings is not None:
-        scale = float(getattr(settings, "light_gobo_scale", scale))
-        strength = float(getattr(settings, "light_gobo_strength", strength))
-    result = gobo_apply.apply_gobo_to_object(
-        context,
-        obj,
-        preset_id,
-        scale=scale,
-        strength=strength,
-    )
-    return bool(result.get("ok"))
+    if settings is None or not hasattr(settings, "light_gobo_preset"):
+        return
+    current = str(getattr(settings, "light_gobo_preset", "") or "")
+    if current == gobos_lib.DEFAULT_PRESET:
+        return
+    try:
+        settings["light_gobo_preset"] = gobos_lib.DEFAULT_PRESET
+    except (TypeError, AttributeError, KeyError):
+        try:
+            settings.light_gobo_preset = gobos_lib.DEFAULT_PRESET
+        except (TypeError, AttributeError):
+            pass
 
 
 def _ensure_tree(data: object) -> NodeTree | None:

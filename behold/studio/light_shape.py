@@ -5,13 +5,27 @@ from __future__ import annotations
 
 from typing import Any
 
-import bpy
 from bpy.types import Context, Node, NodeSocket, NodeTree, Object
 
+from . import ies as ies_spec
+from . import gobos as gobos_spec
 from . import light_presets as presets
 from . import lights as light_lib
 
 _SocketKey = str | int
+
+
+def _other_owns_nodes(obj: Object) -> bool:
+    """Gobo and IES each own the light node tree; Shape must not overwrite them."""
+    try:
+        if bool(obj.get(ies_spec.ACTIVE_KEY, False)):
+            return True
+        gobo = str(obj.get(gobos_spec.PRESET_ID_KEY, "") or "")
+        if gobo and gobo != gobos_spec.DEFAULT_PRESET:
+            return True
+    except (TypeError, AttributeError):
+        return False
+    return False
 
 
 def apply_preset_to_object(
@@ -26,10 +40,13 @@ def apply_preset_to_object(
     data = obj.data
     written = presets.apply_shape_props(data, preset, scale=scale)
     graph = presets.node_graph_for(preset.nodes)
-    if graph is None:
-        if hasattr(data, "use_nodes"):
+    other_owns = _other_owns_nodes(obj)
+    if graph is None or other_owns:
+        if hasattr(data, "use_nodes") and not other_owns:
             data.use_nodes = False
-        written["use_nodes"] = False
+        written["use_nodes"] = bool(other_owns and getattr(data, "use_nodes", False))
+        if graph is not None and other_owns:
+            written["nodes_skipped"] = True
     else:
         _apply_node_graph(data, graph)
         written["use_nodes"] = True

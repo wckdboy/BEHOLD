@@ -149,11 +149,17 @@ class FeatureFlagTests(unittest.TestCase):
 
     def test_addon_registers_utilities_after_ui(self) -> None:
         init = _read("behold/__init__.py")
-        self.assertIn("from . import utilities", init)
-        self.assertLess(init.index("ui,"), init.index("utilities,"))
-        self.assertIn('"version": (1, 5, 1)', init)
+        self.assertIn('"version": (1, 6, 0)', init)
         brand = _read("behold/brand.py")
-        self.assertIn("VERSION = (1, 5, 1)", brand)
+        self.assertIn("VERSION = (1, 6, 0)", brand)
+
+    def test_utilities_operators_stay_lazy(self) -> None:
+        init = _read("behold/__init__.py")
+        self.assertNotIn("utilities,", init.split("_MODULES", 1)[1].split(")", 1)[0])
+        registration = _read("behold/utilities/registration.py")
+        header = registration.split("def ", 1)[0]
+        self.assertNotIn("from .operators import CLASSES", header)
+        self.assertNotIn("from .panel import CLASSES", header)
 
 
 class WallMathTests(unittest.TestCase):
@@ -402,7 +408,7 @@ class DocsTests(unittest.TestCase):
         self.assertIn("Inddragelse af tag", text)
         self.assertIn("vejledende", text)
         self.assertIn("not a product release", text.lower())
-        self.assertIn("1.5.1", text)
+        self.assertIn("1.6.0", text)
         checkpoint = _read("CHECKPOINT.md")
         self.assertIn("eave", checkpoint.lower())
         self.assertIn("not a version bump", checkpoint.lower())

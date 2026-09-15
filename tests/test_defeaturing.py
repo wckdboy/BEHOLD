@@ -264,7 +264,7 @@ class BlockerAndCopyTests(unittest.TestCase):
         self.assertEqual(needs, defeaturing.DEFEATURE_NEEDS_OCP)
         self.assertIn("OCP", needs or "")
         self.assertIn("STEPper NEXT tessellates only", needs or "")
-        self.assertIn("Regenerate", needs or "")
+        self.assertIn("Apply cleanup", needs or "")
         no_fillet = defeaturing.cleanup_blockers(
             plan,
             ocp_available=True,
@@ -404,12 +404,16 @@ class WiringTests(unittest.TestCase):
         self.assertNotIn("BEHOLD_PT_defeaturing", source)
         tess = _func_source(source, tree, "draw_import_tessellation")
         self.assertIn("behold.regenerate_cad", tess)
+        cleanup = _func_source(source, tree, "draw_import_cleanup")
+        self.assertIn("behold.cleanup_cad", cleanup)
+        self.assertNotIn("behold.regenerate_cad", cleanup)
         parked = _func_source(source, tree, "draw_import_parked")
         self.assertIn("cad_cleanup_fillets", parked)
         self.assertIn("cad_blend_mm", parked)
+        self.assertIn("behold.cleanup_cad", parked)
         lights = _func_source(source, tree, "draw_lights_section")
         self.assertNotIn("cad_cleanup_fillets", lights)
-        self.assertIn("light_ies_filepath", lights)
+        self.assertIn("light_ies_filepath", _func_source(source, tree, "draw_lights_ies"))
 
 
 class OcpDefeaturingTests(unittest.TestCase):
