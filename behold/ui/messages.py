@@ -64,6 +64,16 @@ from ..studio.gobos import (
     UNKNOWN_GOBO,
     unknown_gobo_message,
 )
+from ..studio.ies import (
+    IES_CLEARED,
+    IES_LOAD_FAILED,
+    IES_NODES_FAILED,
+    NO_IES_FILE,
+    NO_IES_TYPE,
+    ies_file_not_found,
+    path_problem_message as ies_path_problem_message,
+    unsupported_ies_message,
+)
 from ..studio.light_linking import (
     LINKING_FAILED,
     NO_LINKING_API,
@@ -230,6 +240,8 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_PRODUCT_FOR_CATCHER,
         UNKNOWN_BACKDROP,
         NO_GOBO_TYPE,
+        NO_IES_FILE,
+        NO_IES_TYPE,
     }
 )
 
@@ -258,6 +270,8 @@ def report_type(message: str) -> str:
             "HDRI file not found:",
             "Unsupported HDRI:",
             "Unsupported bake format:",
+            "IES file not found:",
+            "Unsupported IES:",
             "Shot name “",
             "Shot camera “",
             "Batch export ",

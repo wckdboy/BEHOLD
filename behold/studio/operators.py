@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape, gobo, linking."""
+"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape, gobo, IES, linking."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ from . import bake_apply
 from . import catcher_apply
 from . import gobo_apply
 from . import gobos as gobos_lib
+from . import ies as ies_lib
+from . import ies_apply
 from . import light_linking
 from . import light_linking_apply
 from . import light_presets
@@ -132,6 +134,10 @@ class BEHOLD_OT_apply_light_preset(Operator):
             message = unknown_light_preset_message(self.preset)
             self.report(report_set(message), message)
             return {"CANCELLED"}
+        ies_path = str(getattr(context.scene.behold, "light_ies_filepath", "") or "")
+        active = light_lib.get_active_behold_light(context)
+        if active is not None:
+            ies_apply.release_ies_if_active(context, active)
         result = light_shape.apply_preset_in_scene(context, preset.id)
         if not result["ok"]:
             message = NO_LIGHTS if result["message"] == "NO_LIGHTS" else result["message"]
@@ -141,6 +147,9 @@ class BEHOLD_OT_apply_light_preset(Operator):
         gobo_id = str(getattr(context.scene.behold, "light_gobo_preset", "") or "")
         if gobo_id and gobo_id != gobos_lib.DEFAULT_PRESET:
             gobo_apply.apply_gobo_in_scene(context)
+        if ies_path:
+            context.scene.behold.light_ies_filepath = ies_path
+            ies_apply.apply_ies_in_scene(context)
         self.report({"INFO"}, result["message"])
         return {"FINISHED"}
 
@@ -159,6 +168,88 @@ class BEHOLD_OT_apply_gobo(Operator):
         if not result["ok"]:
             message = result["message"]
             self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_load_ies(Operator, ImportHelper):
+    bl_idname = "behold.load_ies"
+    bl_label = "Load IES"
+    bl_description = (
+        "Load a photometric .ies profile onto the active BEHOLD spot or point "
+        "light (area lights become spots while IES is on)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    filename_ext = ".ies"
+    filter_glob: StringProperty(
+        default=ies_lib.IES_FILTER_GLOB,
+        options={"HIDDEN"},
+    )
+
+    def execute(self, context: Context):
+        settings = context.scene.behold
+        settings.light_ies_filepath = self.filepath
+        result = ies_apply.apply_ies_in_scene(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_load_ies_sample(Operator):
+    bl_idname = "behold.load_ies_sample"
+    bl_label = "Sample IES"
+    bl_description = (
+        "Load the bundled CC0 sample spot IES onto the active BEHOLD light. "
+        "Bring your own .ies for a real fixture"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        path = ies_lib.bundled_sample_path()
+        settings = context.scene.behold
+        settings.light_ies_filepath = path
+        result = ies_apply.apply_ies_in_scene(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_clear_ies(Operator):
+    bl_idname = "behold.clear_ies"
+    bl_label = "Clear IES"
+    bl_description = (
+        "Remove the IES profile and restore the light's prior type, Shape, and Gobo"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = ies_apply.teardown_ies_in_scene(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
+            return {"CANCELLED"}
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_ies(Operator):
+    bl_idname = "behold.apply_ies"
+    bl_label = "Apply IES"
+    bl_description = (
+        "Apply the IES path / strength / scale on the active BEHOLD light. "
+        "Clear tears the graph down"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = ies_apply.apply_ies_in_scene(context)
+        if not result["ok"]:
+            self.report(report_set(result["message"]), result["message"])
             return {"CANCELLED"}
         self.report({"INFO"}, result["message"])
         return {"FINISHED"}
@@ -341,6 +432,10 @@ CLASSES = (
     BEHOLD_OT_set_active_light,
     BEHOLD_OT_apply_light_preset,
     BEHOLD_OT_apply_gobo,
+    BEHOLD_OT_load_ies,
+    BEHOLD_OT_load_ies_sample,
+    BEHOLD_OT_clear_ies,
+    BEHOLD_OT_apply_ies,
     BEHOLD_OT_link_selected,
     BEHOLD_OT_exclude_selected,
     BEHOLD_OT_unlink_selected,

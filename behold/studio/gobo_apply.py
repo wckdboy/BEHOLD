@@ -11,6 +11,7 @@ from . import gobos as spec
 from . import light_presets
 from . import light_shape
 from . import lights as light_lib
+from .ies_apply import release_ies_if_active
 from ..ui.messages import NO_LIGHTS
 
 _SocketKey = str | int
@@ -64,6 +65,10 @@ def apply_gobo_to_object(
     preset = spec.get_preset(preset_id)
     if preset is None:
         return _result(False, spec.unknown_gobo_message(preset_id))
+    data = getattr(obj, "data", None)
+    if data is None:
+        return _result(False, NO_LIGHTS)
+    release_ies_if_active(context, obj)
     data = getattr(obj, "data", None)
     if data is None:
         return _result(False, NO_LIGHTS)

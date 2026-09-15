@@ -332,8 +332,9 @@ class WiringTests(unittest.TestCase):
         self.assertLess(body.index("light_shape_preset"), link_idx)
         self.assertLess(body.index("light_gobo_preset"), link_idx)
         self.assertGreater(body.index("light_gobo_preset"), body.index("light_shape_preset"))
+        self.assertLess(body.index("light_ies_filepath"), link_idx)
+        self.assertGreater(body.index("light_ies_filepath"), body.index("light_gobo_preset"))
         self.assertNotIn("BEHOLD_PT_light_linking", source)
-        self.assertNotIn("IES", body)
 
 
 if __name__ == "__main__":
