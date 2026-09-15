@@ -2,8 +2,8 @@
 """Procedural gobo / cookie lite — blinds, soft window, circle (no Blender).
 
 Light Wrangler streams a gobo texture library onto area/spot lights. This cut
-is three procedural patterns as nodes on the active BEHOLD light — no IES,
-no logo pack, no streamed catalog. None tears the graph down and restores
+is three procedural patterns as nodes on the active BEHOLD light — IES
+practical lite is 1.2.0 (BYO .ies). None tears the graph down and restores
 the 0.16.0 shape falloff when that light still has a shape preset.
 """
 

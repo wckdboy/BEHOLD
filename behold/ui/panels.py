@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-v1.1.0 adds procedural gobo lite on Lights. v1.0.0 is first stable. Studio
+v1.2.0 adds IES practical lite on Lights. v1.1.0 adds procedural gobo lite
+on Lights. v1.0.0 is first stable. Studio
 chrome (v0.9.0) + workflow order (v0.12.0): branded hero + Import →
 Studio → Dress → Shoot strip on the main panel; physical child order is
 Import → Studio → Lights → Materials → Cameras → Shoot → Advanced so Shoot
@@ -11,7 +12,9 @@ Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
 backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
 shape presets (Apply to active), v1.1.0 gobo (None / Blinds / Window /
-Circle + scale / strength), and v0.21.0 light / shadow linking lite
+Circle + scale / strength), v1.2.0 IES (Load / Sample / Clear + strength /
+scale on the active spot or point; area lights become spots while IES is
+on), and v0.21.0 light / shadow linking lite
 (Link Selected / Unlink / Solo product). Cameras is the v0.5.0 product-camera
 kit plus v0.22.0 product DoF (on/off, f-stop, Focus on product / Focus on
 selected). Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
@@ -289,7 +292,7 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
 
 
 def draw_lights_section(layout: UILayout, context: Context) -> None:
-    """Multi-light inventory + shape + gobo + linking lite + Light Draw."""
+    """Multi-light inventory + shape + gobo + IES + linking lite + Light Draw."""
     settings = context.scene.behold
     lights = light_lib.iter_behold_lights(context)
 
@@ -330,6 +333,17 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
             row = gobo.row(align=True)
             row.prop(settings, "light_gobo_scale", text="Scale")
             row.prop(settings, "light_gobo_strength", text="Strength")
+        ies = layout.box()
+        ies.label(text="IES", icon="LIGHT_SPOT")
+        ies.prop(settings, "light_ies_filepath", text="")
+        row = ies.row(align=True)
+        row.operator("behold.load_ies", text="Load", icon="FILE_FOLDER")
+        row.operator("behold.load_ies_sample", text="Sample")
+        row.operator("behold.clear_ies", text="Clear", icon="X")
+        if settings.light_ies_filepath:
+            row = ies.row(align=True)
+            row.prop(settings, "light_ies_strength", text="Strength")
+            row.prop(settings, "light_ies_scale", text="Scale")
         linking = layout.box()
         linking.label(text="Linking", icon="LINKED")
         linking.prop(settings, "light_linking_kind", text="", expand=True)
@@ -528,7 +542,7 @@ def draw_materials_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
-    """Light Draw hotkeys + Apply Gobo (parked — gobo lives on Lights)."""
+    """Light Draw hotkeys + Apply Gobo / IES (parked — both live on Lights)."""
     settings = context.scene.behold
     col = layout.column(align=True)
     col.label(text="While drawing:")
@@ -546,6 +560,13 @@ def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
     col.prop(settings, "light_gobo_scale")
     col.prop(settings, "light_gobo_strength")
     col.operator("behold.apply_gobo", icon="TEXTURE")
+    col.separator()
+    col.label(text="IES")
+    col.prop(settings, "light_ies_filepath", text="")
+    col.prop(settings, "light_ies_strength")
+    col.prop(settings, "light_ies_scale")
+    col.operator("behold.apply_ies", icon="LIGHT_SPOT")
+    col.operator("behold.clear_ies", text="Clear IES")
 
 
 def draw_shoot_parked(layout: UILayout, context: Context) -> None:

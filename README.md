@@ -6,7 +6,7 @@
 
 **BEHOLD by AMIRITE.studio** — the best product-render suite for Blender. KeyShot-simple lighting, cameras, and stills, as open source.
 
-**v1.1.0 — Procedural gobo / flag lite.** Window blinds, a soft window, or a circle cookie on the active BEHOLD light — nodes on the light, not a streamed texture library. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
+**v1.2.0 — IES practical lite.** Put a real photometric `.ies` on the active BEHOLD light (spot / point; area becomes a spot while IES is on). Bring your own file, plus one tiny CC0 sample. **v1.1.0** is procedural gobo lite. **v1.0.0 is First stable.** The current logo is a **placeholder** (official mark in the UI still ships).
 
 Official mark (Blender UI): [`behold/icons/behold_icon.png`](behold/icons/behold_icon.png) · Wordmark: [`docs/brand/behold_logo.png`](docs/brand/behold_logo.png) · also [`behold/icons/behold_logo.png`](behold/icons/behold_logo.png)
 
@@ -34,7 +34,7 @@ N-panel order: **Import → Studio → Lights → Materials → Cameras → Shoo
 | --- | --- |
 | **Import** | **Import Product** file picker + CAD line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**) |
 | **Studio** | White / Grey / Black + **Build** + **Catcher**, compact **HDRI**, compact **Bake HDRI** |
-| **Lights** | Inventory + Light Draw + **Shape** + **Gobo** (None / Blinds / Window / Circle) + **Linking** |
+| **Lights** | Inventory + Light Draw + **Shape** + **Gobo** + **IES** (Load / Sample / Clear) + **Linking** |
 | **Materials** | Metal / Plastic / Rubber / Glass / Paint + **Assist** (no BlenderKit account) |
 | **Cameras** | Add / frame product cameras + **DoF** |
 | **Shoot** | Draft / Final, Still, **Size**, **Look**, **Shots**, **Batch export**, **Turntable** |
@@ -64,7 +64,8 @@ Select the product → **Build**. The cyclorama auto-fits the world AABB (floor 
 Add / remove / set active BEHOLD area lights. Per-light energy. Build Studio seeds Key / Fill / Rim.
 
 - **Shape** — Softbox, Strip, Octa, Hard, Rim on the active light (size / spread / procedural falloff). **Apply to active**.
-- **Gobo (1.1.0)** — **None / Blinds / Window / Circle** on the active BEHOLD **area or spot** light. Procedural nodes on the light (Wave bands / Brick panes / circular cookie). **Scale** and **Strength** when a pattern is on. **None** tears the graph down and restores the Shape falloff. Live RNA update; **Apply Gobo** stays in Advanced. Missing lights or a point/sun reports a sentence plus the next step. Empty Lights state unchanged. Not a Light Wrangler streamed gobo / IES library.
+- **Gobo (1.1.0)** — **None / Blinds / Window / Circle** on the active BEHOLD **area or spot** light. Procedural nodes on the light (Wave bands / Brick panes / circular cookie). **Scale** and **Strength** when a pattern is on. **None** tears the graph down and restores the Shape falloff. Live RNA update; **Apply Gobo** stays in Advanced. Missing lights or a point/sun reports a sentence plus the next step. Empty Lights state unchanged.
+- **IES (1.2.0)** — **Load** / **Sample** / **Clear** a photometric `.ies` on the active BEHOLD light. Cycles IES works on **spot and point**; area lights become spots while the profile is on. **Strength** and **Scale** when a file is set. **Clear** restores the prior type plus Shape / Gobo. Missing file or a sun reports a sentence plus the next step. One bundled CC0 `sample_spot.ies` — **bring your own `.ies`** for a real fixture. Not a streamed manufacturer catalog. **Apply IES** stays in Advanced.
 - **Linking** — **Link Selected** cycles include → exclude (Cycles **light linking**). **Unlink** drops the selection, or clears the light if nothing is selected. **Solo product** includes only the product (cyclorama stays unlit). **Light / Shadow** picks receiver vs blocker collection when the 5.2 API is present.
 - **Light Draw** — Aim: Active | New. Reflect / Direct / Orbit (LMB aim, scroll power/size/distance, solo).
 
@@ -96,15 +97,15 @@ One-click **Metal / Plastic / Rubber / Glass / Paint** on the selected product m
 
 ### Advanced
 
-Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / search / apply, Light Draw hotkeys, tokens / bookmark, turntable bake / ease / render, Apply Catcher / DoF / Quality / Size / Exposure / Look / Gobo. Operators stay registered.
+Collapsed closed. Mixer, **Studio Margin**, CAD extras, BlenderKit login / search / apply, Light Draw hotkeys, tokens / bookmark, turntable bake / ease / render, Apply Catcher / DoF / Quality / Size / Exposure / Look / Gobo / IES. Operators stay registered.
 
 ### Utilities (opt-in, not a product release)
 
 Off by default. Enable **Utilities panel** in add-on preferences to show a separate **Utilities** section (after Advanced) for a layered Danish wall and Legs / L-bracket balcony mounts. Does not change Import → Studio → Lights → Materials → Cameras → Shoot. See **[docs/UTILITIES.md](docs/UTILITIES.md)**.
 
-## Coming (not 1.1)
+## Coming (not 1.2)
 
-IES libraries, logo redo, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
+Streamed IES / gobo catalogs, logo redo, Light Wrangler viewport-gizmo parity, live tessellation regenerate, defeaturing, per-body auto-dress, full BlenderKit browser. IES practical lite shipped in **1.2.0**. Procedural gobos shipped in **1.1.0**. See **[ROADMAP.md](ROADMAP.md)** and [CHECKPOINT.md](CHECKPOINT.md).
 
 ## STEPper NEXT
 
@@ -145,21 +146,21 @@ If the release has no `behold-*.zip` asset, **Open release** and install the zip
 
 ## Install (Blender 5.2 LTS+)
 
-1. Get `behold-1.1.0.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`).
+1. Get `behold-1.2.0.zip` (GitHub Release, Actions artifact `behold-addon`, or `make zip`).
 2. Blender → Edit → Preferences → Add-ons → Install… → select the zip  
    (or Get Extensions → Install from Disk).
 3. Enable **BEHOLD**, then open the 3D Viewport sidebar (`N`) → **BEHOLD** tab.
 
 The zip also loads on **4.2+** when you need it; 5.2 LTS is the production target.
 
-**Versioned release** — push a tag `v1.1.0`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
+**Versioned release** — push a tag `v1.2.0`. The [Build Blender add-on zip](https://github.com/wckdboy/BEHOLD/actions) workflow attaches the zip to the [GitHub Release](https://github.com/wckdboy/BEHOLD/releases). Every push / PR also uploads the `behold-addon` artifact.
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.2.0
+git push origin v1.2.0
 
 make zip
-# → dist/behold-1.1.0.zip
+# → dist/behold-1.2.0.zip
 ```
 
 Alternate (dev): copy or symlink `behold/` into your Blender `scripts/addons/` directory.

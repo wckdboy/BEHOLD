@@ -43,6 +43,12 @@ from .studio.gobos import DEFAULT_STRENGTH as LIGHT_GOBO_STRENGTH_DEFAULT
 from .studio.gobos import MAX_SCALE as LIGHT_GOBO_SCALE_MAX
 from .studio.gobos import MIN_SCALE as LIGHT_GOBO_SCALE_MIN
 from .studio.gobos import preset_enum_items as light_gobo_enum_items
+from .studio.ies import DEFAULT_SCALE as LIGHT_IES_SCALE_DEFAULT
+from .studio.ies import DEFAULT_STRENGTH as LIGHT_IES_STRENGTH_DEFAULT
+from .studio.ies import MAX_SCALE as LIGHT_IES_SCALE_MAX
+from .studio.ies import MAX_STRENGTH as LIGHT_IES_STRENGTH_MAX
+from .studio.ies import MIN_SCALE as LIGHT_IES_SCALE_MIN
+from .studio.ies_apply import on_ies_filepath_update, on_ies_values_update
 from .studio.light_presets import DEFAULT_PRESET as LIGHT_SHAPE_DEFAULT
 from .studio.light_presets import preset_enum_items as light_shape_enum_items
 from .studio.world_apply import on_hdri_filepath_update, on_hdri_values_update
@@ -409,6 +415,37 @@ class BEHOLDSceneSettings(PropertyGroup):
         max=1.0,
         subtype="FACTOR",
         update=on_gobo_update,
+    )
+    light_ies_filepath: StringProperty(
+        name="IES",
+        description="Photometric .ies profile on the active BEHOLD spot / point light",
+        default="",
+        subtype="FILE_PATH",
+        maxlen=1024,
+        update=on_ies_filepath_update,
+    )
+    light_ies_strength: FloatProperty(
+        name="IES Strength",
+        description="IES intensity multiplier on the active light (Cycles IES Strength)",
+        default=LIGHT_IES_STRENGTH_DEFAULT,
+        min=0.0,
+        max=LIGHT_IES_STRENGTH_MAX,
+        soft_max=4.0,
+        step=10,
+        precision=2,
+        update=on_ies_values_update,
+    )
+    light_ies_scale: FloatProperty(
+        name="IES Scale",
+        description="Zoom the IES distribution on the active light",
+        default=LIGHT_IES_SCALE_DEFAULT,
+        min=LIGHT_IES_SCALE_MIN,
+        max=LIGHT_IES_SCALE_MAX,
+        soft_min=0.25,
+        soft_max=4.0,
+        step=10,
+        precision=2,
+        update=on_ies_values_update,
     )
     light_linking_kind: EnumProperty(
         name="Linking",

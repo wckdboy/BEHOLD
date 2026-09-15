@@ -5,8 +5,8 @@ workflows**. Artists use these to show how a balcony sits in a Danish apartment
 wall — not as structural engineering, and **not** as part of the default
 product-render path.
 
-This track is **not a product release**. Addon version stays at the current
-`main` (v1.1.0). Do not treat Utilities as v1.2.0.
+This track is **not a product release**. Addon version is independent of this
+track (currently v1.2.0). Do not treat Utilities as a product milestone.
 
 ## Enable
 

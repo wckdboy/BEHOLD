@@ -2,14 +2,19 @@
 
 BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
 **v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. **v1.1.0**
-is procedural gobo lite (not an IES / streamed texture library). Each later
-cut still closes one gap product artists actually hit, then we ship a GitHub
-Release. See [CHECKPOINT.md](CHECKPOINT.md) for living status.
+is procedural gobo lite. **v1.2.0** is IES practical lite (BYO `.ies`, not a
+streamed catalog). Each later cut still closes one gap product artists
+actually hit, then we ship a GitHub Release. See [CHECKPOINT.md](CHECKPOINT.md)
+for living status.
 
 ## Implemented
 
-The 1.1.0 zip is this path. Nothing below is “coming” anymore.
+The 1.2.0 zip is this path. Nothing below is “coming” anymore.
 
+- **1.2.0 IES practical lite** — Load / Sample / Clear a photometric `.ies` on
+  the active BEHOLD spot or point (area lights become spots while IES is on).
+  Strength / scale. Clear restores prior type / Shape / Gobo. One CC0 sample;
+  bring your own `.ies` for a real fixture. Not a manufacturer catalog.
 - **1.1.0 Procedural gobo / flag lite** — None / Blinds / Window / Circle on
   the active BEHOLD area or spot light (Wave bands / Brick panes / circular
   cookie, plus scale / strength). None tears the graph down. Not an IES
@@ -71,23 +76,23 @@ The 1.1.0 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.1.0. None of this is in the 1.1 zip.
+Honest order after 1.2.0. None of this is in the 1.2 zip.
 
 Feature-flagged **Utilities** (Danish wall + balcony mounts, default off) is a
 side track, not a product release — [docs/UTILITIES.md](docs/UTILITIES.md).
 
-1. **IES libraries** — photometric profiles / practicals. A library story is
-   easy to ship as a junk drawer; gobos lite already landed in 1.1.0.
-2. **Logo redo** — replace the placeholder wordmark. Official mark in the
+1. **Logo redo** — replace the placeholder wordmark. Official mark in the
    N-panel can stay until the new art is ready.
-3. **Live tessellation regenerate** — OCP / STEPper deflection without
+2. **Live tessellation regenerate** — OCP / STEPper deflection without
    re-picking the CAD file.
-4. **Defeaturing** — fillet / chamfer / hole suppress before tessellate.
-5. **Per-body auto-dress** — each STEP color/name → its own look (Assist still
+3. **Defeaturing** — fillet / chamfer / hole suppress before tessellate.
+4. **Per-body auto-dress** — each STEP color/name → its own look (Assist still
    applies one look to the selection in 1.0).
 
 ## Explicitly later / maybe never
 
+- Streamed IES / gobo texture catalogs (1.2.0 is BYO + one sample; 1.1.0 is
+  three procedural gobos).
 - Full Light Wrangler viewport HDRI gizmo parity (rotate in the 3D View with a
   custom manipulator). Studio Z-rotation is the 0.13.0 cut.
 - In-panel BlenderKit browser.
