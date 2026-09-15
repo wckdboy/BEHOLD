@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-v1.2.0 adds IES practical lite on Lights. v1.1.0 adds procedural gobo lite
+v1.3.0 adds live tessellation regenerate on Import. v1.2.0 adds IES practical
+lite on Lights. v1.1.0 adds procedural gobo lite
 on Lights. v1.0.0 is first stable. Studio
 chrome (v0.9.0) + workflow order (v0.12.0): branded hero + Import →
 Studio → Dress → Shoot strip on the main panel; physical child order is
@@ -10,7 +11,8 @@ is last. Easy update (v0.10.0): a dismissible GitHub notice on the main
 panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
 Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
-backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
+backend line (v0.7.0) and a compact tessellation card (v1.3.0: quality /
+deflection + Regenerate on the last CAD source). Lights is the v0.4.0 lighting section plus v0.16.0
 shape presets (Apply to active), v1.1.0 gobo (None / Blinds / Window /
 Circle + scale / strength), v1.2.0 IES (Load / Sample / Clear + strength /
 scale on the active spot or point; area lights become spots while IES is
@@ -50,6 +52,7 @@ import bpy
 from bpy.types import Context, Panel, UILayout
 
 from ..cad import detect as cad_detect
+from ..cad.regenerate import cached_label
 from ..cad.stepper_api import import_panel_copy
 from ..materials import blenderkit_bridge, local_rack
 from ..materials.presets import EMPTY_NO_MESH, empty_state
@@ -118,11 +121,23 @@ def draw_cad_status_line(layout: UILayout, cad: dict) -> None:
 
 
 def draw_import_first_ship(layout: UILayout, context: Context) -> None:
-    """Import Product picker plus CAD backend status."""
-    del context
+    """Import Product picker plus CAD backend status and tessellation."""
     card = layout.box()
     card.operator("behold.import_product", icon="IMPORT")
     draw_cad_status_line(layout, cad_detect.cad_status_for_draw())
+    draw_import_tessellation(layout, context)
+
+
+def draw_import_tessellation(layout: UILayout, context: Context) -> None:
+    """Retessellate the last CAD import without re-picking the file."""
+    settings = context.scene.behold
+    card = layout.box()
+    card.label(text="Tessellation", icon="MOD_TRIANGULATE")
+    card.label(text=cached_label(settings.cad_source_filepath))
+    card.prop(settings, "cad_quality", text="Quality", expand=True)
+    if settings.cad_quality == "CUSTOM":
+        card.prop(settings, "cad_deflection", text="Deflection")
+    card.operator("behold.regenerate_cad", icon="FILE_REFRESH")
 
 
 def draw_studio_first_ship(layout: UILayout, context: Context) -> None:
@@ -481,6 +496,12 @@ def draw_import_parked(layout: UILayout, context: Context) -> None:
         box.label(text="Mesh formats never need STEPper")
     if cad["can_import"]:
         box.operator("behold.import_step", text="Import STEP / IGES…", icon="FILE_3D")
+
+    tess = layout.box()
+    tess.label(text="Tessellation", icon="MOD_TRIANGULATE")
+    tess.prop(settings, "cad_quality", text="Quality")
+    tess.prop(settings, "cad_deflection", text="Deflection")
+    tess.operator("behold.regenerate_cad", text="Apply tessellation", icon="FILE_REFRESH")
 
 
 def draw_studio_parked(layout: UILayout, context: Context) -> None:

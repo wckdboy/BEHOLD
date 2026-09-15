@@ -10,6 +10,14 @@ from __future__ import annotations
 
 import os
 
+from ..cad.regenerate import (
+    NO_CAD_SOURCE,
+    REGENERATE_EMPTY,
+    REGENERATE_FAILED,
+    UNKNOWN_CAD_QUALITY,
+    cad_source_problem_message,
+    unknown_quality_message as unknown_cad_quality_message,
+)
 from ..materials.presets import EMPTY_NO_MESH, EMPTY_NO_MESH_HINT
 from ..shoot.exposure import (
     EXPOSURE_APPLIED,
@@ -242,6 +250,8 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_GOBO_TYPE,
         NO_IES_FILE,
         NO_IES_TYPE,
+        NO_CAD_SOURCE,
+        UNKNOWN_CAD_QUALITY,
     }
 )
 
@@ -272,6 +282,9 @@ def report_type(message: str) -> str:
             "Unsupported bake format:",
             "IES file not found:",
             "Unsupported IES:",
+            "CAD file not found:",
+            "Cached source is not CAD",
+            "Unknown tessellation quality",
             "Shot name “",
             "Shot camera “",
             "Batch export ",
