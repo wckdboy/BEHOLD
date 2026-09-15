@@ -1,14 +1,19 @@
 # ROADMAP
 
 BEHOLD is not a KeyShot clone and not Light Wrangler parity theater.
-**v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. Each later
+**v1.0.0 is first stable** — the suite 0.4.0–0.25.0 already ships. **v1.1.0**
+is procedural gobo lite (not an IES / streamed texture library). Each later
 cut still closes one gap product artists actually hit, then we ship a GitHub
 Release. See [CHECKPOINT.md](CHECKPOINT.md) for living status.
 
 ## Implemented
 
-The 1.0.0 zip is this path. Nothing below is “coming” anymore.
+The 1.1.0 zip is this path. Nothing below is “coming” anymore.
 
+- **1.1.0 Procedural gobo / flag lite** — None / Blinds / Window / Circle on
+  the active BEHOLD area or spot light (Wave bands / Brick panes / circular
+  cookie, plus scale / strength). None tears the graph down. Not an IES
+  library, logo redo, or Light Wrangler streamed catalog.
 - **1.0.0 First stable** — artist README, version 1.0.0 everywhere, honest
   Implemented vs Coming. No new operators. Logo stays a placeholder.
 - **0.25.0 Catalog resolution presets** — Square 1:1, Portrait 4:5, Landscape 16:9
@@ -66,10 +71,10 @@ The 1.0.0 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.0.0. None of this is in the 1.0 zip.
+Honest order after 1.1.0. None of this is in the 1.1 zip.
 
-1. **Gobos / IES libraries** — window lights, practicals, photometric profiles.
-   Last because they need a library story and are easy to ship as a junk drawer.
+1. **IES libraries** — photometric profiles / practicals. A library story is
+   easy to ship as a junk drawer; gobos lite already landed in 1.1.0.
 2. **Logo redo** — replace the placeholder wordmark. Official mark in the
    N-panel can stay until the new art is ready.
 3. **Live tessellation regenerate** — OCP / STEPper deflection without

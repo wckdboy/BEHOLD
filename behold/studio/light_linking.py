@@ -4,8 +4,8 @@
 No Blender import. Light Wrangler uses L / Shift+L in a modal (add →
 exclude → remove). This cut is selection + three Lights buttons: Link
 Selected (same cycle), Unlink, Solo product. Shadow linking uses the
-stable 5.2 ``blocker_collection`` API when present. Gobos / IES are out
-of scope.
+stable 5.2 ``blocker_collection`` API when present. Procedural gobos are
+1.1.0; IES libraries stay out of scope.
 """
 
 from __future__ import annotations

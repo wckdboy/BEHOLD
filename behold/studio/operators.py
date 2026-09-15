@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape presets, linking."""
+"""Studio operators: build, light mixer, multi-light CRUD, HDRI world, bake, shape, gobo, linking."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ from bpy_extras.io_utils import ImportHelper
 
 from . import bake_apply
 from . import catcher_apply
+from . import gobo_apply
+from . import gobos as gobos_lib
 from . import light_linking
 from . import light_linking_apply
 from . import light_presets
@@ -136,6 +138,28 @@ class BEHOLD_OT_apply_light_preset(Operator):
             self.report(report_set(message), message)
             return {"CANCELLED"}
         context.scene.behold.light_shape_preset = preset.id
+        gobo_id = str(getattr(context.scene.behold, "light_gobo_preset", "") or "")
+        if gobo_id and gobo_id != gobos_lib.DEFAULT_PRESET:
+            gobo_apply.apply_gobo_in_scene(context)
+        self.report({"INFO"}, result["message"])
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_gobo(Operator):
+    bl_idname = "behold.apply_gobo"
+    bl_label = "Apply Gobo"
+    bl_description = (
+        "Apply a procedural gobo (blinds / window / circle) to the active "
+        "BEHOLD area or spot light. None tears the graph down"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = gobo_apply.apply_gobo_in_scene(context)
+        if not result["ok"]:
+            message = result["message"]
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
         self.report({"INFO"}, result["message"])
         return {"FINISHED"}
 
@@ -316,6 +340,7 @@ CLASSES = (
     BEHOLD_OT_remove_light,
     BEHOLD_OT_set_active_light,
     BEHOLD_OT_apply_light_preset,
+    BEHOLD_OT_apply_gobo,
     BEHOLD_OT_link_selected,
     BEHOLD_OT_exclude_selected,
     BEHOLD_OT_unlink_selected,

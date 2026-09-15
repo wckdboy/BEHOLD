@@ -57,6 +57,13 @@ from ..shoot.resolution import (
     unknown_aspect_message,
     unknown_size_message,
 )
+from ..studio.gobos import (
+    GOBO_CLEARED,
+    GOBO_NODES_FAILED,
+    NO_GOBO_TYPE,
+    UNKNOWN_GOBO,
+    unknown_gobo_message,
+)
 from ..studio.light_linking import (
     LINKING_FAILED,
     NO_LINKING_API,
@@ -222,6 +229,7 @@ EMPTY_STATE_MESSAGES = frozenset(
         NO_STUDIO,
         NO_PRODUCT_FOR_CATCHER,
         UNKNOWN_BACKDROP,
+        NO_GOBO_TYPE,
     }
 )
 
@@ -282,6 +290,10 @@ def unknown_light_preset_message(preset_id: str) -> str:
         f"Unknown light shape “{shown}” — "
         "pick Softbox, Strip, Octa, Hard, or Rim"
     )
+
+
+def unknown_gobo_preset_message(preset_id: str) -> str:
+    return unknown_gobo_message(preset_id)
 
 
 def unknown_look_preset_message(preset_id: str) -> str:

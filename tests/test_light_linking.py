@@ -330,8 +330,9 @@ class WiringTests(unittest.TestCase):
         link_idx = body.index("behold.link_selected")
         self.assertLess(empty_idx, link_idx)
         self.assertLess(body.index("light_shape_preset"), link_idx)
+        self.assertLess(body.index("light_gobo_preset"), link_idx)
+        self.assertGreater(body.index("light_gobo_preset"), body.index("light_shape_preset"))
         self.assertNotIn("BEHOLD_PT_light_linking", source)
-        self.assertNotIn("gobo", body.lower())
         self.assertNotIn("IES", body)
 
 

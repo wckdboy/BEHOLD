@@ -4,7 +4,8 @@
 Maps Softbox / Strip / Octa / Hard / Rim onto Cycles area-light RNA that
 exists on 4.2+ and 5.2 LTS: ``shape``, ``size``, ``size_y``, ``energy``,
 ``spread`` (radians). Optional emission falloff is a tiny node graph, not
-a bundled image, so the zip stays small. Gobos / IES are out of scope.
+a bundled image, so the zip stays small. Procedural gobos are 1.1.0; IES
+is still out of scope.
 """
 
 from __future__ import annotations

@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """BEHOLD N-panel UI.
 
-v1.0.0 is first stable — same panel order, no new operators. Studio chrome
-(v0.9.0) + workflow order (v0.12.0): branded hero + Import →
+v1.1.0 adds procedural gobo lite on Lights. v1.0.0 is first stable. Studio
+chrome (v0.9.0) + workflow order (v0.12.0): branded hero + Import →
 Studio → Dress → Shoot strip on the main panel; physical child order is
 Import → Studio → Lights → Materials → Cameras → Shoot → Advanced so Shoot
 is last. Easy update (v0.10.0): a dismissible GitHub notice on the main
@@ -10,7 +10,8 @@ panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
 Section header icons; box cards and one-CTA empty states. First-ship
 Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
 backend line (v0.7.0). Lights is the v0.4.0 lighting section plus v0.16.0
-shape presets (Apply to active) and v0.21.0 light / shadow linking lite
+shape presets (Apply to active), v1.1.0 gobo (None / Blinds / Window /
+Circle + scale / strength), and v0.21.0 light / shadow linking lite
 (Link Selected / Unlink / Solo product). Cameras is the v0.5.0 product-camera
 kit plus v0.22.0 product DoF (on/off, f-stop, Focus on product / Focus on
 selected). Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
@@ -288,7 +289,7 @@ def draw_turntable_compact(layout: UILayout, context: Context) -> None:
 
 
 def draw_lights_section(layout: UILayout, context: Context) -> None:
-    """Multi-light inventory + shape presets + linking lite + Light Draw."""
+    """Multi-light inventory + shape + gobo + linking lite + Light Draw."""
     settings = context.scene.behold
     lights = light_lib.iter_behold_lights(context)
 
@@ -322,6 +323,13 @@ def draw_lights_section(layout: UILayout, context: Context) -> None:
             icon="CHECKMARK",
         )
         apply.preset = settings.light_shape_preset
+        gobo = layout.box()
+        gobo.label(text="Gobo", icon="TEXTURE")
+        gobo.prop(settings, "light_gobo_preset", text="", expand=True)
+        if settings.light_gobo_preset != "NONE":
+            row = gobo.row(align=True)
+            row.prop(settings, "light_gobo_scale", text="Scale")
+            row.prop(settings, "light_gobo_strength", text="Strength")
         linking = layout.box()
         linking.label(text="Linking", icon="LINKED")
         linking.prop(settings, "light_linking_kind", text="", expand=True)
@@ -520,8 +528,8 @@ def draw_materials_parked(layout: UILayout, context: Context) -> None:
 
 
 def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
-    """Light Draw hotkeys (parked — controls live on Lights)."""
-    del context
+    """Light Draw hotkeys + Apply Gobo (parked — gobo lives on Lights)."""
+    settings = context.scene.behold
     col = layout.column(align=True)
     col.label(text="While drawing:")
     col.label(text="LMB drag — aim")
@@ -532,6 +540,12 @@ def draw_light_draw_parked(layout: UILayout, context: Context) -> None:
     col.label(text="S — solo · F — false color · Esc — exit")
     col.separator()
     col.label(text="Open Light Draw from the pie (Shift+Alt+B) or Lights")
+    col.separator()
+    col.label(text="Gobo")
+    col.prop(settings, "light_gobo_preset", text="", expand=True)
+    col.prop(settings, "light_gobo_scale")
+    col.prop(settings, "light_gobo_strength")
+    col.operator("behold.apply_gobo", icon="TEXTURE")
 
 
 def draw_shoot_parked(layout: UILayout, context: Context) -> None:
