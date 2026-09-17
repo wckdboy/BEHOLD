@@ -232,13 +232,14 @@ class CatcherWiringTests(unittest.TestCase):
         ops = _read("behold_studio/operators.py")
         props = _read("behold_studio/properties.py")
         ids = _read("behold_common/camera_ids.py")
-        presets = _read("behold_product/materials/presets.py")
+        dressable = _read("behold_common/ids.py")
         self.assertIn('bl_idname = "behold.apply_catcher"', ops)
         self.assertIn("catcher_apply.apply_ground_contact", ops)
         self.assertIn("include_shadow_catcher", props)
         self.assertIn("on_catcher_update", props)
         self.assertIn("_ContactShadow", ids)
-        self.assertIn("BEHOLD_ContactShadow", presets)
+        self.assertIn("is_studio_mesh_name", dressable)
+        self.assertIn("def is_dressable_mesh_name", dressable)
 
     def test_studio_toggle_stays_on_build_row(self) -> None:
         source = _read("behold_studio/ui/panels.py")

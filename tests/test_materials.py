@@ -5,10 +5,12 @@ from __future__ import annotations
 
 import unittest
 
-from tests.support import ROOT, load_module
+from tests.support import ROOT, load_addon_module, load_module
 
 hints = load_module("behold_product/cad/hints.py", "behold_hints")
-presets = load_module("behold_product/materials/presets.py", "behold_presets")
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
 
 
 def _read(relpath: str) -> str:

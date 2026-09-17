@@ -38,7 +38,7 @@ def apply_gobo_in_scene(context: Context) -> dict[str, Any]:
     light = light_lib.get_active_behold_light(context)
     if light is None:
         return _result(False, NO_LIGHTS)
-    settings = getattr(context.scene, "behold", None)
+    settings = getattr(context.scene, "behold_lighting", None)
     preset_id = spec.DEFAULT_PRESET
     scale = spec.DEFAULT_SCALE
     strength = spec.DEFAULT_STRENGTH

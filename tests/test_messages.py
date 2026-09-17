@@ -9,7 +9,9 @@ from tests.support import ROOT, load_addon_module, load_module
 
 messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
-presets = load_module("behold_product/materials/presets.py", "behold_presets_messages")
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
 turntable = load_module("behold_product/shoot/turntable.py", "behold_turntable_messages")
 invoke = load_module("behold_product/product_import/invoke.py", "behold_mesh_invoke_messages")
 
@@ -156,8 +158,18 @@ class MessageConstantTests(unittest.TestCase):
 class OperatorWiringTests(unittest.TestCase):
     def test_primary_operators_import_shared_copy(self) -> None:
         studio = _read("behold_studio/operators.py")
-        lighting = _read("behold_lighting/operators.py")
+        lighting = "".join(
+            _read(f"behold_lighting/{name}")
+            for name in (
+                "operators.py",
+                "shape_ops.py",
+                "gobo_ops.py",
+                "ies_ops.py",
+                "linking_ops.py",
+            )
+        )
         shoot = _read("behold_product/shoot/operators.py")
+        cameras = _read("behold_product/cameras_ops.py")
         lights = _read("behold_lighting/light_draw/operators.py")
         materials = _read("behold_product/materials/local_rack.py")
         product = _read("behold_product/product_import/operators.py")
@@ -182,7 +194,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("BUILD_NEEDS_MESH = EMPTY_NO_MESH", setup)
         self.assertIn("report_set", studio)
         self.assertIn("NO_CAMERA", shoot)
-        self.assertIn("FRAME_NO_PRODUCT", shoot)
+        self.assertIn("FRAME_NO_PRODUCT", cameras)
         self.assertIn("TURNTABLE_NO_SETUP", shoot)
         self.assertIn("behold.add_shot", shoot)
         self.assertIn("behold.apply_shot", shoot)
@@ -190,9 +202,9 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.apply_look", shoot)
         self.assertIn("behold.batch_angles", shoot)
         self.assertIn("run_batch_export", shoot)
-        self.assertIn("behold.apply_camera_dof", shoot)
-        self.assertIn("behold.focus_product", shoot)
-        self.assertIn("behold.focus_selected", shoot)
+        self.assertIn("behold.apply_camera_dof", cameras)
+        self.assertIn("behold.focus_product", cameras)
+        self.assertIn("behold.focus_selected", cameras)
         self.assertIn("behold.apply_quality", shoot)
         self.assertIn("quality_apply", shoot)
         self.assertIn("behold.apply_resolution", shoot)

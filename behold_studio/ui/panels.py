@@ -6,12 +6,13 @@ from __future__ import annotations
 import bpy
 from bpy.types import Context, Panel, UILayout
 
-from ..common.chrome import draw_empty_card, draw_parked_heading, draw_section_icon
+from ..common.chrome import draw_parked_heading, draw_section_icon
 from ..common.deps import IMPORT_PRODUCT_OP, operator_exists
 from ..common.messages import NO_MESH_SELECTED
-from .flow_ids import SECTION_ICONS
 
-# Re-exported draw helpers used by tests that read this module.
+SECTION_ICONS = {
+    "studio": "OUTLINER_OB_LIGHT",
+}
 
 
 def _settings(context: Context):

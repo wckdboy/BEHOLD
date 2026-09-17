@@ -1,20 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Lighting operators: inventory, shape, gobo, IES, linking, mixer, seed."""
+"""Lighting inventory operators: seed, mixer, add / remove / set active."""
 
 from __future__ import annotations
 
 import bpy
-from bpy.props import EnumProperty, StringProperty
+from bpy.props import StringProperty
 from bpy.types import Context, Operator
-from bpy_extras.io_utils import ImportHelper
 
-from . import gobo_apply
-from . import ies as ies_lib
-from . import ies_apply
-from . import light_linking
-from . import light_linking_apply
-from . import light_presets
-from . import light_shape
 from . import lights as light_lib
 from . import setup_lights
 from .common.messages import (
@@ -22,7 +14,6 @@ from .common.messages import (
     NO_LIGHTS,
     light_not_found,
     report_set,
-    unknown_light_preset_message,
 )
 
 
@@ -104,247 +95,12 @@ class BEHOLD_OT_set_active_light(Operator):
         return {"FINISHED"}
 
 
-class BEHOLD_OT_apply_light_preset(Operator):
-    bl_idname = "behold.apply_light_preset"
-    bl_label = "Apply Light Shape"
-    bl_description = (
-        "Apply a softbox / area look to the active BEHOLD light "
-        "(adds a light if the studio has none)"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    preset: EnumProperty(
-        name="Shape",
-        items=light_presets.preset_enum_items(),
-        default=light_presets.DEFAULT_PRESET,
-    )
-
-    def execute(self, context: Context):
-        preset = light_presets.get_preset(self.preset)
-        if preset is None:
-            message = unknown_light_preset_message(self.preset)
-            self.report(report_set(message), message)
-            return {"CANCELLED"}
-        result = light_shape.apply_preset_in_scene(context, preset.id)
-        if not result["ok"]:
-            message = NO_LIGHTS if result["message"] == "NO_LIGHTS" else result["message"]
-            self.report(report_set(message), message)
-            return {"CANCELLED"}
-        context.scene.behold_lighting.light_shape_preset = preset.id
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_apply_gobo(Operator):
-    bl_idname = "behold.apply_gobo"
-    bl_label = "Apply Gobo"
-    bl_description = (
-        "Apply a procedural gobo (blinds / window / circle) to the active "
-        "BEHOLD area or spot light. None tears the graph down"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    def execute(self, context: Context):
-        result = gobo_apply.apply_gobo_in_scene(context)
-        if not result["ok"]:
-            message = result["message"]
-            self.report(report_set(message), message)
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_load_ies(Operator, ImportHelper):
-    bl_idname = "behold.load_ies"
-    bl_label = "Load IES"
-    bl_description = (
-        "Load a photometric .ies profile onto the active BEHOLD spot or point "
-        "light (area lights become spots while IES is on)"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    filename_ext = ".ies"
-    filter_glob: StringProperty(
-        default=ies_lib.IES_FILTER_GLOB,
-        options={"HIDDEN"},
-    )
-
-    def execute(self, context: Context):
-        settings = context.scene.behold_lighting
-        settings.light_ies_filepath = self.filepath
-        result = ies_apply.apply_ies_in_scene(context)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_load_ies_sample(Operator):
-    bl_idname = "behold.load_ies_sample"
-    bl_label = "Sample IES"
-    bl_description = (
-        "Load the bundled CC0 sample spot IES onto the active BEHOLD light. "
-        "Bring your own .ies for a real fixture"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    def execute(self, context: Context):
-        path = ies_lib.bundled_sample_path()
-        settings = context.scene.behold_lighting
-        settings.light_ies_filepath = path
-        result = ies_apply.apply_ies_in_scene(context)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_clear_ies(Operator):
-    bl_idname = "behold.clear_ies"
-    bl_label = "Clear IES"
-    bl_description = (
-        "Remove the IES profile and restore the light's prior type, Shape, and Gobo"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    def execute(self, context: Context):
-        result = ies_apply.teardown_ies_in_scene(context)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_apply_ies(Operator):
-    bl_idname = "behold.apply_ies"
-    bl_label = "Apply IES"
-    bl_description = (
-        "Apply the IES path / strength / scale on the active BEHOLD light. "
-        "Clear tears the graph down"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    def execute(self, context: Context):
-        result = ies_apply.apply_ies_in_scene(context)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_link_selected(Operator):
-    bl_idname = "behold.link_selected"
-    bl_label = "Link Selected"
-    bl_description = (
-        "Cycle include / exclude on selected objects for the active BEHOLD light "
-        "(Cycles light linking). Same idea as Light Wrangler L, against the selection"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    kind: EnumProperty(
-        name="Kind",
-        description="Light linking (receivers) or shadow linking (blockers)",
-        items=light_linking.kind_enum_items(),
-        default=light_linking.DEFAULT_KIND,
-    )
-
-    def execute(self, context: Context):
-        result = light_linking_apply.link_selected(context, kind=self.kind)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_exclude_selected(Operator):
-    bl_idname = "behold.exclude_selected"
-    bl_label = "Exclude Selected"
-    bl_description = (
-        "Exclude selected objects from the active BEHOLD light "
-        "(Cycles light linking / shadow linking)"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    kind: EnumProperty(
-        name="Kind",
-        description="Light linking (receivers) or shadow linking (blockers)",
-        items=light_linking.kind_enum_items(),
-        default=light_linking.DEFAULT_KIND,
-    )
-
-    def execute(self, context: Context):
-        result = light_linking_apply.exclude_selected(context, kind=self.kind)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_unlink_selected(Operator):
-    bl_idname = "behold.unlink_selected"
-    bl_label = "Unlink"
-    bl_description = (
-        "Remove selected objects from the active BEHOLD light's linking collection. "
-        "With nothing selected, clear linking on that light"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    kind: EnumProperty(
-        name="Kind",
-        description="Light linking (receivers) or shadow linking (blockers)",
-        items=light_linking.kind_enum_items(),
-        default=light_linking.DEFAULT_KIND,
-    )
-
-    def execute(self, context: Context):
-        result = light_linking_apply.unlink_selected(context, kind=self.kind)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
-class BEHOLD_OT_solo_product_link(Operator):
-    bl_idname = "behold.solo_product_link"
-    bl_label = "Solo product"
-    bl_description = (
-        "Only the product receives this light (and casts its shadows when "
-        "shadow linking is available). Cyclorama stays unlit"
-    )
-    bl_options = {"REGISTER", "UNDO"}
-
-    def execute(self, context: Context):
-        result = light_linking_apply.solo_product(context)
-        if not result["ok"]:
-            self.report(report_set(result["message"]), result["message"])
-            return {"CANCELLED"}
-        self.report({"INFO"}, result["message"])
-        return {"FINISHED"}
-
-
 CLASSES = (
     BEHOLD_OT_seed_studio_lights,
     BEHOLD_OT_refresh_lights,
     BEHOLD_OT_add_light,
     BEHOLD_OT_remove_light,
     BEHOLD_OT_set_active_light,
-    BEHOLD_OT_apply_light_preset,
-    BEHOLD_OT_apply_gobo,
-    BEHOLD_OT_load_ies,
-    BEHOLD_OT_load_ies_sample,
-    BEHOLD_OT_clear_ies,
-    BEHOLD_OT_apply_ies,
-    BEHOLD_OT_link_selected,
-    BEHOLD_OT_exclude_selected,
-    BEHOLD_OT_unlink_selected,
-    BEHOLD_OT_solo_product_link,
 )
 
 

@@ -288,7 +288,7 @@ class CopyTests(unittest.TestCase):
 
 class WiringTests(unittest.TestCase):
     def test_operators_and_property(self) -> None:
-        ops = _read("behold_lighting/operators.py")
+        ops = _read("behold_lighting/linking_ops.py")
         props = _read("behold_lighting/properties.py")
         apply = _read("behold_lighting/light_linking_apply.py")
         spec = _read("behold_lighting/light_linking.py")

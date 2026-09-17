@@ -8,6 +8,7 @@ from typing import Any
 import bpy
 from bpy.types import Context, Object
 
+from ..common.ids import is_behold_product
 from ..materials import blenderkit_bridge, local_rack
 from ..materials.presets import EMPTY_NO_MESH, assist_summary, plan_assist
 from .auto_dress import (
@@ -128,10 +129,6 @@ def tag_selection_for_assist(context: Context) -> None:
         )
         if hinted:
             obj["BEHOLD_material_hint"] = hinted
-
-
-def is_behold_product(obj: Object) -> bool:
-    return bool(obj.get("BEHOLD_product_source") or obj.get("BEHOLD_cad_source"))
 
 
 def run_material_assist(

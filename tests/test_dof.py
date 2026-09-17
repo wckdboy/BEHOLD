@@ -265,7 +265,7 @@ class DofWiringTests(unittest.TestCase):
         self.assertIn("use_dof = False", cameras)
 
     def test_operators_and_properties(self) -> None:
-        ops = _read("behold_product/shoot/operators.py")
+        ops = _read("behold_product/cameras_ops.py")
         props = _read("behold_product/properties.py")
         self.assertIn('bl_idname = "behold.apply_camera_dof"', ops)
         self.assertIn('bl_idname = "behold.focus_product"', ops)

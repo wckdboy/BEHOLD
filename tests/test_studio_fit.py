@@ -8,7 +8,7 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-fit = load_module("behold_studio/fit.py", "behold_studio_fit")
+fit = load_module("behold_common/fit.py", "behold_studio_fit")
 
 
 def _read(relpath: str) -> str:
@@ -166,7 +166,7 @@ class FitMathTests(unittest.TestCase):
 class FitWiringTests(unittest.TestCase):
     def test_setup_uses_fit_helpers_and_rebuilds_backdrop(self) -> None:
         source = _read("behold_studio/setup.py")
-        self.assertIn("from .fit import", source)
+        self.assertIn("from .common.fit import", source)
         self.assertIn("fit_from_aabb", source)
         self.assertIn("BUILD_NEEDS_MESH", source)
         self.assertIn("EMPTY_NO_MESH", source)

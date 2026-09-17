@@ -49,7 +49,7 @@ def apply_ies_in_scene(context: Context) -> dict[str, Any]:
     light = light_lib.get_active_behold_light(context)
     if light is None:
         return _result(False, NO_LIGHTS)
-    settings = getattr(context.scene, "behold", None)
+    settings = getattr(context.scene, "behold_lighting", None)
     strength = spec.DEFAULT_STRENGTH
     scale = spec.DEFAULT_SCALE
     path = ""
@@ -206,7 +206,7 @@ def on_ies_values_update(settings, context: Context) -> None:
     if light is None:
         return
     path = ""
-    scene_settings = getattr(context.scene, "behold", None)
+    scene_settings = getattr(context.scene, "behold_lighting", None)
     if scene_settings is not None:
         path = spec.normalize_filepath(
             getattr(scene_settings, "light_ies_filepath", "") or ""
@@ -330,7 +330,7 @@ def _restore_shape(context: Context, obj: Object) -> bool:
 def _clear_gobo_marker(context: Context, obj: Object) -> None:
     """IES owns the node tree — Gobo enum goes to None without RNA teardown."""
     _store(obj, gobos_lib.PRESET_ID_KEY, gobos_lib.DEFAULT_PRESET)
-    settings = getattr(context.scene, "behold", None)
+    settings = getattr(context.scene, "behold_lighting", None)
     if settings is None or not hasattr(settings, "light_gobo_preset"):
         return
     current = str(getattr(settings, "light_gobo_preset", "") or "")
@@ -378,7 +378,7 @@ def _clear_ies_keys(obj: Object) -> None:
 
 
 def _sync_scene_path(context: Context, filepath: str) -> None:
-    settings = getattr(context.scene, "behold", None)
+    settings = getattr(context.scene, "behold_lighting", None)
     if settings is None or not hasattr(settings, "light_ies_filepath"):
         return
     current = str(getattr(settings, "light_ies_filepath", "") or "")

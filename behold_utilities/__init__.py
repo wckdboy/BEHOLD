@@ -31,7 +31,6 @@ _MODULES = (
 )
 
 
-
 def register() -> None:
     for module in _MODULES:
         module.register()

@@ -115,7 +115,7 @@ def apply_dof(
     if problem is not None:
         return _result(False, problem, camera=cam.name)
 
-    settings = getattr(context.scene, "behold", None)
+    settings = getattr(context.scene, "behold_product", None)
     dof = data.dof
     current_use = bool(getattr(dof, "use_dof", False))
     current_fstop = float(getattr(dof, "aperture_fstop", spec.BLENDER_DEFAULT_FSTOP))

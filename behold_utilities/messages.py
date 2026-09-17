@@ -6,9 +6,6 @@ from __future__ import annotations
 WARNING = "WARNING"
 ERROR = "ERROR"
 
-NO_UTILITIES = (
-    "Utilities is off — enable Utilities panel in BEHOLD add-on preferences"
-)
 NO_WALL = "No Danish wall — Build Wall in Utilities, or select a wall mesh"
 NO_PRODUCT = (
     "No balcony product — import a mesh or select the balcony, then Build Mount"
@@ -23,7 +20,6 @@ UNKNOWN_EAVE = (
 
 PREREQUISITE_MESSAGES = frozenset(
     {
-        NO_UTILITIES,
         NO_WALL,
         NO_PRODUCT,
         WALL_NEEDS_SIZE,

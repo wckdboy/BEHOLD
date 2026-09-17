@@ -58,7 +58,7 @@ def _result(ok: bool, message: str, **extra: Any) -> dict[str, Any]:
 def _resolve_kind(context: Context, kind: str) -> spec.KindId | dict[str, Any]:
     raw = (kind or "").strip()
     if not raw:
-        settings = getattr(context.scene, "behold", None)
+        settings = getattr(context.scene, "behold_lighting", None)
         raw = str(getattr(settings, "light_linking_kind", spec.DEFAULT_KIND) or "")
     if spec.is_kind(raw):
         if raw == "LIGHT":

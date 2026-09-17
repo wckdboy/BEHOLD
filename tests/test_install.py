@@ -237,8 +237,8 @@ class ZipLayoutTests(unittest.TestCase):
     def test_zip_payload_has_manifest_and_init(self) -> None:
         expected = {
             STUDIO: {"blender_manifest.toml", "__init__.py", "setup.py", "operators.py"},
-            LIGHTING: {"blender_manifest.toml", "__init__.py", "lights.py", "ies/sample_spot.ies"},
-            PRODUCT: {"blender_manifest.toml", "__init__.py", "cad/operators.py", "shoot/operators.py"},
+            LIGHTING: {"blender_manifest.toml", "__init__.py", "lights.py", "shape_ops.py", "gobo_ops.py", "ies_ops.py", "linking_ops.py", "ies/sample_spot.ies"},
+            PRODUCT: {"blender_manifest.toml", "__init__.py", "cad/operators.py", "cameras_ops.py", "shoot/operators.py"},
             UTILITIES: {"blender_manifest.toml", "__init__.py", "eaves.py", "settings.py"},
         }
         for addon, files in expected.items():
@@ -396,7 +396,7 @@ class SuitePackageTests(unittest.TestCase):
     def test_studio_and_lighting_seed_ops_are_split(self) -> None:
         studio_ops = _read(STUDIO / "operators.py")
         lighting_ops = _read(LIGHTING / "operators.py")
-        product_ops = _read(PRODUCT / "shoot" / "operators.py")
+        product_ops = _read(PRODUCT / "cameras_ops.py")
         self.assertIn('bl_idname = "behold.build_studio"', studio_ops)
         self.assertIn('bl_idname = "behold.seed_studio_lights"', lighting_ops)
         self.assertIn('bl_idname = "behold.seed_studio_camera"', product_ops)

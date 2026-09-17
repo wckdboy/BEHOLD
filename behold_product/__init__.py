@@ -14,6 +14,7 @@ bl_info = {
     "doc_url": "https://github.com/wckdboy/BEHOLD",
 }
 
+from . import cameras_ops
 from . import preferences
 from . import properties
 from .cad import operators as cad_ops
@@ -31,12 +32,12 @@ _MODULES = (
     updates,
     local_rack,
     blenderkit_bridge,
+    cameras_ops,
     shoot_ops,
     cad_ops,
     product_ops,
     ui,
 )
-
 
 
 def register() -> None:

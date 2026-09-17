@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal, Never
 
-from .fit import MIN_EXTENT
+from .common.fit import MIN_EXTENT
 
 BackdropId = Literal["CYCLORAMA", "SOLID", "HDRI"]
 HostId = Literal["CYCLORAMA", "PLANE"]

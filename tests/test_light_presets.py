@@ -196,7 +196,7 @@ class LightShapeWiringTests(unittest.TestCase):
         self.assertIn("product_frame", source)
 
     def test_operator_and_property(self) -> None:
-        ops = _read("behold_lighting/operators.py")
+        ops = _read("behold_lighting/shape_ops.py")
         props = _read("behold_lighting/properties.py")
         self.assertIn('bl_idname = "behold.apply_light_preset"', ops)
         self.assertIn("Apply to active", _read("behold_lighting/ui/panels.py"))

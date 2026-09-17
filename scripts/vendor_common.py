@@ -15,7 +15,7 @@ ADDONS = (
     ROOT / "behold_product",
     ROOT / "behold_utilities",
 )
-SKIP_DIRS = {"__pycache__"}
+SKIP_DIRS = {"__pycache__", "icons"}
 SKIP_SUFFIXES = {".pyc", ".pyo"}
 SKIP_NAMES = {".DS_Store"}
 

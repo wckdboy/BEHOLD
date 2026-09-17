@@ -19,7 +19,7 @@ from .common.deps import (
 )
 from .common.messages import EMPTY_NO_MESH
 from .common.tones import backdrop_tone_rgba
-from .fit import fit_from_aabb
+from .common.fit import fit_from_aabb
 from .world_apply import reapply_hdri_if_loaded, setup_solid_world
 
 PREFIX = geom_lib.PREFIX

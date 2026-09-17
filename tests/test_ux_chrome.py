@@ -10,7 +10,9 @@ from tests.support import ROOT, load_addon_module, load_module
 
 flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
 brand = load_module("behold_common/brand.py", "behold_common.brand")
-presets = load_module("behold_product/materials/presets.py", "behold_presets_chrome")
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
 camera_ids = load_module("behold_common/camera_ids.py", "behold_camera_ids_chrome")
 
 

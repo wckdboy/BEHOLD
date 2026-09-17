@@ -177,7 +177,7 @@ class IesWiringTests(unittest.TestCase):
         self.assertIn("_clear_gobo_marker", source)
 
     def test_operator_and_property(self) -> None:
-        ops = _read("behold_lighting/operators.py")
+        ops = _read("behold_lighting/ies_ops.py")
         props = _read("behold_lighting/properties.py")
         self.assertIn('bl_idname = "behold.load_ies"', ops)
         self.assertIn('bl_idname = "behold.clear_ies"', ops)
@@ -193,8 +193,8 @@ class IesWiringTests(unittest.TestCase):
         self.assertIn("bundled_sample_path", ops)
 
     def test_shape_apply_does_not_reapply_ies_or_gobo(self) -> None:
-        ops = _read("behold_lighting/operators.py")
-        tree = ast.parse(ops, filename="operators.py")
+        ops = _read("behold_lighting/shape_ops.py")
+        tree = ast.parse(ops, filename="shape_ops.py")
         shape_cls = None
         for node in tree.body:
             if isinstance(node, ast.ClassDef) and node.name == "BEHOLD_OT_apply_light_preset":

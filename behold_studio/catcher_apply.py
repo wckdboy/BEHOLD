@@ -12,7 +12,7 @@ from mathutils import Vector
 from . import catcher as spec
 from .common import geom as light_lib
 from .common.camera_ids import is_studio_mesh_name
-from .fit import MIN_EXTENT, fit_from_aabb
+from .common.fit import MIN_EXTENT, fit_from_aabb
 from .common.ids import is_behold_product
 
 _SocketKey = str | int
@@ -276,7 +276,7 @@ def _plan_from_context(
     floor_center: Vector | None = None,
     fit=None,
 ) -> tuple[spec.CatcherPlan, Vector, bpy.types.Collection] | dict[str, Any]:
-    settings = getattr(context.scene, "behold", None)
+    settings = getattr(context.scene, "behold_studio", None)
     wanted = bool(enabled) if enabled is not None else bool(
         getattr(settings, "include_shadow_catcher", spec.DEFAULT_ENABLED)
     )

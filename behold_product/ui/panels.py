@@ -1,51 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""BEHOLD N-panel UI.
+"""BEHOLD Product N-panel: Import, Materials, Cameras, Shoot, Advanced.
 
-v1.5.0 adds per-body auto-dress on Materials (STEP color / name → a look each).
-v1.4.0 adds defeaturing lite (fillet / chamfer / hole suppress) on Import.
-v1.3.0 adds live tessellation regenerate on Import. v1.2.0 adds IES practical
-lite on Lights. v1.1.0 adds procedural gobo lite
-on Lights. v1.0.0 is first stable. Studio
-chrome (v0.9.0) + workflow order (v0.12.0): branded hero + Import →
-Studio → Dress → Shoot strip on the main panel; physical child order is
-Import → Studio → Lights → Materials → Cameras → Shoot → Advanced so Shoot
-is last. Easy update (v0.10.0): a dismissible GitHub notice on the main
-panel when a newer stable zip is cached. Cyclorama auto-fit (v0.11.0).
-Section header icons; box cards and one-CTA empty states. First-ship
-Import / Studio / Shoot stay skinny. Import shows the picker plus one CAD
-backend line (v0.7.0), a compact tessellation card (v1.3.0: quality /
-deflection + Regenerate on the last CAD source), and a compact Cleanup card
-(v1.4.0: fillets / chamfers / holes in mm, OCP before tessellate). Lights is the v0.4.0 lighting section plus v0.16.0
-shape presets (Apply to active), v1.1.0 gobo (None / Blinds / Window /
-Circle + scale / strength), v1.2.0 IES (Load / Sample / Clear + strength /
-scale on the active spot or point; area lights become spots while IES is
-on), and v0.21.0 light / shadow linking lite
-(Link Selected / Unlink / Solo product). Cameras is the v0.5.0 product-camera
-kit plus v0.22.0 product DoF (on/off, f-stop, Focus on product / Focus on
-selected). Shoot carries a compact Turntable row (v0.6.0), compact Shots (v0.14.0),
-compact Look (v0.17.0 / v0.20.0 compositor presets), compact Batch export
-(v0.19.0), compact Size (v0.25.0 catalog resolution presets: Square 1:1 /
-Portrait 4:5 / Landscape 16:9 + 2048² / 1080p / 4K), and v0.23.0
-EEVEE Draft / Cycles Final (quality-linked engine).
-Materials is the v0.8.0 local-look rack (Assist applies one look without
-BlenderKit) plus v1.5.0 Auto-dress (per body from STEP color / name).
-Parked mixer, CAD box extras, BlenderKit chrome, hotkeys, tokens / bookmark,
-and turntable extras (plus Studio Margin in 0.11.0) live in BEHOLD_PT_advanced
-(DEFAULT_CLOSED). Compact Studio HDRI (v0.13.0): load / strength / Z rotation
-/ reflections-only + Reset world — not a new first-class panel. Compact Shot
-Manager on Shoot (v0.14.0): named presets for camera + quality + HDRI +
-backdrop + output tokens. v0.15.0 draw-once cache: CAD status + scene flags
-once per N-panel pass. Compact Look on Shoot (v0.17.0): EV, Kelvin white
-balance, and AgX-safe False Color — wired to Color Management, not only
-Advanced. v0.20.0 adds Clean / Catalog / Dramatic compositor presets plus a
-Compositor toggle on the same card (vignette, grain, bloom-safe glare). Compact
-Bake HDRI on Studio (v0.18.0): 1K/2K equirectangular
-EXR/HDR of the light rig, optional world, optional apply as world. Compact
-Catcher on Studio (v0.24.0): toggle next to Build — cyclorama gets a soft
-contact shadow; Solid / HDRI get a Cycles shadow-catcher plane with an
-EEVEE-friendly fallback. Compact
-Batch export on Shoot (v0.19.0): front / ¾ / top plus optional saved shots;
-path tokens stay in the output folder template.
+Studio and Lights live in the Studio / Lighting add-ons. Product keeps the
+hero, flow strip, and Import → Materials → Cameras → Shoot path.
 """
 
 from __future__ import annotations

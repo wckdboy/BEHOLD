@@ -10,7 +10,9 @@ from tests.support import ROOT, load_addon_module, load_module
 
 auto_dress = load_addon_module("behold_product/cad/auto_dress.py", "behold_product.cad.auto_dress")
 hints = load_module("behold_product/cad/hints.py", "behold_hints_auto_dress")
-presets = load_module("behold_product/materials/presets.py", "behold_presets_auto_dress")
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
 messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 

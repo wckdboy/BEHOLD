@@ -14,9 +14,13 @@ bl_info = {
     "doc_url": "https://github.com/wckdboy/BEHOLD",
 }
 
+from . import gobo_ops
+from . import ies_ops
+from . import linking_ops
 from . import operators
 from . import preferences
 from . import properties
+from . import shape_ops
 from . import ui
 from .common import previews
 from .common import updates
@@ -28,10 +32,13 @@ _MODULES = (
     preferences,
     updates,
     operators,
+    shape_ops,
+    gobo_ops,
+    ies_ops,
+    linking_ops,
     light_draw_ops,
     ui,
 )
-
 
 
 def register() -> None:

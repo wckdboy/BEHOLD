@@ -105,7 +105,8 @@ class FramingMathTests(unittest.TestCase):
 
 class CameraWiringTests(unittest.TestCase):
     def test_operators_register_crud(self) -> None:
-        source = _read("behold_product/shoot/operators.py")
+        cameras = _read("behold_product/cameras_ops.py")
+        shoot = _read("behold_product/shoot/operators.py")
         for bl_id in (
             "behold.add_camera",
             "behold.remove_camera",
@@ -114,14 +115,14 @@ class CameraWiringTests(unittest.TestCase):
             "behold.clear_cameras",
             "behold.bookmark_camera",
             "behold.use_main_camera",
-            "behold.render_still",
             "behold.apply_camera_dof",
             "behold.focus_product",
             "behold.focus_selected",
         ):
-            self.assertIn(f'bl_idname = "{bl_id}"', source)
-        self.assertIn("resolve_shoot_camera", source)
-        self.assertIn("set_active_behold_camera", source)
+            self.assertIn(f'bl_idname = "{bl_id}"', cameras)
+        self.assertIn('bl_idname = "behold.render_still"', shoot)
+        self.assertIn("resolve_shoot_camera", shoot)
+        self.assertIn("set_active_behold_camera", cameras)
 
     def test_properties_expose_active_and_lens(self) -> None:
         source = _read("behold_product/properties.py")

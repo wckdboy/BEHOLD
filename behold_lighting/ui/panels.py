@@ -9,7 +9,20 @@ from bpy.types import Context, Panel, UILayout
 from .. import lights as light_lib
 from ..common.chrome import draw_empty_card, draw_parked_heading, draw_section_icon
 from ..common.deps import BUILD_STUDIO_OP
-from .flow_ids import EMPTY_LIGHTS, SECTION_ICONS
+from ..common.empty_state import EmptyState
+from ..common.messages import NO_LIGHTS_NEXT, NO_LIGHTS_TITLE
+
+SECTION_ICONS = {
+    "lights": "LIGHT_AREA",
+}
+
+EMPTY_LIGHTS = EmptyState(
+    title=NO_LIGHTS_TITLE,
+    hint=NO_LIGHTS_NEXT,
+    operator=BUILD_STUDIO_OP,
+    operator_text="Build Studio",
+    icon="OUTLINER_OB_LIGHT",
+)
 
 
 def _settings(context: Context):

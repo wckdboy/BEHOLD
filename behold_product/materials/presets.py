@@ -12,16 +12,13 @@ import re
 from dataclasses import dataclass
 from typing import Any, Mapping
 
+from ..common.ids import is_dressable_mesh_name
+
 DEFAULT_PRESET = "METAL"
 DEFAULT_QUERY = "brushed metal"
 
 EMPTY_NO_MESH = "No mesh selected — select the product or Import Product"
 EMPTY_NO_MESH_HINT = "Import Product, then select that mesh (not the cyclorama)"
-
-# Studio sweep / catcher — do not dress these as the product.
-STUDIO_SKIP_MESHES = frozenset(
-    {"BEHOLD_Cyclorama", "BEHOLD_ShadowCatcher", "BEHOLD_ContactShadow"}
-)
 
 # 4.2+ / 5.2 LTS Principled BSDF. First name is the current Cycles/EEVEE Next
 # identifier; fallbacks cover older RNA still present on some 4.x builds.
@@ -170,14 +167,6 @@ def preset_enum_items() -> tuple[tuple[str, str, str], ...]:
 
 def material_name_for(preset_id: str) -> str:
     return f"BEHOLD_{preset_id.title()}"
-
-
-def is_dressable_mesh_name(name: str) -> bool:
-    base = name.split(".", 1)[0]
-    if base in STUDIO_SKIP_MESHES:
-        return False
-    # Utilities wall / mount / eave kits (see behold.utilities.ids.UTIL_PREFIX).
-    return not base.startswith("BEHOLD_Util_")
 
 
 def empty_state(*, has_product_mesh: bool) -> str | None:

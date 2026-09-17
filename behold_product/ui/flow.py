@@ -6,6 +6,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Literal, Mapping, Never
 
+from ..common.empty_state import EmptyState
 from ..common.brand import (
     HEADER_DRAW_FUNC,
     HERO_ICON,
@@ -88,15 +89,6 @@ class FlowStep:
 class FlowCta:
     operator: str
     label: str
-    icon: str
-
-
-@dataclass(frozen=True)
-class EmptyState:
-    title: str
-    hint: str
-    operator: str
-    operator_text: str
     icon: str
 
 

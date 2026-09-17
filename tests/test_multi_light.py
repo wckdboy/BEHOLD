@@ -71,7 +71,16 @@ class KelvinTests(unittest.TestCase):
 
 class MultiLightWiringTests(unittest.TestCase):
     def test_operators_register_crud(self) -> None:
-        source = _read("behold_lighting/operators.py")
+        source = "".join(
+            _read(f"behold_lighting/{name}")
+            for name in (
+                "operators.py",
+                "shape_ops.py",
+                "gobo_ops.py",
+                "ies_ops.py",
+                "linking_ops.py",
+            )
+        )
         for bl_id in (
             "behold.seed_studio_lights",
             "behold.refresh_lights",

@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Utilities N-panel — poll-gated, not part of the first-ship CLASSES tuple."""
+"""Utilities N-panel — Danish wall, balcony mounts, and eave / roof."""
 
 from __future__ import annotations
 
+import bpy
 from bpy.types import Context, Panel
 
-from .flag import PANEL_ID
+from .operator_ids import PANEL_ID
 from .wall import resolve_layers, thickness_mm_for_storey
 
 
@@ -75,14 +76,10 @@ CLASSES = (BEHOLD_PT_utilities,)
 
 
 def register() -> None:
-    import bpy
-
     for cls in CLASSES:
         bpy.utils.register_class(cls)
 
 
 def unregister() -> None:
-    import bpy
-
     for cls in reversed(CLASSES):
         bpy.utils.unregister_class(cls)

@@ -5,13 +5,15 @@ from __future__ import annotations
 
 from bpy.types import Context, UILayout
 
-from ..common.brand import PRODUCT_CREDIT, PRODUCT_NAME
-from ..cad import material_assist
-from ..common.draw_cache import SCENE_SNAP_KEY, draw_get
-from ..materials.presets import is_dressable_mesh_name
-from ..preferences import get_prefs
-from ..common.previews import draw_mark_label
 from .. import cameras as camera_lib
+from ..common.chrome import (
+    draw_empty_card,
+    draw_hero,
+    draw_parked_heading,
+    draw_section_icon,
+)
+from ..common.draw_cache import SCENE_SNAP_KEY, draw_get
+from ..common.ids import is_behold_product, is_dressable_mesh_name
 from ..common.light_ids import is_behold_light_name
 from ..common.updates.core import (
     available_from_cache,
@@ -19,9 +21,9 @@ from ..common.updates.core import (
     installed_version,
 )
 from ..common.updates.runtime import notice_is_dismissed
+from ..preferences import get_prefs
 from .flow import (
     FLOW_STEPS,
-    EmptyState,
     FlowStepId,
     cta_for_step,
     flow_completed,
@@ -29,12 +31,6 @@ from .flow import (
     next_step,
 )
 from .scene_scan import ObjectDrawRow, SceneDrawSnap, snap_from_rows
-
-
-def draw_hero(layout: UILayout) -> None:
-    box = layout.box()
-    draw_mark_label(box, PRODUCT_NAME)
-    box.label(text=PRODUCT_CREDIT)
 
 
 def draw_update_notice(layout: UILayout, context: Context) -> None:
@@ -77,35 +73,6 @@ def draw_update_notice(layout: UILayout, context: Context) -> None:
     row.operator("behold_product.dismiss_update", text="", icon="X")
 
 
-def draw_section_icon(layout: UILayout, icon: str) -> None:
-    layout.label(text="", icon=icon)
-
-
-def draw_parked_heading(
-    layout: UILayout,
-    text: str,
-    icon: str,
-    *,
-    leading_separator: bool = True,
-) -> None:
-    if leading_separator:
-        layout.separator()
-    layout.label(text=text, icon=icon)
-
-
-def draw_empty_card(
-    layout: UILayout,
-    spec: EmptyState,
-) -> UILayout:
-    """One primary CTA. Callers may add a quieter secondary control on the box."""
-    box = layout.box()
-    box.label(text=spec.title, icon="INFO")
-    if spec.hint:
-        box.label(text=spec.hint)
-    box.operator(spec.operator, text=spec.operator_text, icon=spec.icon)
-    return box
-
-
 def _object_draw_rows(context: Context) -> list[ObjectDrawRow]:
     selected = {obj.name for obj in context.selected_objects}
     rows: list[ObjectDrawRow] = []
@@ -116,7 +83,7 @@ def _object_draw_rows(context: Context) -> list[ObjectDrawRow]:
             ObjectDrawRow(
                 name=obj.name,
                 ob_type=ob_type,
-                tagged_product=is_mesh and material_assist.is_behold_product(obj),
+                tagged_product=is_mesh and is_behold_product(obj),
                 has_look=(
                     is_mesh
                     and is_dressable_mesh_name(obj.name)

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Utilities track: wall math, mount kits, eave sections, feature-flag gating (no bpy)."""
+"""Utilities track: wall math, mount kits, eave sections (no bpy)."""
 
 from __future__ import annotations
 
@@ -8,8 +8,10 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-flag = load_module("behold_utilities/flag.py", "behold_utilities_flag")
 ids = load_module("behold_utilities/ids.py", "behold_utilities_ids")
+operator_ids = load_module(
+    "behold_utilities/operator_ids.py", "behold_utilities_operator_ids"
+)
 messages = load_module("behold_utilities/messages.py", "behold_utilities_messages")
 wall = load_addon_module("behold_utilities/wall.py", "behold_utilities.wall")
 mounts = load_module("behold_utilities/mounts.py", "behold_utilities_mounts")
@@ -17,7 +19,9 @@ eaves = load_module("behold_utilities/eaves.py", "behold_utilities_eaves")
 openscad = load_addon_module(
     "behold_utilities/openscad/__init__.py", "behold_utilities.openscad"
 )
-presets = load_module("behold_product/materials/presets.py", "behold_presets_utilities")
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
 flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
 
 
@@ -52,26 +56,14 @@ def _panel_class_names(source: str, tree: ast.Module) -> list[str]:
     ]
 
 
-class FeatureFlagTests(unittest.TestCase):
-    def test_flag_defaults_on_for_the_utilities_addon(self) -> None:
-        self.assertTrue(flag.DEFAULT_ENABLE_UTILITIES)
-        self.assertEqual(flag.PREF_ID, "enable_utilities")
-        self.assertTrue(flag.show_utilities_panel(None))
-        self.assertTrue(flag.show_utilities_panel(type("P", (), {})()))
-        self.assertTrue(
-            flag.show_utilities_panel(type("P", (), {"enable_utilities": False})())
-        )
-
-    def test_gated_registration_ids(self) -> None:
-        self.assertEqual(flag.gated_ui_ids(enabled=False), ())
-        enabled = flag.gated_ui_ids(enabled=True)
-        self.assertEqual(enabled[0], flag.PANEL_ID)
-        self.assertIn(flag.OPERATOR_BUILD_WALL, enabled)
-        self.assertIn(flag.OPERATOR_BUILD_LEGS, enabled)
-        self.assertIn(flag.OPERATOR_BUILD_BRACKET, enabled)
-        self.assertIn(flag.OPERATOR_BUILD_EAVE, enabled)
-        self.assertIn(flag.OPERATOR_EXPORT_SCAD, enabled)
-        self.assertNotIn(flag.PANEL_ID, flag.gated_ui_ids(enabled=False))
+class RegistrationTests(unittest.TestCase):
+    def test_operator_ids_are_stable(self) -> None:
+        self.assertEqual(operator_ids.PANEL_ID, "BEHOLD_PT_utilities")
+        self.assertIn(operator_ids.OPERATOR_BUILD_WALL, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_BUILD_LEGS, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_BUILD_BRACKET, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_BUILD_EAVE, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_EXPORT_SCAD, operator_ids.OPERATOR_IDS)
 
     def test_product_preferences_do_not_gate_utilities(self) -> None:
         prefs = _read("behold_product/preferences.py")
@@ -82,7 +74,7 @@ class FeatureFlagTests(unittest.TestCase):
         source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         names = _panel_class_names(source, tree)
-        self.assertNotIn(flag.PANEL_ID, names)
+        self.assertNotIn(operator_ids.PANEL_ID, names)
         self.assertEqual(
             names,
             [
@@ -94,9 +86,9 @@ class FeatureFlagTests(unittest.TestCase):
                 "BEHOLD_PT_advanced",
             ],
         )
-        self.assertIn(flag.PANEL_ID, flow.N_PANEL_CLASS_ORDER)
-        self.assertIn(flag.PANEL_ID, flow.PANEL_BL_IDNAMES)
-        self.assertNotIn(flag.PANEL_ID, source)
+        self.assertIn(operator_ids.PANEL_ID, flow.N_PANEL_CLASS_ORDER)
+        self.assertIn(operator_ids.PANEL_ID, flow.PANEL_BL_IDNAMES)
+        self.assertNotIn(operator_ids.PANEL_ID, source)
 
     def test_first_ship_draws_do_not_register_utility_operators(self) -> None:
         product = _read("behold_product/ui/panels.py")
@@ -121,10 +113,10 @@ class FeatureFlagTests(unittest.TestCase):
             tree = ast.parse(source)
             for name in names:
                 body = _func_source(source, tree, name)
-                for operator_id in flag.OPERATOR_IDS:
+                for operator_id in operator_ids.OPERATOR_IDS:
                     self.assertNotIn(operator_id, body, msg=f"{name} leaked {operator_id}")
         pie = _read("behold_product/ui/pie.py")
-        for operator_id in flag.OPERATOR_IDS:
+        for operator_id in operator_ids.OPERATOR_IDS:
             self.assertNotIn(operator_id, pie)
 
     def test_utilities_panel_is_always_on_and_sorts_after_advanced(self) -> None:
@@ -154,10 +146,8 @@ class FeatureFlagTests(unittest.TestCase):
         util_init = _read("behold_utilities/__init__.py")
         self.assertIn("from . import operators", util_init)
         self.assertIn("from . import panel", util_init)
-        source = _read("behold_utilities/registration.py")
-        header = source.split("def ", 1)[0]
-        self.assertNotIn("from .operators import CLASSES", header)
-        self.assertNotIn("from .panel import CLASSES", header)
+        self.assertFalse((ROOT / "behold_utilities" / "flag.py").is_file())
+        self.assertFalse((ROOT / "behold_utilities" / "registration.py").is_file())
 
 
 class WallMathTests(unittest.TestCase):
@@ -358,7 +348,7 @@ class OpenScadAndCopyTests(unittest.TestCase):
     def test_actionable_errors(self) -> None:
         self.assertIn("Build Wall", messages.NO_WALL)
         self.assertIn("import", messages.NO_PRODUCT.lower())
-        self.assertIn("preferences", messages.NO_UTILITIES.lower())
+        self.assertFalse(hasattr(messages, "NO_UTILITIES"))
         self.assertEqual(messages.report_type(messages.NO_WALL), "WARNING")
         self.assertIn("Legs", messages.mount_built_message("Legs"))
         self.assertIn("Under eaves", messages.eave_built_message("Under eaves"))
