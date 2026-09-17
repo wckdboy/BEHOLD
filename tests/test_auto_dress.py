@@ -8,10 +8,10 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-auto_dress = load_addon_module("behold/cad/auto_dress.py", "behold.cad.auto_dress")
-hints = load_module("behold/cad/hints.py", "behold_hints_auto_dress")
-presets = load_module("behold/materials/presets.py", "behold_presets_auto_dress")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+auto_dress = load_addon_module("behold_product/cad/auto_dress.py", "behold_product.cad.auto_dress")
+hints = load_module("behold_product/cad/hints.py", "behold_hints_auto_dress")
+presets = load_module("behold_product/materials/presets.py", "behold_presets_auto_dress")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -197,14 +197,14 @@ class MessageTests(unittest.TestCase):
 
 class WiringTests(unittest.TestCase):
     def test_operator_and_runner(self) -> None:
-        assist = _read("behold/cad/material_assist.py")
+        assist = _read("behold_product/cad/material_assist.py")
         self.assertIn("def run_auto_dress", assist)
         self.assertIn("def run_material_assist", assist)
         self.assertIn("def body_hint_from_object", assist)
         self.assertIn("plan_bodies", assist)
         self.assertIn("apply_look_to_objects", assist)
         self.assertNotIn("blenderkit_search", assist.split("def run_auto_dress", 1)[1])
-        ops = _read("behold/cad/operators.py")
+        ops = _read("behold_product/cad/operators.py")
         self.assertIn('bl_idname = "behold.cad_auto_dress"', ops)
         self.assertIn('bl_idname = "behold.cad_material_assist"', ops)
         self.assertIn("class BEHOLD_OT_cad_auto_dress", ops)
@@ -214,16 +214,16 @@ class WiringTests(unittest.TestCase):
         self.assertIn("run_material_assist", ops)
 
     def test_cad_import_uses_auto_dress_mesh_keeps_assist(self) -> None:
-        post = _read("behold/product_import/operators.py")
+        post = _read("behold_product/product_import/operators.py")
         self.assertIn("run_auto_dress", post)
         self.assertIn("run_material_assist", post)
         self.assertIn('kind == "cad"', post)
-        source = _read("behold/cad/operators.py")
+        source = _read("behold_product/cad/operators.py")
         self.assertIn("run_auto_dress", source)
         self.assertIn("import_auto_material_assist", source)
 
     def test_materials_card_keeps_assist_adds_auto_dress(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source)
         body = _func_source(source, tree, "draw_materials_section")
         self.assertIn("behold.cad_material_assist", body)
@@ -240,13 +240,13 @@ class WiringTests(unittest.TestCase):
         self.assertNotIn("cad_auto_dress", first_ship)
 
     def test_local_rack_tint_helper(self) -> None:
-        rack = _read("behold/materials/local_rack.py")
+        rack = _read("behold_product/materials/local_rack.py")
         self.assertIn("def apply_look_to_objects", rack)
         self.assertIn("def apply_to_objects", rack)
         self.assertIn("base_color", rack)
 
     def test_panel_order_untouched(self) -> None:
-        flow = _read("behold/ui/flow.py")
+        flow = _read("behold_product/ui/flow.py")
         self.assertIn('"BEHOLD_PT_import"', flow)
         self.assertLess(flow.index("BEHOLD_PT_materials"), flow.index("BEHOLD_PT_cameras"))
         self.assertLess(flow.index("BEHOLD_PT_cameras"), flow.index("BEHOLD_PT_shoot"))

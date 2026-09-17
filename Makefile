@@ -1,6 +1,9 @@
-.PHONY: zip clean test smoke-step
+.PHONY: zip clean test smoke-step vendor
 
-zip:
+vendor:
+	@python3 scripts/vendor_common.py
+
+zip: vendor
 	@bash scripts/build_addon.sh
 
 test:

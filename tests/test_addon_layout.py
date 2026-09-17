@@ -8,8 +8,8 @@ import re
 import unittest
 from pathlib import Path
 
-from tests.support import ROOT
-ADDON = ROOT / "behold"
+from tests.support import ADDONS, COMMON, PRODUCT, ROOT
+ADDON = PRODUCT
 
 
 def _read(path: Path) -> str:
@@ -22,12 +22,12 @@ class AddonLayoutTests(unittest.TestCase):
         init = _read(ADDON / "__init__.py")
         match = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.M)
         self.assertIsNotNone(match)
-        self.assertEqual(match.group(1), "1.6.0")
-        self.assertIn('"version": (1, 6, 0)', init)
+        self.assertEqual(match.group(1), "2.0.0")
+        self.assertIn('"version": (2, 0, 0)', init)
         self.assertIn('"blender": (4, 2, 0)', init)
         self.assertIn('blender_version_min = "4.2.0"', manifest)
         self.assertIn("AMIRITE.studio", init)
-        self.assertIn("VERSION = (1, 6, 0)", _read(ADDON / "brand.py"))
+        self.assertIn("VERSION = (2, 0, 0)", _read(COMMON / "brand.py"))
 
     def test_stepper_url_documented(self) -> None:
         readme = _read(ROOT / "README.md")
@@ -48,9 +48,12 @@ class AddonLayoutTests(unittest.TestCase):
         self.assertIn("1.3.0", readme)
         self.assertIn("1.4.0", readme)
         self.assertIn("1.5.0", readme)
-        self.assertIn("1.5.1", readme)
+        self.assertIn("2.0.0", readme)
+        self.assertIn("BEHOLD Studio", readme)
+        self.assertIn("BEHOLD Lighting", readme)
+        self.assertIn("BEHOLD Product", readme)
+        self.assertIn("BEHOLD Utilities", readme)
         self.assertIn("1.6.0", readme)
-        self.assertIn("simplified", readme.lower())
         self.assertIn("Auto-dress", readme)
         self.assertIn("Cleanup", readme)
         self.assertIn("fillet", readme.lower())
@@ -91,7 +94,7 @@ class AddonLayoutTests(unittest.TestCase):
         self.assertIn("Focus on product", readme)
         self.assertIn("Focus on selected", readme)
         self.assertIn("docs/brand/behold_logo.png", readme)
-        self.assertIn("behold/icons/behold_icon.png", readme)
+        self.assertIn("behold_product/icons/behold_icon.png", readme)
         self.assertIn("ROADMAP.md", readme)
         self.assertIn("HDRI", readme)
         self.assertIn("5.2", readme)
@@ -110,7 +113,8 @@ class AddonLayoutTests(unittest.TestCase):
 
     def test_python_sources_parse(self) -> None:
         files = (
-            list(ADDON.rglob("*.py"))
+            [path for addon in ADDONS for path in addon.rglob("*.py")]
+            + list(COMMON.rglob("*.py"))
             + list((ROOT / "tests").rglob("*.py"))
             + list((ROOT / "scripts").glob("*.py"))
         )

@@ -10,9 +10,9 @@ from pathlib import Path
 
 from tests.support import ROOT, load_addon_module, load_module
 
-core = load_addon_module("behold/updates/core.py", "behold.updates.core")
-fetch = load_addon_module("behold/updates/fetch.py", "behold.updates.fetch")
-brand = load_module("behold/brand.py", "behold.brand")
+core = load_addon_module("behold_common/updates/core.py", "behold_common.updates.core")
+fetch = load_addon_module("behold_common/updates/fetch.py", "behold_common.updates.fetch")
+brand = load_module("behold_common/brand.py", "behold_common.brand")
 
 FIXTURES = ROOT / "tests" / "fixtures" / "github"
 
@@ -78,9 +78,9 @@ class VersionCompareTests(unittest.TestCase):
         self.assertEqual(core.version_string(()), "?")
 
     def test_installed_version_matches_brand(self) -> None:
-        self.assertEqual(brand.VERSION, (1, 6, 0))
-        self.assertEqual(core.installed_version(), (1, 6, 0))
-        self.assertEqual(core.version_string(), "1.6.0")
+        self.assertEqual(brand.VERSION, (2, 0, 0))
+        self.assertEqual(core.installed_version(), (2, 0, 0))
+        self.assertEqual(core.version_string(), "2.0.0")
 
 
 class ReleaseParseTests(unittest.TestCase):
@@ -342,49 +342,49 @@ class InstallKwargsTests(unittest.TestCase):
 
 class WiringTests(unittest.TestCase):
     def test_operators_and_prefs_are_wired(self) -> None:
-        operators = (ROOT / "behold" / "updates" / "operators.py").read_text(
+        operators = (ROOT / "behold_common" / "updates" / "operators.py").read_text(
             encoding="utf-8"
         )
-        runtime = (ROOT / "behold" / "updates" / "runtime.py").read_text(
+        runtime = (ROOT / "behold_common" / "updates" / "runtime.py").read_text(
             encoding="utf-8"
         )
-        prefs = (ROOT / "behold" / "preferences.py").read_text(encoding="utf-8")
-        panels = (ROOT / "behold" / "ui" / "panels.py").read_text(encoding="utf-8")
-        chrome = (ROOT / "behold" / "ui" / "chrome.py").read_text(encoding="utf-8")
-        init = (ROOT / "behold" / "__init__.py").read_text(encoding="utf-8")
-        manifest = (ROOT / "behold" / "blender_manifest.toml").read_text(
+        prefs = (ROOT / "behold_product" / "preferences.py").read_text(encoding="utf-8")
+        panels = (ROOT / "behold_product" / "ui" / "panels.py").read_text(encoding="utf-8")
+        chrome = (ROOT / "behold_product" / "ui" / "chrome.py").read_text(encoding="utf-8")
+        init = (ROOT / "behold_product" / "__init__.py").read_text(encoding="utf-8")
+        manifest = (ROOT / "behold_product" / "blender_manifest.toml").read_text(
             encoding="utf-8"
         )
-        self.assertIn('bl_idname = "behold.check_updates"', operators)
-        self.assertIn('bl_idname = "behold.install_update"', operators)
-        self.assertIn('bl_idname = "behold.open_release"', operators)
-        self.assertIn('bl_idname = "behold.dismiss_update"', operators)
+        self.assertIn('bl_idname = f"{ns}.check_updates"', operators)
+        self.assertIn('bl_idname = f"{ns}.install_update"', operators)
+        self.assertIn('bl_idname = f"{ns}.open_release"', operators)
+        self.assertIn('bl_idname = f"{ns}.dismiss_update"', operators)
         self.assertIn("request_check(force=True)", operators)
         self.assertIn("daemon=True", runtime)
         self.assertIn("bpy.app.timers.register", runtime)
         self.assertIn("check_for_updates", prefs)
         self.assertIn("default=True", prefs)
-        self.assertIn("behold.check_updates", prefs)
-        self.assertIn("behold.install_update", prefs)
-        self.assertIn("behold.open_release", prefs)
+        self.assertIn("behold_product.check_updates", prefs)
+        self.assertIn("behold_product.install_update", prefs)
+        self.assertIn("behold_product.open_release", prefs)
         self.assertIn("update_error_kind", prefs)
         self.assertIn("alert", prefs)
         self.assertIn("draw_update_notice", panels)
-        self.assertIn("behold.open_release", chrome)
-        self.assertIn("behold.check_updates", chrome)
+        self.assertIn("behold_product.open_release", chrome)
+        self.assertIn("behold_product.check_updates", chrome)
         self.assertIn('icon="ERROR"', chrome)
         self.assertIn("Check again", chrome)
         self.assertIn("updates", init)
         self.assertIn("GitHub", manifest)
         self.assertNotIn("GITHUB_TOKEN", operators)
         self.assertNotIn("GITHUB_TOKEN", runtime)
-        fetch_src = (ROOT / "behold" / "updates" / "fetch.py").read_text(encoding="utf-8")
+        fetch_src = (ROOT / "behold_common" / "updates" / "fetch.py").read_text(encoding="utf-8")
         self.assertNotIn("GITHUB_TOKEN", fetch_src)
         self.assertNotIn("Bearer", fetch_src)
         self.assertNotIn("headers[\"Authorization\"]", fetch_src)
 
     def test_install_path_uses_5_2_extensions_then_addon_install(self) -> None:
-        install = (ROOT / "behold" / "updates" / "blender_install.py").read_text(
+        install = (ROOT / "behold_common" / "updates" / "blender_install.py").read_text(
             encoding="utf-8"
         )
         self.assertIn("extensions.package_install_files", install)

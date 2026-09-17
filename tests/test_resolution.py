@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-resolution = load_module("behold/shoot/resolution.py", "behold_shoot_resolution")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+resolution = load_module("behold_product/shoot/resolution.py", "behold_shoot_resolution")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -152,24 +152,24 @@ class ResolutionPresetTests(unittest.TestCase):
 
 class ResolutionWiringTests(unittest.TestCase):
     def test_apply_writes_render_rna(self) -> None:
-        apply = _read("behold/shoot/resolution_apply.py")
-        spec = _read("behold/shoot/resolution.py")
+        apply = _read("behold_product/shoot/resolution_apply.py")
+        spec = _read("behold_product/shoot/resolution.py")
         self.assertIn("resolution_x", spec)
         self.assertIn("pixel_aspect_x", spec)
         self.assertIn("resolution_percentage", spec)
         self.assertIn("on_resolution_update", apply)
         self.assertIn("rna_pairs", apply)
         self.assertIn("NO_RENDER_SETTINGS", apply)
-        setup = _read("behold/studio/setup.py")
-        self.assertIn("apply_resolution(context)", setup)
-        batch = _read("behold/shoot/batch_apply.py")
+        setup = _read("behold_studio/setup.py")
+        self.assertIn("try_operator(APPLY_RESOLUTION_OP)", setup)
+        batch = _read("behold_product/shoot/batch_apply.py")
         self.assertIn("apply_resolution(context)", batch)
         smoke = _read("scripts/smoke_step_vertical.py")
         self.assertIn("resolution_x = 128", smoke)
 
     def test_operators_and_properties(self) -> None:
-        ops = _read("behold/shoot/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_product/shoot/operators.py")
+        props = _read("behold_product/properties.py")
         self.assertIn("from .resolution_apply import apply_resolution", ops)
         self.assertIn('bl_idname = "behold.apply_resolution"', ops)
         self.assertIn("apply_resolution(context)", ops)
@@ -183,7 +183,7 @@ class ResolutionWiringTests(unittest.TestCase):
         self.assertIn("2048²", props)
 
     def test_shoot_size_card_stays_compact(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_shoot_first_ship")
         size = _func_source(source, tree, "draw_resolution_compact")
@@ -206,7 +206,7 @@ class ResolutionWiringTests(unittest.TestCase):
         self.assertIn("resolution_size", parked)
         self.assertIn("behold.apply_resolution", parked)
         self.assertIn("behold.apply_quality", parked)
-        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
         self.assertEqual(
             list(flow.N_PANEL_CLASS_ORDER),
             [
@@ -218,6 +218,7 @@ class ResolutionWiringTests(unittest.TestCase):
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
             ],
         )
 

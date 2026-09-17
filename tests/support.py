@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Load addon modules without executing behold/__init__.py (needs bpy)."""
+"""Load addon modules without executing add-on ``__init__.py`` (needs bpy)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,12 @@ from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[1]
 UNIT_CUBE_STEP = ROOT / "tests" / "fixtures" / "unit_cube.step"
+STUDIO = ROOT / "behold_studio"
+LIGHTING = ROOT / "behold_lighting"
+PRODUCT = ROOT / "behold_product"
+UTILITIES = ROOT / "behold_utilities"
+COMMON = ROOT / "behold_common"
+ADDONS = (STUDIO, LIGHTING, PRODUCT, UTILITIES)
 
 
 def load_module(relpath: str, name: str) -> ModuleType:
@@ -39,7 +45,7 @@ def _ensure_namespace(dotted: str) -> None:
 def load_addon_module(relpath: str, dotted: str) -> ModuleType:
     """Load a bpy-free submodule so package-relative imports resolve.
 
-    Does not execute ``behold/__init__.py`` (that module imports bpy).
+    Does not execute suite ``__init__.py`` modules (those import bpy).
     """
     parts = dotted.split(".")
     for index in range(1, len(parts)):

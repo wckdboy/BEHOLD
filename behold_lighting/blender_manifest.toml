@@ -1,0 +1,17 @@
+schema_version = "1.0.0"
+
+id = "behold_lighting"
+version = "2.0.0"
+name = "BEHOLD Lighting"
+tagline = "Multi-light, Light Draw, gobo, IES, and linking"
+maintainer = "AMIRITE.studio"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+website = "https://github.com/wckdboy/BEHOLD"
+tags = ["Lighting", "Render"]
+
+[permissions]
+network = "GitHub update check for BEHOLD Lighting"

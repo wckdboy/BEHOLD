@@ -6,20 +6,21 @@ Living status for BEHOLD by AMIRITE.studio. Update this file when a slice lands 
 
 KeyShot-simple OSS product renders in Blender. Best Blender plugin for product rendering and production workflows under **BEHOLD by AMIRITE.studio**.
 
-Cadence: one focused feature cut, then a GitHub Release. **v1.0.0 is the first stable product milestone.** **v1.1.0** is procedural gobo lite. **v1.2.0** is IES practical lite. **v1.3.0** is live tessellation regenerate. **v1.4.0** is defeaturing lite. **v1.5.0** is per-body auto-dress. **v1.5.1** is the Install from Disk enable fix. **v1.6.0** is the deep simplify refactor.
+Cadence: one focused feature cut, then a GitHub Release. **v1.0.0 is the first stable product milestone.** **v1.1.0** is procedural gobo lite. **v1.2.0** is IES practical lite. **v1.3.0** is live tessellation regenerate. **v1.4.0** is defeaturing lite. **v1.5.0** is per-body auto-dress. **v1.5.1** is the Install from Disk enable fix. **v1.6.0** is the deep simplify refactor. **v2.0.0** is the four-add-on suite (**BEHOLD Studio**, **BEHOLD Lighting**, **BEHOLD Product**, **BEHOLD Utilities**).
 
 ## Now
 
 | | |
 | --- | --- |
-| **Version on `main` (before this cut)** | 1.5.1 (Install from Disk enable fix) |
-| **This branch / after merge** | **1.6.0 — Deep simplify** |
+| **Version on `main` (before this cut)** | 1.6.0 (Deep simplify) |
+| **This branch / after merge** | **2.0.0 — four-add-on suite** |
 | **Primary Blender target** | **5.2 LTS and newer** |
 | **Install min** | 4.2.0 (`bl_info`, `blender_manifest.toml`) — cheap 4.2+ load; do not block 5.2 work on it |
-| **Install zip** | `dist/behold-1.6.0.zip` (Actions artifact `behold-addon`) |
+| **Install zips** | `dist/behold-studio-2.0.0.zip`, `behold-lighting-2.0.0.zip`, `behold-product-2.0.0.zip`, `behold-utilities-2.0.0.zip` (Actions artifact `behold-addon`) |
 
 ## Implemented
 
+- **Four-add-on suite (2.0.0)** — split the 1.6.0 monolith into four Install-from-Disk extensions. **BEHOLD Studio** (cyclorama / HDRI / Catcher / Build). **BEHOLD Lighting** (multi-light, Light Draw, Shape / Gobo / IES / Linking). **BEHOLD Product** (Import → Materials → Cameras → Shoot). **BEHOLD Utilities** (Danish wall / mounts / eave — optional zip; no `enable_utilities` flag). Shared helpers vendored as `common/` in each zip. Soft deps via `bpy.ops` (“Install BEHOLD Studio for Build Studio”). N-panel: each add-on owns its section(s); Product keeps Import → Materials → Cameras → Shoot. Extract, do not rewrite. Tests in `tests/test_install.py` plus remapped domain tests. Install zips `behold-studio-2.0.0.zip` / `behold-lighting-2.0.0.zip` / `behold-product-2.0.0.zip` / `behold-utilities-2.0.0.zip`. Migration: uninstall `behold-1.6.0.zip`, then install the four. Logo still a placeholder. Not new artist features.
 - **Deep simplify (1.6.0)** — architecture + UX subtraction, not new artist toys. One operator / card = one job. Utilities operators/panel stay **off the enable import graph** until `enable_utilities` is on (lazy `_classes()`). Lights **Shape / Gobo / IES / Linking** are separate cards; Gobo and IES own the node tree exclusively so teardown no longer re-applies the other. Import **Tessellation** (Regenerate) and **Cleanup** (Apply cleanup) are separate operators; Auto-dress stays on Materials (dress-after-import default **off**). Shoot drops the duplicate Still/Render pair; **Exposure** (EV / WB / False Color) is not the compositor **Look** card. Install tests fail on duplicate `bl_idname`, unbound CLASSES names, and utilities operator imports at module level. Zip still one `behold/` folder; `blender --command extension build` when Blender is on PATH. Logo still a placeholder. Tests in `tests/test_install.py` plus card wiring. Install zip `behold-1.6.0.zip`.
 - **Install from Disk enable (1.5.1)** — v1.5.0 zip failed to enable: `BEHOLD_OT_cad_auto_dress` was inserted by replacing the `class BEHOLD_OT_cad_build_studio` header, so `CLASSES` referenced a missing name (`NameError` on import). `compileall` stayed green. Fix restores two operator classes and shortens the extension tagline / `network` permission to Blender 5.2’s 64-character strict rules. Tests in `tests/test_install.py`. Install zip `behold-1.5.1.zip`. Not a new artist feature. Not a registration-graph refactor.
 - **Per-body auto-dress (1.5.0)** — KeyShot-class body looks without a material library. Compact Materials **Auto-dress** next to **Assist**: each imported body gets its own Metal / Plastic / Rubber / Glass / Paint from **STEP color** and/or **part name** (same Material Assist regexes). Name wins; a real CAD color tints the rack look (glass stays clear). Placeholder Blender white / 0.8 grey is not a color. Bodies with no hint are skipped (`NO_BODY_HINT` — name the bodies or use Assist for one look). **Assist is unchanged** — one look on the whole selection from filename / STEP hint. CAD Import Product (and Advanced Import STEP when Assist-after-import is on) run auto-dress; mesh OBJ/FBX/STL still use Assist. Empty Materials state unchanged. Panel order stays Import → Studio → Lights → Materials → Cameras → Shoot → Advanced. Tests in `tests/test_auto_dress.py`. Not a logo redo, IES/gobo catalog, utilities expansion, or BlenderKit library download.
@@ -65,7 +66,7 @@ Cadence: one focused feature cut, then a GitHub Release. **v1.0.0 is the first s
 
 ## First-ship chrome (Percival)
 
-N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI; v0.14.0 is compact Shot Manager on Shoot; v0.15.0 is test/opt only; v0.16.0 is Lights shape presets; v0.17.0 is compact Look (EV / WB / False Color) on Shoot; v0.18.0 is compact Bake HDRI on Studio; v0.19.0 is compact Batch export on Shoot; v0.20.0 is compositor look presets on the same Shoot Look card; v0.21.0 is compact Linking on Lights; v0.22.0 is compact DoF on Cameras; v0.23.0 is EEVEE Draft / Cycles Final on Shoot; v0.24.0 is Catcher on Studio; v0.25.0 is catalog Size on Shoot; **v1.0.0 is first stable**; **v1.1.0 is Gobo on Lights** (None / Blinds / Window / Circle); **v1.2.0 is IES on Lights** (Load / Sample / Clear); **v1.3.0 is Tessellation on Import** (Regenerate); **v1.4.0 is Cleanup on Import** (fillets / chamfers / holes); **v1.5.0 is Auto-dress on Materials** (per-body STEP color / name) — same chrome, no new mega-panel.
+N-panel keeps the three-click path skinny, but **physical order matches the work**. Lights, Materials, and Cameras sit between Studio and Shoot so artists do not scroll past Shoot to dress, then back. Turntable stays a compact row on Shoot — not a fourth first-class section. **v2.0.0** splits ownership: Product registers main + Import / Materials / Cameras / Shoot / Advanced; Studio and Lighting are top-level BEHOLD-tab sections (no `bl_parent_id`) so they install independently; Utilities is its own optional section. v0.9.0 is Percival chrome (hero, flow strip, cards, pie/header); v0.10.0 adds the update notice; v0.11.0 is cyclorama auto-fit (order already shoot-path); v0.12.0 is Percival `bl_order` + error copy; v0.13.0 is official mark + compact Studio HDRI; v0.14.0 is compact Shot Manager on Shoot; v0.15.0 is test/opt only; v0.16.0 is Lights shape presets; v0.17.0 is compact Look (EV / WB / False Color) on Shoot; v0.18.0 is compact Bake HDRI on Studio; v0.19.0 is compact Batch export on Shoot; v0.20.0 is compositor look presets on the same Shoot Look card; v0.21.0 is compact Linking on Lights; v0.22.0 is compact DoF on Cameras; v0.23.0 is EEVEE Draft / Cycles Final on Shoot; v0.24.0 is Catcher on Studio; v0.25.0 is catalog Size on Shoot; **v1.0.0 is first stable**; **v1.1.0 is Gobo on Lights** (None / Blinds / Window / Circle); **v1.2.0 is IES on Lights** (Load / Sample / Clear); **v1.3.0 is Tessellation on Import** (Regenerate); **v1.4.0 is Cleanup on Import** (fillets / chamfers / holes); **v1.5.0 is Auto-dress on Materials** (per-body STEP color / name) — same chrome, no new mega-panel.
 
 1. **Import** — **Import Product** file picker + one CAD backend line (**STEPper NEXT ready** / **OCP fallback** / **Install STEPper NEXT**) + compact **Tessellation** (Draft / Balanced / Fine / Ultra / Custom + **Regenerate**, tessellate only) + compact **Cleanup** (Fillets / Chamfers / Holes + Blend mm / Hole Ø mm + **Apply cleanup**). Auto-studio, optional dress-after-import, and the full CAD box stay in Advanced. Do not embed STEPper's import dialog.
 2. **Studio** — backdrop **White / Grey / Black** + one **Build** button + **Catcher** toggle, compact **HDRI** card (Load / Reset, strength, Z rotation, optional reflections-only), compact **Bake HDRI** (1K/2K, path, Include world, Apply after bake). No light mixer. Cyclorama auto-fits; **Studio Margin** and **Apply Catcher** stay in Advanced.
@@ -80,11 +81,11 @@ Backend operators stay registered. Pie / header / preferences do not replace the
 
 ## Coming / In flight
 
-**Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite; **1.1.0** adds procedural gobos; **1.2.0** adds IES practical lite; **1.3.0** adds live tessellation regenerate; **1.4.0** adds defeaturing lite; **1.5.0** adds per-body auto-dress; **1.5.1** fixes Install from Disk enable; **1.6.0** simplifies (one card / one job, utilities isolation). **Coming** after that (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
+**Implemented** through 0.4.0–0.25.0 is the 1.0.0 suite; **1.1.0** adds procedural gobos; **1.2.0** adds IES practical lite; **1.3.0** adds live tessellation regenerate; **1.4.0** adds defeaturing lite; **1.5.0** adds per-body auto-dress; **1.5.1** fixes Install from Disk enable; **1.6.0** simplifies (one card / one job, utilities isolation); **2.0.0** splits the monolith into four installable add-ons. **Coming** after that (not KeyShot / Light Wrangler parity theater): **[ROADMAP.md](ROADMAP.md)**.
 
-**Utilities track** (not a version bump): feature-flagged Danish wall, balcony mounts, and MinAltan eave / roof section helpers, default **off**. See [docs/UTILITIES.md](docs/UTILITIES.md). Panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced stays the product-render path.
+**Utilities track** (not a version bump in 1.6.0; own zip in 2.0.0): Danish wall, balcony mounts, and MinAltan eave / roof section helpers. See [docs/UTILITIES.md](docs/UTILITIES.md). Panel order Import → Studio → Lights → Materials → Cameras → Shoot → Advanced stays the product-render path.
 
-Not this PR (and not 1.6.0):
+Not this PR (and not 2.0.0 artist work):
 
 - Streamed IES / gobo catalogs (photometric BYO + one CC0 sample shipped in 1.2.0; Blinds / Window / Circle gobos shipped in 1.1.0).
 - Logo redo (current wordmark is a placeholder; official mark in the UI stays).
@@ -92,13 +93,14 @@ Not this PR (and not 1.6.0):
 - Light / shadow linking changes (lite shipped in 0.21.0).
 - Full Light Wrangler viewport HDRI gizmo parity.
 - Full BlenderKit browser / apply-from-search-results (login/search/apply hooks stay; no in-panel library).
-- Utilities stays feature-flagged and off (eave / roof helpers are on that track, not a product cut).
 
 Draft [PR #7](https://github.com/wckdboy/BEHOLD/pull/7) (`galahad/behold-step-vertical-smoke`) sketched STEP vertical on pre-0.4 chrome (v0.3.2). Leave PR #7 as historical draft — do not merge it as-is. [PR #11](https://github.com/wckdboy/BEHOLD/pull/11) is the 0.7.0 **smoke-only** fixture/tests/script; **0.7.0 supersedes #11** as the real STEPper NEXT first-class + mesh reliability + first-ship Import UX.
 
 ## Change log
 
-### 2026-09-15
+### 2026-09-17
+
+- v**2.0.0** Four-add-on suite: **BEHOLD Studio**, **BEHOLD Lighting**, **BEHOLD Product**, **BEHOLD Utilities**. Extract from the 1.6.0 monolith; vendored `common/`; four Install-from-Disk zips. Tests in `tests/test_install.py`. Install zips `behold-studio-2.0.0.zip` / `behold-lighting-2.0.0.zip` / `behold-product-2.0.0.zip` / `behold-utilities-2.0.0.zip`.
 
 ### 2026-09-15
 

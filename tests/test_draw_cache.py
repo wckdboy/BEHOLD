@@ -7,8 +7,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-draw_cache = load_module("behold/draw_cache.py", "behold_draw_cache")
-scene_scan = load_addon_module("behold/ui/scene_scan.py", "behold.ui.scene_scan")
+draw_cache = load_module("behold_common/draw_cache.py", "behold_draw_cache")
+scene_scan = load_addon_module("behold_product/ui/scene_scan.py", "behold_product.ui.scene_scan")
 
 
 def _read(relpath: str) -> str:
@@ -148,9 +148,9 @@ class SceneSnapTests(unittest.TestCase):
 
 class DrawPathWiringTests(unittest.TestCase):
     def test_panels_use_draw_once_cad_and_scene_snap(self) -> None:
-        panels = _read("behold/ui/panels.py")
-        chrome = _read("behold/ui/chrome.py")
-        detect = _read("behold/cad/detect.py")
+        panels = _read("behold_product/ui/panels.py")
+        chrome = _read("behold_product/ui/chrome.py")
+        detect = _read("behold_product/cad/detect.py")
         self.assertIn("cad_status_for_draw", panels)
         self.assertNotIn("cad_detect.cad_status()", panels)
         self.assertIn("scene_snap_from_context", panels)
@@ -164,7 +164,7 @@ class DrawPathWiringTests(unittest.TestCase):
         self.assertIn("cad_status_for_draw", detect)
 
     def test_operators_still_probe_cad_status_fresh(self) -> None:
-        ops = _read("behold/cad/operators.py")
+        ops = _read("behold_product/cad/operators.py")
         self.assertIn("detect.cad_status()", ops)
         self.assertIn("ensure_stepper_enabled", ops)
         self.assertNotIn("cad_status_for_draw", ops)

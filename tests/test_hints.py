@@ -7,7 +7,7 @@ import unittest
 
 from tests.support import load_module
 
-hints = load_module("behold/cad/hints.py", "behold_hints")
+hints = load_module("behold_product/cad/hints.py", "behold_hints")
 
 
 class HintTests(unittest.TestCase):

@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module
 
-batch = load_addon_module("behold/shoot/batch.py", "behold.shoot.batch")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+batch = load_addon_module("behold_product/shoot/batch.py", "behold_product.shoot.batch")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -168,7 +168,7 @@ class BatchPlanTests(unittest.TestCase):
 
 class BatchWiringTests(unittest.TestCase):
     def test_apply_renders_pngs_and_restores(self) -> None:
-        apply = _read("behold/shoot/batch_apply.py")
+        apply = _read("behold_product/shoot/batch_apply.py")
         self.assertIn("plan_batch", apply)
         self.assertIn("write_still=True", apply)
         self.assertIn("product_targets", apply)
@@ -179,11 +179,11 @@ class BatchWiringTests(unittest.TestCase):
         self.assertIn("progress_update", apply)
         self.assertIn("progress_end", apply)
         self.assertIn("angle_world_offset", apply)
-        self.assertIn("fill_output_tokens", _read("behold/shoot/operators.py"))
+        self.assertIn("fill_output_tokens", _read("behold_product/shoot/operators.py"))
 
     def test_operator_and_properties(self) -> None:
-        ops = _read("behold/shoot/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_product/shoot/operators.py")
+        props = _read("behold_product/properties.py")
         self.assertIn('bl_idname = "behold.batch_angles"', ops)
         self.assertIn('bl_label = "Batch export"', ops)
         self.assertIn("run_batch_export", ops)
@@ -193,7 +193,7 @@ class BatchWiringTests(unittest.TestCase):
         self.assertIn("Saved shots", props)
 
     def test_shoot_batch_card_stays_compact(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_shoot_first_ship")
         compact = _func_source(source, tree, "draw_batch_compact")

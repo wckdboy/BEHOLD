@@ -24,20 +24,16 @@ jobs:
       - name: Build zip
         run: make zip
 
-      - name: Resolve zip path
-        id: zip
+      - name: List suite zips
         run: |
           set -euo pipefail
-          ZIP="$(ls -1 dist/behold-*.zip | head -n 1)"
-          echo "path=${ZIP}" >> "$GITHUB_OUTPUT"
-          echo "name=$(basename "${ZIP}")" >> "$GITHUB_OUTPUT"
-          echo "Built ${ZIP}"
+          ls -1 dist/behold-studio-*.zip dist/behold-lighting-*.zip dist/behold-product-*.zip dist/behold-utilities-*.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: behold-addon
-          path: ${{ steps.zip.outputs.path }}
+          path: dist/behold-*.zip
           if-no-files-found: error
           retention-days: 30
 
@@ -45,7 +41,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.zip.outputs.path }}
+          files: dist/behold-*.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
         env:

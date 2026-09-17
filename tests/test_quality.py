@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-quality = load_module("behold/shoot/quality.py", "behold_shoot_quality")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+quality = load_module("behold_product/shoot/quality.py", "behold_shoot_quality")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -162,8 +162,8 @@ class QualityMessageTests(unittest.TestCase):
 
 class QualityWiringTests(unittest.TestCase):
     def test_apply_writes_engine_rna(self) -> None:
-        apply = _read("behold/shoot/quality_apply.py")
-        spec = _read("behold/shoot/quality.py")
+        apply = _read("behold_product/shoot/quality_apply.py")
+        spec = _read("behold_product/shoot/quality.py")
         self.assertIn("BLENDER_EEVEE_NEXT", spec)
         self.assertIn("available_engine_ids", apply)
         self.assertIn("on_quality_update", apply)
@@ -174,13 +174,13 @@ class QualityWiringTests(unittest.TestCase):
         self.assertIn("taa_render_samples", spec)
         self.assertIn("OPENIMAGEDENOISE", apply)
         self.assertIn("cycles_fallback_plan", apply)
-        setup = _read("behold/studio/setup.py")
-        self.assertIn("apply_render_quality(context)", setup)
+        setup = _read("behold_studio/setup.py")
+        self.assertIn("try_operator(APPLY_QUALITY_OP)", setup)
         self.assertNotIn('render.engine = "CYCLES"', setup)
 
     def test_operators_and_properties(self) -> None:
-        ops = _read("behold/shoot/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_product/shoot/operators.py")
+        props = _read("behold_product/properties.py")
         self.assertIn("from .quality_apply import apply_render_quality", ops)
         self.assertIn("QUALITY_SAMPLES = quality_lib.QUALITY_SAMPLES", ops)
         self.assertIn("engine_label", ops)
@@ -189,14 +189,14 @@ class QualityWiringTests(unittest.TestCase):
         self.assertIn("on_quality_update", props)
         self.assertIn("QUALITY_DEFAULT", props)
         self.assertIn("Draft = EEVEE Next", props)
-        batch = _read("behold/shoot/batch_apply.py")
+        batch = _read("behold_product/shoot/batch_apply.py")
         self.assertIn('result.get("ok")', batch)
         smoke = _read("scripts/smoke_step_vertical.py")
         self.assertIn("apply_render_quality", smoke)
         self.assertNotIn('scene.render.engine = "CYCLES"', smoke)
 
     def test_shoot_card_keeps_draft_final_and_hint(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_shoot_first_ship")
         parked = _func_source(source, tree, "draw_shoot_parked")
@@ -211,7 +211,7 @@ class QualityWiringTests(unittest.TestCase):
         self.assertIn("SHOOT_ENGINE_HINT", parked)
         self.assertIn("behold.apply_quality", parked)
         self.assertIn("render_quality", parked)
-        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
         self.assertEqual(
             list(flow.N_PANEL_CLASS_ORDER),
             [
@@ -223,6 +223,7 @@ class QualityWiringTests(unittest.TestCase):
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
             ],
         )
 

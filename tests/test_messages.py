@@ -7,11 +7,11 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
-flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
-presets = load_module("behold/materials/presets.py", "behold_presets_messages")
-turntable = load_module("behold/shoot/turntable.py", "behold_turntable_messages")
-invoke = load_module("behold/product_import/invoke.py", "behold_mesh_invoke_messages")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
+flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
+presets = load_module("behold_product/materials/presets.py", "behold_presets_messages")
+turntable = load_module("behold_product/shoot/turntable.py", "behold_turntable_messages")
+invoke = load_module("behold_product/product_import/invoke.py", "behold_mesh_invoke_messages")
 
 
 def _read(relpath: str) -> str:
@@ -155,28 +155,29 @@ class MessageConstantTests(unittest.TestCase):
 
 class OperatorWiringTests(unittest.TestCase):
     def test_primary_operators_import_shared_copy(self) -> None:
-        studio = _read("behold/studio/operators.py")
-        shoot = _read("behold/shoot/operators.py")
-        lights = _read("behold/light_draw/operators.py")
-        materials = _read("behold/materials/local_rack.py")
-        product = _read("behold/product_import/operators.py")
-        cad = _read("behold/cad/operators.py")
-        setup = _read("behold/studio/setup.py")
+        studio = _read("behold_studio/operators.py")
+        lighting = _read("behold_lighting/operators.py")
+        shoot = _read("behold_product/shoot/operators.py")
+        lights = _read("behold_lighting/light_draw/operators.py")
+        materials = _read("behold_product/materials/local_rack.py")
+        product = _read("behold_product/product_import/operators.py")
+        cad = _read("behold_product/cad/operators.py")
+        setup = _read("behold_studio/setup.py")
         self.assertIn("NO_MESH_SELECTED", studio)
         self.assertIn("BUILD_NEEDS_MESH", studio)
         self.assertIn("behold.load_hdri", studio)
         self.assertIn("behold.reset_world", studio)
         self.assertIn("behold.bake_hdri", studio)
         self.assertIn("behold.apply_catcher", studio)
-        self.assertIn("behold.apply_light_preset", studio)
-        self.assertIn("behold.apply_gobo", studio)
-        self.assertIn("behold.load_ies", studio)
-        self.assertIn("behold.clear_ies", studio)
-        self.assertIn("behold.apply_ies", studio)
-        self.assertIn("behold.link_selected", studio)
-        self.assertIn("behold.exclude_selected", studio)
-        self.assertIn("behold.unlink_selected", studio)
-        self.assertIn("behold.solo_product_link", studio)
+        self.assertIn("behold.apply_light_preset", lighting)
+        self.assertIn("behold.apply_gobo", lighting)
+        self.assertIn("behold.load_ies", lighting)
+        self.assertIn("behold.clear_ies", lighting)
+        self.assertIn("behold.apply_ies", lighting)
+        self.assertIn("behold.link_selected", lighting)
+        self.assertIn("behold.exclude_selected", lighting)
+        self.assertIn("behold.unlink_selected", lighting)
+        self.assertIn("behold.solo_product_link", lighting)
         self.assertIn("EMPTY_NO_MESH", setup)
         self.assertIn("BUILD_NEEDS_MESH = EMPTY_NO_MESH", setup)
         self.assertIn("report_set", studio)
@@ -195,7 +196,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("behold.apply_quality", shoot)
         self.assertIn("quality_apply", shoot)
         self.assertIn("behold.apply_resolution", shoot)
-        apply_src = _read("behold/shoot/exposure_apply.py")
+        apply_src = _read("behold_product/shoot/exposure_apply.py")
         self.assertIn("on_exposure_update", apply_src)
         self.assertIn("LIGHT_DRAW_NEEDS_VIEWPORT", lights)
         self.assertIn("LIGHT_DRAW_NO_LIGHTS", lights)
@@ -214,7 +215,7 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn('self.report({"INFO"}, TURNTABLE_READY_PLAY)', shoot)
 
     def test_update_check_copy_matches_core(self) -> None:
-        core = load_addon_module("behold/updates/core.py", "behold.updates.core")
+        core = load_addon_module("behold_common/updates/core.py", "behold_common.updates.core")
         check = core.describe_failure("check")
         missing = core.describe_failure("no_zip")
         self.assertEqual(
@@ -230,9 +231,9 @@ class OperatorWiringTests(unittest.TestCase):
         self.assertIn("Open release", messages.UPDATE_CHECK_UNAVAILABLE)
         self.assertEqual(messages.report_type(messages.UPDATE_CHECK_OFFLINE), "WARNING")
         self.assertEqual(messages.report_type(messages.UPDATE_CHECK_UNAVAILABLE), "WARNING")
-        ops = _read("behold/updates/operators.py")
+        ops = _read("behold_common/updates/operators.py")
         self.assertIn("update_failure_report", ops)
-        self.assertIn("behold.check_updates", ops)
+        self.assertIn('bl_idname = f"{ns}.check_updates"', ops)
 
 
 if __name__ == "__main__":

@@ -9,8 +9,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-presets = load_module("behold/studio/light_presets.py", "behold_light_presets")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+presets = load_module("behold_lighting/light_presets.py", "behold_light_presets")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -180,7 +180,7 @@ class NodeGraphTests(unittest.TestCase):
 
 class LightShapeWiringTests(unittest.TestCase):
     def test_apply_module_wires_the_spec(self) -> None:
-        source = _read("behold/studio/light_shape.py")
+        source = _read("behold_lighting/light_shape.py")
         self.assertIn("apply_shape_props", source)
         self.assertIn("node_graph_for", source)
         self.assertIn("nodes.clear()", source)
@@ -188,7 +188,7 @@ class LightShapeWiringTests(unittest.TestCase):
         self.assertIn("gradient_type", source)
         self.assertIn("color_ramp", source)
         self.assertIn("elements.new", source)
-        self.assertIn("ShaderNodeOutputLight", _read("behold/studio/light_presets.py"))
+        self.assertIn("ShaderNodeOutputLight", _read("behold_lighting/light_presets.py"))
         self.assertIn("use_nodes = False", source)
         self.assertIn("create_if_missing", source)
         self.assertIn("add_extra_light", source)
@@ -196,10 +196,10 @@ class LightShapeWiringTests(unittest.TestCase):
         self.assertIn("product_frame", source)
 
     def test_operator_and_property(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_lighting/operators.py")
+        props = _read("behold_lighting/properties.py")
         self.assertIn('bl_idname = "behold.apply_light_preset"', ops)
-        self.assertIn("Apply to active", _read("behold/ui/panels.py"))
+        self.assertIn("Apply to active", _read("behold_lighting/ui/panels.py"))
         self.assertIn("light_presets.preset_enum_items", ops)
         self.assertIn("apply_preset_in_scene", ops)
         self.assertIn("unknown_light_preset_message", ops)
@@ -209,7 +209,7 @@ class LightShapeWiringTests(unittest.TestCase):
         self.assertIn("light_shape_enum_items", props)
 
     def test_panel_shape_row_stays_off_empty_state(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_lighting/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_lights_section")
         shape = _func_source(source, tree, "draw_lights_shape")

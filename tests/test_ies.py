@@ -12,8 +12,8 @@ from pathlib import Path
 
 from tests.support import ROOT, load_addon_module, load_module
 
-ies = load_module("behold/studio/ies.py", "behold_studio_ies")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+ies = load_module("behold_lighting/ies.py", "behold_studio_ies")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -146,7 +146,7 @@ class IesSampleTests(unittest.TestCase):
         self.assertIn("TILT=NONE", text)
         self.assertIn("CC0", text)
         self.assertLess(path.stat().st_size, 2048)
-        readme = _read("behold/ies/README.md")
+        readme = _read("behold_lighting/ies/README.md")
         self.assertIn("CC0", readme)
         self.assertIn("Bring your own", readme)
         self.assertIn("sample_spot.ies", readme)
@@ -154,7 +154,7 @@ class IesSampleTests(unittest.TestCase):
 
 class IesWiringTests(unittest.TestCase):
     def test_apply_module_wires_the_spec(self) -> None:
-        source = _read("behold/studio/ies_apply.py")
+        source = _read("behold_lighting/ies_apply.py")
         self.assertIn("node_graph_for", source)
         self.assertIn("nodes.clear()", source)
         self.assertIn("tree.nodes.new", source)
@@ -177,8 +177,8 @@ class IesWiringTests(unittest.TestCase):
         self.assertIn("_clear_gobo_marker", source)
 
     def test_operator_and_property(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_lighting/operators.py")
+        props = _read("behold_lighting/properties.py")
         self.assertIn('bl_idname = "behold.load_ies"', ops)
         self.assertIn('bl_idname = "behold.clear_ies"', ops)
         self.assertIn('bl_idname = "behold.apply_ies"', ops)
@@ -193,7 +193,7 @@ class IesWiringTests(unittest.TestCase):
         self.assertIn("bundled_sample_path", ops)
 
     def test_shape_apply_does_not_reapply_ies_or_gobo(self) -> None:
-        ops = _read("behold/studio/operators.py")
+        ops = _read("behold_lighting/operators.py")
         tree = ast.parse(ops, filename="operators.py")
         shape_cls = None
         for node in tree.body:
@@ -214,11 +214,11 @@ class IesWiringTests(unittest.TestCase):
         self.assertNotIn("apply_gobo_in_scene", src)
 
     def test_gobo_apply_releases_ies(self) -> None:
-        source = _read("behold/studio/gobo_apply.py")
+        source = _read("behold_lighting/gobo_apply.py")
         self.assertIn("release_ies_if_active", source)
 
     def test_panel_ies_card_stays_off_empty_state(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_lighting/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_lights_section")
         ies = _func_source(source, tree, "draw_lights_ies")

@@ -25,15 +25,15 @@ except Exception as exc:  # noqa: BLE001
     _OCP_PRIMS_ERROR = exc
 
 defeaturing = load_addon_module(
-    "behold/cad/defeaturing.py", "behold.cad.defeaturing"
+    "behold_product/cad/defeaturing.py", "behold_product.cad.defeaturing"
 )
 ocp_defeature = load_addon_module(
-    "behold/cad/ocp_defeature.py", "behold.cad.ocp_defeature"
+    "behold_product/cad/ocp_defeature.py", "behold_product.cad.ocp_defeature"
 )
-ocp_core = load_module("behold/cad/ocp_core.py", "behold_ocp_core_defeature")
-stepper_api = load_module("behold/cad/stepper_api.py", "behold_stepper_api_df")
-regenerate = load_addon_module("behold/cad/regenerate.py", "behold.cad.regenerate")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+ocp_core = load_module("behold_product/cad/ocp_core.py", "behold_ocp_core_defeature")
+stepper_api = load_module("behold_product/cad/stepper_api.py", "behold_stepper_api_df")
+regenerate = load_addon_module("behold_product/cad/regenerate.py", "behold_product.cad.regenerate")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -363,10 +363,10 @@ class BlockerAndCopyTests(unittest.TestCase):
 
 class WiringTests(unittest.TestCase):
     def test_operators_force_ocp_when_cleanup_on(self) -> None:
-        ops = _read("behold/cad/operators.py")
-        apply_src = _read("behold/cad/regenerate_apply.py")
-        import_src = _read("behold/cad/ocp_import.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_product/cad/operators.py")
+        apply_src = _read("behold_product/cad/regenerate_apply.py")
+        import_src = _read("behold_product/cad/ocp_import.py")
+        props = _read("behold_product/properties.py")
         self.assertIn("scene_cleanup_plan", ops)
         self.assertIn("_cleanup_blockers", ops)
         self.assertIn("cad_cleanup_fillets", ops)
@@ -384,7 +384,7 @@ class WiringTests(unittest.TestCase):
         self.assertNotIn("occ_defeature", ops)
 
     def test_import_panel_cleanup_card(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_import_first_ship")
         self.assertIn("draw_import_tessellation", body)
@@ -411,9 +411,11 @@ class WiringTests(unittest.TestCase):
         self.assertIn("cad_cleanup_fillets", parked)
         self.assertIn("cad_blend_mm", parked)
         self.assertIn("behold.cleanup_cad", parked)
-        lights = _func_source(source, tree, "draw_lights_section")
+        lighting = _read("behold_lighting/ui/panels.py")
+        lighting_tree = ast.parse(lighting, filename="lighting_panels.py")
+        lights = _func_source(lighting, lighting_tree, "draw_lights_section")
         self.assertNotIn("cad_cleanup_fillets", lights)
-        self.assertIn("light_ies_filepath", _func_source(source, tree, "draw_lights_ies"))
+        self.assertIn("light_ies_filepath", _func_source(lighting, lighting_tree, "draw_lights_ies"))
 
 
 class OcpDefeaturingTests(unittest.TestCase):

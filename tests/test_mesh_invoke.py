@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-invoke = load_module("behold/product_import/invoke.py", "behold_mesh_invoke")
-formats = load_module("behold/product_import/formats.py", "behold_formats")
+invoke = load_module("behold_product/product_import/invoke.py", "behold_mesh_invoke")
+formats = load_module("behold_product/product_import/formats.py", "behold_formats")
 
 
 class MeshKwargAttemptTests(unittest.TestCase):
@@ -78,7 +78,7 @@ class MeshFailureMessageTests(unittest.TestCase):
 
 class NativeWiringTests(unittest.TestCase):
     def test_native_reports_which_operator_failed(self) -> None:
-        source = (ROOT / "behold" / "product_import" / "native.py").read_text(
+        source = (ROOT / "behold_product" / "product_import" / "native.py").read_text(
             encoding="utf-8"
         )
         self.assertIn("format_mesh_import_failure", source)

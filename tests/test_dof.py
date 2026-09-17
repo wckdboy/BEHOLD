@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module
 
-dof = load_addon_module("behold/studio/dof.py", "behold.studio.dof")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+dof = load_addon_module("behold_product/dof.py", "behold_product.dof")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -248,8 +248,8 @@ class DofMessageTests(unittest.TestCase):
 
 class DofWiringTests(unittest.TestCase):
     def test_apply_writes_camera_dof_rna(self) -> None:
-        apply = _read("behold/studio/dof_apply.py")
-        spec = _read("behold/studio/dof.py")
+        apply = _read("behold_product/dof_apply.py")
+        spec = _read("behold_product/dof.py")
         self.assertIn("use_dof", apply)
         self.assertIn("aperture_fstop", apply)
         self.assertIn("focus_distance", apply)
@@ -260,13 +260,13 @@ class DofWiringTests(unittest.TestCase):
         self.assertIn("is_studio_mesh_name", apply)
         self.assertIn("Camera.dof", spec)
         self.assertIn("aperture_fstop", spec)
-        cameras = _read("behold/studio/cameras.py")
+        cameras = _read("behold_product/cameras.py")
         self.assertIn("dof_lib.DEFAULT_FSTOP", cameras)
         self.assertIn("use_dof = False", cameras)
 
     def test_operators_and_properties(self) -> None:
-        ops = _read("behold/shoot/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_product/shoot/operators.py")
+        props = _read("behold_product/properties.py")
         self.assertIn('bl_idname = "behold.apply_camera_dof"', ops)
         self.assertIn('bl_idname = "behold.focus_product"', ops)
         self.assertIn('bl_idname = "behold.focus_selected"', ops)
@@ -279,7 +279,7 @@ class DofWiringTests(unittest.TestCase):
         self.assertIn("DOF_DEFAULT_FSTOP", props)
 
     def test_cameras_card_stays_off_empty_state(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         section = _func_source(source, tree, "draw_cameras_section")
         card = _func_source(source, tree, "draw_cameras_dof")

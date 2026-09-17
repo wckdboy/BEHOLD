@@ -7,8 +7,8 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-hints = load_module("behold/cad/hints.py", "behold_hints")
-presets = load_module("behold/materials/presets.py", "behold_presets")
+hints = load_module("behold_product/cad/hints.py", "behold_hints")
+presets = load_module("behold_product/materials/presets.py", "behold_presets")
 
 
 def _read(relpath: str) -> str:
@@ -198,7 +198,7 @@ class AssistMappingTests(unittest.TestCase):
 
 class MaterialsWiringTests(unittest.TestCase):
     def test_apply_operator_and_helpers(self) -> None:
-        source = _read("behold/materials/local_rack.py")
+        source = _read("behold_product/materials/local_rack.py")
         self.assertIn('bl_idname = "behold.apply_local_material"', source)
         self.assertIn("def apply_to_objects", source)
         self.assertIn("def apply_look_to_objects", source)
@@ -211,21 +211,21 @@ class MaterialsWiringTests(unittest.TestCase):
         self.assertIn("BSDF_PRINCIPLED", source)
 
     def test_assist_applies_local_before_optional_search(self) -> None:
-        assist = _read("behold/cad/material_assist.py")
+        assist = _read("behold_product/cad/material_assist.py")
         self.assertIn("def run_material_assist", assist)
         self.assertIn("plan_assist", assist)
         self.assertIn("apply_to_objects", assist)
         self.assertIn("blenderkit_search", assist)
-        ops = _read("behold/cad/operators.py")
+        ops = _read("behold_product/cad/operators.py")
         self.assertIn("run_material_assist", ops)
         self.assertIn('bl_idname = "behold.cad_material_assist"', ops)
-        post = _read("behold/product_import/operators.py")
+        post = _read("behold_product/product_import/operators.py")
         self.assertIn("run_material_assist", post)
         self.assertIn("run_auto_dress", post)
         self.assertNotIn("Material Assist query", post)
 
     def test_panel_registers_materials_section(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         self.assertIn("BEHOLD_PT_materials", source)
         self.assertIn("draw_materials_section", source)
         self.assertIn("behold.apply_local_material", source)
@@ -238,7 +238,7 @@ class MaterialsWiringTests(unittest.TestCase):
         self.assertIn("blenderkit_login", source)
 
     def test_blenderkit_hooks_stay_registered(self) -> None:
-        source = _read("behold/materials/blenderkit_bridge.py")
+        source = _read("behold_product/materials/blenderkit_bridge.py")
         for bl_id in (
             "behold.blenderkit_login",
             "behold.blenderkit_search",
