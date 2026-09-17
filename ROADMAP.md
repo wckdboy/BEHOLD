@@ -6,15 +6,21 @@ is procedural gobo lite. **v1.2.0** is IES practical lite (BYO `.ies`, not a
 streamed catalog). **v1.3.0** is live tessellation regenerate. **v1.4.0** is
 defeaturing lite. **v1.5.0** is per-body auto-dress. **v1.5.1** is the
 Install from Disk enable fix. **v1.6.0** is the deep simplify
-(one card / one job, utilities isolation). Each later cut
+(one card / one job, utilities isolation). **v2.0.0** is the four-add-on
+suite (Studio / Lighting / Product / Utilities). Each later cut
 still closes one gap product artists
 actually hit, then we ship a GitHub Release. See [CHECKPOINT.md](CHECKPOINT.md)
 for living status.
 
 ## Implemented
 
-The 1.6.0 zip is this path. Nothing below is “coming” anymore.
+The 2.0.0 zips are this path. Nothing below is “coming” anymore.
 
+- **2.0.0 Four-add-on suite** — **BEHOLD Studio**, **BEHOLD Lighting**,
+  **BEHOLD Product**, **BEHOLD Utilities** as independent Install-from-Disk
+  zips. Extract from 1.6.0; vendored `common/`; Product owns Import →
+  Materials → Cameras → Shoot. Utilities is optional (no feature flag).
+  Not new artist toys. Not a logo redo.
 - **1.6.0 Deep simplify** — subtract overlap. Utilities operators/panel stay
   off the enable import graph until the flag is on. Lights Shape / Gobo / IES
   teardown no longer restore each other. Tessellation, Cleanup, and Auto-dress
@@ -104,11 +110,11 @@ The 1.6.0 zip is this path. Nothing below is “coming” anymore.
 
 ## Coming
 
-Honest order after 1.6.0. None of this is in the 1.6.0 zip.
+Honest order after 2.0.0. None of this is in the 2.0.0 zips.
 
-Feature-flagged **Utilities** (Danish wall + balcony mounts + eave/roof
-sections, default off) is a side track, not a product release —
-[docs/UTILITIES.md](docs/UTILITIES.md).
+Optional **Utilities** (Danish wall + balcony mounts + eave/roof
+sections) ships as `behold-utilities-2.0.0.zip` — a side track, not a
+product-render milestone — [docs/UTILITIES.md](docs/UTILITIES.md).
 
 1. **Logo redo** — replace the placeholder wordmark. Official mark in the
    N-panel can stay until the new art is ready.

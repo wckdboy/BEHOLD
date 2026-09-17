@@ -9,9 +9,9 @@ import unittest
 from tests.support import ROOT, load_addon_module, load_module
 
 linking = load_addon_module(
-    "behold/studio/light_linking.py", "behold.studio.light_linking"
+    "behold_lighting/light_linking.py", "behold_lighting.light_linking"
 )
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -288,10 +288,10 @@ class CopyTests(unittest.TestCase):
 
 class WiringTests(unittest.TestCase):
     def test_operators_and_property(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
-        apply = _read("behold/studio/light_linking_apply.py")
-        spec = _read("behold/studio/light_linking.py")
+        ops = _read("behold_lighting/linking_ops.py")
+        props = _read("behold_lighting/properties.py")
+        apply = _read("behold_lighting/light_linking_apply.py")
+        spec = _read("behold_lighting/light_linking.py")
         self.assertIn('bl_idname = "behold.link_selected"', ops)
         self.assertIn('bl_idname = "behold.exclude_selected"', ops)
         self.assertIn('bl_idname = "behold.unlink_selected"', ops)
@@ -313,7 +313,7 @@ class WiringTests(unittest.TestCase):
         self.assertIn("lookup_collection_entry", apply)
 
     def test_lights_card_stays_off_empty_state(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_lighting/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_lights_section")
         linking = _func_source(source, tree, "draw_lights_linking")

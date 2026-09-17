@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module
 
-catcher = load_addon_module("behold/studio/catcher.py", "behold.studio.catcher")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+catcher = load_addon_module("behold_studio/catcher.py", "behold_studio.catcher")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -212,9 +212,9 @@ class CatcherMessageTests(unittest.TestCase):
 
 class CatcherWiringTests(unittest.TestCase):
     def test_apply_writes_catcher_and_contact_rna(self) -> None:
-        apply = _read("behold/studio/catcher_apply.py")
-        spec = _read("behold/studio/catcher.py")
-        setup = _read("behold/studio/setup.py")
+        apply = _read("behold_studio/catcher_apply.py")
+        spec = _read("behold_studio/catcher.py")
+        setup = _read("behold_studio/setup.py")
         self.assertIn("is_shadow_catcher", apply)
         self.assertIn("use_contact_shadow", apply)
         self.assertIn("contact_shadow_distance", apply)
@@ -229,19 +229,20 @@ class CatcherWiringTests(unittest.TestCase):
         self.assertIn("on_catcher_update", apply)
 
     def test_operators_and_properties(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
-        ids = _read("behold/studio/camera_ids.py")
-        presets = _read("behold/materials/presets.py")
+        ops = _read("behold_studio/operators.py")
+        props = _read("behold_studio/properties.py")
+        ids = _read("behold_common/camera_ids.py")
+        dressable = _read("behold_common/ids.py")
         self.assertIn('bl_idname = "behold.apply_catcher"', ops)
         self.assertIn("catcher_apply.apply_ground_contact", ops)
         self.assertIn("include_shadow_catcher", props)
         self.assertIn("on_catcher_update", props)
         self.assertIn("_ContactShadow", ids)
-        self.assertIn("BEHOLD_ContactShadow", presets)
+        self.assertIn("is_studio_mesh_name", dressable)
+        self.assertIn("def is_dressable_mesh_name", dressable)
 
     def test_studio_toggle_stays_on_build_row(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_studio/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_studio_first_ship")
         parked = _func_source(source, tree, "draw_studio_parked")
@@ -256,7 +257,7 @@ class CatcherWiringTests(unittest.TestCase):
         self.assertIn("include_shadow_catcher", parked)
         self.assertIn("behold.apply_catcher", parked)
         self.assertNotIn("behold.apply_catcher", first)
-        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
         self.assertEqual(
             list(flow.N_PANEL_CLASS_ORDER),
             [
@@ -268,6 +269,7 @@ class CatcherWiringTests(unittest.TestCase):
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
             ],
         )
 

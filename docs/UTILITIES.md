@@ -1,24 +1,31 @@
 # BEHOLD Utilities
 
-Feature-flagged CAD/build helpers for **MinAltan / Scandinavian balcony-mount
+Optional CAD/build helpers for **MinAltan / Scandinavian balcony-mount
 workflows**. Artists use these to show how a balcony sits in a Danish apartment
 wall — not as structural engineering, and **not** as part of the default
 product-render path.
 
-This track is **not a product release**. Addon version is independent of this
-track (currently v1.6.0). Do not treat Utilities as a product milestone.
+This track is **not a product release**. In **1.6.0** it lived behind the
+monolith preference `enable_utilities` (default off). In **v2.0.0** it is its
+own installable add-on: `behold-utilities-2.0.0.zip`. Do not treat Utilities as
+a product-render milestone.
 
 ## Enable
 
-Default **off**. When off, there is no Utilities N-panel and the wall / mount /
-eave operators are **not imported or registered** (a bug in those modules
-cannot brick core enable). They do not appear on Import → Studio →
-Lights → Materials → Cameras → Shoot.
+Install **BEHOLD Utilities** from Disk, then enable it. There is no
+`enable_utilities` switch on Product / Studio / Lighting — the **Utilities
+panel** is on whenever this zip is enabled. It does not appear unless you
+install this add-on. Import → Studio → Lights → Materials → Cameras → Shoot
+stays the product-render path.
 
-1. Edit → Preferences → Add-ons → **BEHOLD**
-2. Chrome → **Utilities panel** (`enable_utilities`)
-3. Open the 3D Viewport sidebar (`N`) → **BEHOLD** → **Utilities** (after
+1. Get `behold-utilities-2.0.0.zip` (after Studio, Lighting, and Product).
+2. Blender → Edit → Preferences → Get Extensions → **Install from Disk**
+3. Enable **BEHOLD Utilities**
+4. Open the 3D Viewport sidebar (`N`) → **BEHOLD** → **Utilities** (after
    Advanced, collapsed closed)
+
+Migrating from 1.6.0: uninstall the monolith, then install this zip. The old
+Chrome → **Utilities panel** (`enable_utilities`) checkbox is gone.
 
 ## Danish wall
 
@@ -82,7 +89,7 @@ use the `BEHOLD_Util_` prefix so they never count as the imported product.
 
 ## OpenSCAD (optional)
 
-`behold/utilities/openscad/wall_stack.scad` is a millimetre wall-stack template.
+`behold_utilities/openscad/wall_stack.scad` is a millimetre wall-stack template.
 **Export wall .scad** writes the current panel dimensions to a text block and,
 when the `.blend` is saved, to `behold_danish_wall.scad` beside it. Mount kits
 and eave sections are Blender-only.
@@ -90,5 +97,5 @@ and eave sections are Blender-only.
 ## Out of scope
 
 Full BIM / IFC, structural engineering, replacing STEPper, logo redo, merging
-Utilities into Import → Shoot, tagging a GitHub Release, encoding kvistaltan
-planning rules.
+Utilities into Import → Shoot, tagging a GitHub Release *only* for this track,
+encoding kvistaltan planning rules.

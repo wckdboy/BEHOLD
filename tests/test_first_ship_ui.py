@@ -8,7 +8,9 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-PANELS = ROOT / "behold" / "ui" / "panels.py"
+PRODUCT_PANELS = ROOT / "behold_product" / "ui" / "panels.py"
+STUDIO_PANELS = ROOT / "behold_studio" / "ui" / "panels.py"
+LIGHTING_PANELS = ROOT / "behold_lighting" / "ui" / "panels.py"
 CHECKPOINT = ROOT / "CHECKPOINT.md"
 
 
@@ -29,15 +31,19 @@ def _class_source(source: str, tree: ast.Module, name: str) -> str:
 class FirstShipUiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.source = PANELS.read_text(encoding="utf-8")
-        cls.tree = ast.parse(cls.source, filename=str(PANELS))
+        cls.source = PRODUCT_PANELS.read_text(encoding="utf-8")
+        cls.tree = ast.parse(cls.source, filename=str(PRODUCT_PANELS))
+        cls.studio_source = STUDIO_PANELS.read_text(encoding="utf-8")
+        cls.studio_tree = ast.parse(cls.studio_source, filename=str(STUDIO_PANELS))
+        cls.lighting_source = LIGHTING_PANELS.read_text(encoding="utf-8")
+        cls.lighting_tree = ast.parse(cls.lighting_source, filename=str(LIGHTING_PANELS))
 
     def test_registered_panels_are_first_ship_plus_advanced(self) -> None:
         self.assertIn("BEHOLD_PT_advanced", self.source)
         self.assertIn("BEHOLD_PT_import", self.source)
-        self.assertIn("BEHOLD_PT_studio", self.source)
+        self.assertIn("BEHOLD_PT_studio", self.studio_source)
         self.assertIn("BEHOLD_PT_shoot", self.source)
-        self.assertIn("BEHOLD_PT_lights", self.source)
+        self.assertIn("BEHOLD_PT_lights", self.lighting_source)
         self.assertIn("BEHOLD_PT_cameras", self.source)
         self.assertIn("BEHOLD_PT_materials", self.source)
         self.assertNotIn("BEHOLD_PT_light_draw", self.source)
@@ -56,16 +62,27 @@ class FirstShipUiTests(unittest.TestCase):
             [
                 "BEHOLD_PT_main",
                 "BEHOLD_PT_import",
-                "BEHOLD_PT_studio",
-                "BEHOLD_PT_lights",
                 "BEHOLD_PT_materials",
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
             ],
         )
-        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
-        self.assertEqual(tuple(names[1:]), flow.PANEL_BL_IDNAMES)
+        flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
+        self.assertEqual(
+            flow.N_PANEL_CLASS_ORDER,
+            (
+                "BEHOLD_PT_main",
+                "BEHOLD_PT_import",
+                "BEHOLD_PT_studio",
+                "BEHOLD_PT_lights",
+                "BEHOLD_PT_materials",
+                "BEHOLD_PT_cameras",
+                "BEHOLD_PT_shoot",
+                "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
+            ),
+        )
         self.assertEqual(flow.PANEL_BL_IDNAMES, flow.N_PANEL_CLASS_ORDER[1:])
 
     def test_main_panel_has_hero_and_flow(self) -> None:
@@ -76,7 +93,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("Light Mixer", body)
 
     def test_child_panels_use_shoot_last_bl_order(self) -> None:
-        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
         self.assertEqual(
             list(flow.N_PANEL_CLASS_ORDER),
             [
@@ -88,27 +105,43 @@ class FirstShipUiTests(unittest.TestCase):
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
             ],
         )
         expected = flow.CHILD_PANEL_BL_ORDER
-        for name, order in expected.items():
+        for name in (
+            "BEHOLD_PT_import",
+            "BEHOLD_PT_materials",
+            "BEHOLD_PT_cameras",
+            "BEHOLD_PT_shoot",
+            "BEHOLD_PT_advanced",
+        ):
             body = _class_source(self.source, self.tree, name)
-            self.assertIn(f"bl_order = CHILD_PANEL_BL_ORDER[\"{name}\"]", body)
+            self.assertIn(f'bl_order = CHILD_PANEL_BL_ORDER["{name}"]', body)
+        self.assertIn("bl_order = 20", self.studio_source)
+        self.assertIn("bl_order = 30", self.lighting_source)
         self.assertLess(expected["BEHOLD_PT_import"], expected["BEHOLD_PT_studio"])
         self.assertLess(expected["BEHOLD_PT_studio"], expected["BEHOLD_PT_lights"])
         self.assertLess(expected["BEHOLD_PT_lights"], expected["BEHOLD_PT_materials"])
         self.assertLess(expected["BEHOLD_PT_materials"], expected["BEHOLD_PT_cameras"])
         self.assertLess(expected["BEHOLD_PT_cameras"], expected["BEHOLD_PT_shoot"])
         self.assertLess(expected["BEHOLD_PT_shoot"], expected["BEHOLD_PT_advanced"])
+        self.assertLess(expected["BEHOLD_PT_advanced"], expected["BEHOLD_PT_utilities"])
 
     def test_advanced_defaults_closed(self) -> None:
         advanced = _class_source(self.source, self.tree, "BEHOLD_PT_advanced")
         self.assertIn("DEFAULT_CLOSED", advanced)
         self.assertIn("draw_import_parked", advanced)
-        self.assertIn("draw_studio_parked", advanced)
         self.assertIn("draw_materials_parked", advanced)
-        self.assertIn("draw_light_draw_parked", advanced)
         self.assertIn("draw_shoot_parked", advanced)
+        studio_adv = _class_source(self.studio_source, self.studio_tree, "BEHOLD_PT_studio_advanced")
+        self.assertIn("DEFAULT_CLOSED", studio_adv)
+        self.assertIn("draw_studio_parked", studio_adv)
+        lights_adv = _class_source(
+            self.lighting_source, self.lighting_tree, "BEHOLD_PT_lights_advanced"
+        )
+        self.assertIn("DEFAULT_CLOSED", lights_adv)
+        self.assertIn("draw_light_draw_parked", lights_adv)
 
     def test_import_first_ship_is_picker_plus_cad_status(self) -> None:
         body = _func_source(self.source, self.tree, "draw_import_first_ship")
@@ -140,7 +173,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("behold.regenerate_cad", cleanup)
 
     def test_studio_first_ship_is_tone_and_build(self) -> None:
-        body = _func_source(self.source, self.tree, "draw_studio_first_ship")
+        body = _func_source(self.studio_source, self.studio_tree, "draw_studio_first_ship")
         self.assertIn("draw_studio_hdri", body)
         self.assertIn("draw_studio_bake", body)
         self.assertIn("studio_backdrop_tone", body)
@@ -157,7 +190,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("light_draw_target", body)
 
     def test_lights_section_has_inventory_and_draw_target(self) -> None:
-        body = _func_source(self.source, self.tree, "draw_lights_section")
+        body = _func_source(self.lighting_source, self.lighting_tree, "draw_lights_section")
         self.assertIn("EMPTY_LIGHTS", body)
         self.assertIn("draw_empty_card", body)
         self.assertIn("behold.add_light", body)
@@ -170,18 +203,18 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("draw_lights_gobo", body)
         self.assertIn("draw_lights_ies", body)
         self.assertIn("draw_lights_linking", body)
-        shape = _func_source(self.source, self.tree, "draw_lights_shape")
+        shape = _func_source(self.lighting_source, self.lighting_tree, "draw_lights_shape")
         self.assertIn("light_shape_preset", shape)
         self.assertIn("behold.apply_light_preset", shape)
         self.assertIn('text="Apply to active"', shape)
-        gobo = _func_source(self.source, self.tree, "draw_lights_gobo")
+        gobo = _func_source(self.lighting_source, self.lighting_tree, "draw_lights_gobo")
         self.assertIn("light_gobo_preset", gobo)
         self.assertIn("light_gobo_scale", gobo)
-        ies = _func_source(self.source, self.tree, "draw_lights_ies")
+        ies = _func_source(self.lighting_source, self.lighting_tree, "draw_lights_ies")
         self.assertIn("light_ies_filepath", ies)
         self.assertIn("behold.load_ies", ies)
         self.assertIn("behold.clear_ies", ies)
-        linking = _func_source(self.source, self.tree, "draw_lights_linking")
+        linking = _func_source(self.lighting_source, self.lighting_tree, "draw_lights_linking")
         self.assertIn("behold.link_selected", linking)
         self.assertIn("behold.unlink_selected", linking)
         self.assertIn("behold.solo_product_link", linking)
@@ -281,7 +314,7 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertNotIn("turntable_interpolation", body)
 
     def test_parked_draw_keeps_mixer_batch_and_materials(self) -> None:
-        studio = _func_source(self.source, self.tree, "draw_studio_parked")
+        studio = _func_source(self.studio_source, self.studio_tree, "draw_studio_parked")
         shoot = _func_source(self.source, self.tree, "draw_shoot_parked")
         materials = _func_source(self.source, self.tree, "draw_materials_parked")
         parked_import = _func_source(self.source, self.tree, "draw_import_parked")
@@ -292,7 +325,10 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("cad_quality", parked_import)
         self.assertIn("cad_cleanup_fillets", parked_import)
         self.assertIn("cad_blend_mm", parked_import)
-        self.assertIn("Light Mixer", studio)
+        lighting_parked = _func_source(
+            self.lighting_source, self.lighting_tree, "draw_light_draw_parked"
+        )
+        self.assertIn("Light Mixer", lighting_parked)
         self.assertIn("studio_margin", studio)
         self.assertIn("behold.batch_angles", shoot)
         self.assertIn("behold.bake_turntable", shoot)
@@ -321,15 +357,15 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("dof_fstop", shoot)
 
     def test_backend_keeps_final_quality_and_backdrop_tones(self) -> None:
-        shoot = (ROOT / "behold" / "shoot" / "quality.py").read_text(encoding="utf-8")
-        setup = (ROOT / "behold" / "studio" / "setup.py").read_text(encoding="utf-8")
-        props = (ROOT / "behold" / "properties.py").read_text(encoding="utf-8")
-        tones = load_module("behold/studio/tones.py", "behold_studio_tones")
+        shoot = (ROOT / "behold_product" / "shoot" / "quality.py").read_text(encoding="utf-8")
+        setup = (ROOT / "behold_studio" / "setup.py").read_text(encoding="utf-8")
+        props = (ROOT / "behold_studio" / "properties.py").read_text(encoding="utf-8")
+        tones = load_module("behold_common/tones.py", "behold_studio_tones")
         self.assertIn('"FINAL": 256', shoot)
         self.assertIn("EEVEE", shoot)
         self.assertIn("Draft = EEVEE", shoot)
         self.assertIn("backdrop_tone_rgba", setup)
-        self.assertIn("studio_backdrop_tone", (ROOT / "behold" / "studio" / "tones.py").read_text(encoding="utf-8"))
+        self.assertIn("studio_backdrop_tone", (ROOT / "behold_common" / "tones.py").read_text(encoding="utf-8"))
         self.assertIn('("WHITE", "White"', props)
         self.assertIn('("GREY", "Grey"', props)
         self.assertIn('("BLACK", "Black"', props)
@@ -375,6 +411,11 @@ class FirstShipUiTests(unittest.TestCase):
         self.assertIn("1.5.0", text)
         self.assertIn("1.5.1", text)
         self.assertIn("1.6.0", text)
+        self.assertIn("2.0.0", text)
+        self.assertIn("BEHOLD Studio", text)
+        self.assertIn("BEHOLD Lighting", text)
+        self.assertIn("BEHOLD Product", text)
+        self.assertIn("BEHOLD Utilities", text)
         self.assertIn("simplif", text.lower())
         self.assertIn("Auto-dress", text)
         self.assertIn("Regenerate", text)

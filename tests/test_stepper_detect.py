@@ -9,7 +9,7 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-stepper_api = load_module("behold/cad/stepper_api.py", "behold_stepper_api")
+stepper_api = load_module("behold_product/cad/stepper_api.py", "behold_stepper_api")
 
 
 class StepperModuleNameTests(unittest.TestCase):
@@ -143,7 +143,7 @@ class ImportPanelCopyTests(unittest.TestCase):
 
 class StepperWiringTests(unittest.TestCase):
     def test_operators_call_occ_import_step_not_invoke(self) -> None:
-        source = (ROOT / "behold" / "cad" / "operators.py").read_text(encoding="utf-8")
+        source = (ROOT / "behold_product" / "cad" / "operators.py").read_text(encoding="utf-8")
         self.assertIn("invoke_stepper_occ_import", source)
         self.assertIn("STEPPER_OCC_IMPORT_OP", source)
         self.assertIn("override_file", source)
@@ -161,7 +161,7 @@ class StepperWiringTests(unittest.TestCase):
         self.assertIn("behold.cleanup_cad", source)
 
     def test_detect_reexports_constants(self) -> None:
-        source = (ROOT / "behold" / "cad" / "detect.py").read_text(encoding="utf-8")
+        source = (ROOT / "behold_product" / "cad" / "detect.py").read_text(encoding="utf-8")
         self.assertIn("STEPPER_INSTALL_URL", source)
         self.assertIn("cad_status_for_draw", source)
         self.assertIn("invalidate_cad_status_cache", source)

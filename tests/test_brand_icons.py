@@ -7,7 +7,7 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-brand = load_module("behold/brand.py", "behold.brand")
+brand = load_module("behold_common/brand.py", "behold_common.brand")
 
 
 def _read(relpath: str) -> str:
@@ -30,7 +30,7 @@ class BrandIconTests(unittest.TestCase):
             self.assertEqual(header, b"\x89PNG\r\n\x1a\n", msg=path)
 
     def test_previews_module_loads_mark_on_register(self) -> None:
-        source = _read("behold/previews.py")
+        source = _read("behold_common/previews.py")
         self.assertIn("bpy.utils.previews", source)
         self.assertIn("pcoll.load", source)
         self.assertIn("ICON_MARK_ID", source)
@@ -38,17 +38,18 @@ class BrandIconTests(unittest.TestCase):
         self.assertIn("def icon_id", source)
         self.assertIn("def mark_icon_kwargs", source)
         self.assertIn("def draw_mark_label", source)
-        init = _read("behold/__init__.py")
-        self.assertIn("from . import previews", init)
+        init = _read("behold_product/__init__.py")
+        self.assertIn("from .common import previews", init)
         self.assertLess(init.find("previews"), init.find("properties,"))
         self.assertIn("previews,", init)
 
     def test_ui_uses_mark_on_hero_prefs_pie(self) -> None:
-        chrome = _read("behold/ui/chrome.py")
-        prefs = _read("behold/preferences.py")
-        pie = _read("behold/ui/pie.py")
-        panels = _read("behold/ui/panels.py")
-        self.assertIn("draw_mark_label", chrome)
+        chrome = _read("behold_product/ui/chrome.py")
+        prefs = _read("behold_product/preferences.py")
+        pie = _read("behold_product/ui/pie.py")
+        panels = _read("behold_product/ui/panels.py")
+        self.assertIn("draw_hero", chrome)
+        self.assertIn("draw_mark_label", _read("behold_common/chrome.py"))
         self.assertIn("draw_mark_label", prefs)
         self.assertIn("mark_icon_kwargs", pie)
         self.assertIn("wm.call_menu_pie", pie)
@@ -58,8 +59,8 @@ class BrandIconTests(unittest.TestCase):
     def test_readme_lists_logo_paths(self) -> None:
         readme = _read("README.md")
         self.assertIn("docs/brand/behold_logo.png", readme)
-        self.assertIn("behold/icons/behold_icon.png", readme)
-        self.assertIn("behold/icons/behold_logo.png", readme)
+        self.assertIn("behold_product/icons/behold_icon.png", readme)
+        self.assertIn("behold_product/icons/behold_logo.png", readme)
         self.assertIn("AMIRITE.studio", readme)
         self.assertIn("best product-render suite for blender", readme.lower())
         self.assertIn("ROADMAP.md", readme)

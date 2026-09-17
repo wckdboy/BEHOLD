@@ -8,10 +8,12 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
-brand = load_module("behold/brand.py", "behold.brand")
-presets = load_module("behold/materials/presets.py", "behold_presets_chrome")
-camera_ids = load_module("behold/studio/camera_ids.py", "behold_camera_ids_chrome")
+flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
+brand = load_module("behold_common/brand.py", "behold_common.brand")
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
+camera_ids = load_module("behold_common/camera_ids.py", "behold_camera_ids_chrome")
 
 
 def _read(relpath: str) -> str:
@@ -41,6 +43,7 @@ class FlowStripTests(unittest.TestCase):
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
             ),
         )
         self.assertLess(
@@ -156,7 +159,7 @@ class FlowStripTests(unittest.TestCase):
 
 class PieHeaderPrefsTests(unittest.TestCase):
     def test_pie_menu_and_keymap_are_registered(self) -> None:
-        pie = _read("behold/ui/pie.py")
+        pie = _read("behold_product/ui/pie.py")
         self.assertIn("class BEHOLD_MT_pie", pie)
         self.assertIn("bl_idname = PIE_MENU_ID", pie)
         self.assertIn("behold.import_product", pie)
@@ -174,35 +177,34 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertEqual(brand.PIE_HOTKEY_LABEL, "Shift+Alt+B")
 
     def test_ui_package_registers_pie(self) -> None:
-        init = _read("behold/ui/__init__.py")
+        init = _read("behold_product/ui/__init__.py")
         self.assertIn("from . import panels, pie", init)
         self.assertIn("pie.register()", init)
         self.assertIn("pie.unregister()", init)
 
     def test_preferences_branding_and_scene_toggles(self) -> None:
-        prefs = _read("behold/preferences.py")
-        self.assertIn("class BEHOLDAddonPreferences", prefs)
+        prefs = _read("behold_product/preferences.py")
+        self.assertIn("class BEHOLDProductAddonPreferences", prefs)
         self.assertIn("AddonPreferences", prefs)
         self.assertIn("show_header_shortcuts", prefs)
         self.assertIn("show_flow_strip", prefs)
-        self.assertIn("enable_utilities", prefs)
         self.assertIn("import_auto_studio", prefs)
         self.assertIn("render_quality", prefs)
         self.assertIn("PRODUCT_CREDIT", prefs)
         self.assertIn("DOCS_URL", prefs)
         self.assertIn("RELEASES_URL", prefs)
         self.assertIn("check_for_updates", prefs)
-        self.assertIn("behold.check_updates", prefs)
-        self.assertIn("behold.install_update", prefs)
-        self.assertIn("AMIRITE.studio", _read("behold/brand.py"))
-        self.assertIn("github.com/wckdboy/BEHOLD", _read("behold/brand.py"))
-        self.assertIn("/releases", _read("behold/brand.py"))
-        init = _read("behold/__init__.py")
+        self.assertIn("behold_product.check_updates", prefs)
+        self.assertIn("behold_product.install_update", prefs)
+        self.assertIn("AMIRITE.studio", _read("behold_common/brand.py"))
+        self.assertIn("github.com/wckdboy/BEHOLD", _read("behold_common/brand.py"))
+        self.assertIn("/releases", _read("behold_common/brand.py"))
+        init = _read("behold_product/__init__.py")
         self.assertIn("preferences", init)
-        self.assertIn('"version": (1, 6, 0)', init)
+        self.assertIn('"version": (2, 0, 0)', init)
 
     def test_panels_have_hero_flow_and_section_icons(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         main = _class_source(source, tree, "BEHOLD_PT_main")
         self.assertIn("draw_hero", main)
@@ -210,8 +212,6 @@ class PieHeaderPrefsTests(unittest.TestCase):
         self.assertIn("draw_flow_strip", main)
         for name in (
             "BEHOLD_PT_import",
-            "BEHOLD_PT_studio",
-            "BEHOLD_PT_lights",
             "BEHOLD_PT_materials",
             "BEHOLD_PT_cameras",
             "BEHOLD_PT_shoot",
@@ -220,8 +220,13 @@ class PieHeaderPrefsTests(unittest.TestCase):
             body = _class_source(source, tree, name)
             self.assertIn("draw_header", body)
             self.assertIn("SECTION_ICONS", body)
+        studio = _read("behold_studio/ui/panels.py")
+        lighting = _read("behold_lighting/ui/panels.py")
+        self.assertIn("draw_header", studio)
+        self.assertIn("SECTION_ICONS", studio)
+        self.assertIn("draw_header", lighting)
+        self.assertIn("SECTION_ICONS", lighting)
         self.assertIn("draw_empty_card", source)
-        self.assertIn("EMPTY_LIGHTS", source)
         self.assertIn("EMPTY_CAMERAS", source)
         self.assertIn("EMPTY_MATERIALS", source)
         self.assertIn("EMPTY_SHOTS", source)

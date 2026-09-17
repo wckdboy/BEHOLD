@@ -7,7 +7,7 @@ import unittest
 
 from tests.support import load_module
 
-formats = load_module("behold/product_import/formats.py", "behold_formats")
+formats = load_module("behold_product/product_import/formats.py", "behold_formats")
 
 
 class ClassifyProductFileTests(unittest.TestCase):

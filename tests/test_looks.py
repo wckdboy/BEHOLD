@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-looks = load_module("behold/shoot/looks.py", "behold_shoot_looks")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+looks = load_module("behold_product/shoot/looks.py", "behold_shoot_looks")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -182,7 +182,7 @@ class NodeGraphTests(unittest.TestCase):
 
 class LookWiringTests(unittest.TestCase):
     def test_apply_module_wires_the_spec(self) -> None:
-        source = _read("behold/shoot/looks_apply.py")
+        source = _read("behold_product/shoot/looks_apply.py")
         self.assertIn("node_graph_for", source)
         self.assertIn("nodes.clear()", source)
         self.assertIn("tree.nodes.new", source)
@@ -194,13 +194,13 @@ class LookWiringTests(unittest.TestCase):
         self.assertIn("CompositorNodeMix", source)
         self.assertIn("CompositorNodeNoiseTexture", source)
         self.assertIn("GLARE_FOG_GLOW", source)
-        self.assertIn("FOG_GLOW", _read("behold/shoot/looks.py"))
+        self.assertIn("FOG_GLOW", _read("behold_product/shoot/looks.py"))
         self.assertIn("on_look_update", source)
         self.assertIn("GRAIN_TEXTURE_NAME", source)
 
     def test_operator_and_property(self) -> None:
-        ops = _read("behold/shoot/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_product/shoot/operators.py")
+        props = _read("behold_product/properties.py")
         self.assertIn('bl_idname = "behold.apply_look"', ops)
         self.assertIn("from .looks_apply import apply_look", ops)
         self.assertIn("apply_look(context)", ops)
@@ -209,10 +209,10 @@ class LookWiringTests(unittest.TestCase):
         self.assertIn("LOOK_DEFAULT", props)
         self.assertIn("look_preset_enum_items", props)
         self.assertIn("on_look_update", props)
-        self.assertIn("apply_look(context)", _read("behold/shoot/batch_apply.py"))
+        self.assertIn("apply_look(context)", _read("behold_product/shoot/batch_apply.py"))
 
     def test_shoot_look_card_stays_compact(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_shoot_first_ship")
         look = _func_source(source, tree, "draw_look_compact")
@@ -236,7 +236,7 @@ class LookWiringTests(unittest.TestCase):
         self.assertNotIn('icon="ERROR"', parked)
 
     def test_panel_order_unchanged(self) -> None:
-        flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+        flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
         self.assertEqual(
             list(flow.N_PANEL_CLASS_ORDER),
             [
@@ -248,6 +248,7 @@ class LookWiringTests(unittest.TestCase):
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
+                "BEHOLD_PT_utilities",
             ],
         )
 

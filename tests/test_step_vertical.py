@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, UNIT_CUBE_STEP, load_module
 
-formats = load_module("behold/product_import/formats.py", "behold_formats")
-ocp_core = load_module("behold/cad/ocp_core.py", "behold_ocp_core")
+formats = load_module("behold_product/product_import/formats.py", "behold_formats")
+ocp_core = load_module("behold_product/cad/ocp_core.py", "behold_ocp_core")
 
 
 class StepFixtureTests(unittest.TestCase):
@@ -44,7 +44,7 @@ class StepFixtureTests(unittest.TestCase):
         self.assertEqual(formats.product_import_dispatch("part.obj"), "mesh")
 
     def test_import_product_operator_uses_shared_dispatch(self) -> None:
-        source = (ROOT / "behold" / "product_import" / "operators.py").read_text(
+        source = (ROOT / "behold_product" / "product_import" / "operators.py").read_text(
             encoding="utf-8"
         )
         self.assertIn("product_import_dispatch", source)
@@ -81,7 +81,7 @@ class SmokeScriptTests(unittest.TestCase):
         self.assertIn("build_studio", source)
         self.assertIn("DRAFT", source)
         self.assertIn("missing_cad_backend_message", source)
-        self.assertIn("STEPPER_OCC_IMPORT_OP", (ROOT / "behold" / "cad" / "stepper_api.py").read_text(encoding="utf-8"))
+        self.assertIn("STEPPER_OCC_IMPORT_OP", (ROOT / "behold_product" / "cad" / "stepper_api.py").read_text(encoding="utf-8"))
         makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
         self.assertIn("smoke-step", makefile)
         self.assertIn("smoke_step_vertical.py", makefile)

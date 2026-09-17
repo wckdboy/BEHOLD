@@ -11,8 +11,8 @@ from pathlib import Path
 
 from tests.support import ROOT, load_addon_module, load_module
 
-world = load_module("behold/studio/world.py", "behold_studio_world")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+world = load_module("behold_studio/world.py", "behold_studio_world")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -138,7 +138,7 @@ class HdriSpecTests(unittest.TestCase):
 
 class HdriWiringTests(unittest.TestCase):
     def test_apply_module_wires_the_spec(self) -> None:
-        source = _read("behold/studio/world_apply.py")
+        source = _read("behold_studio/world_apply.py")
         self.assertIn("hdri_nodes", source)
         self.assertIn("hdri_links", source)
         self.assertIn("_wire_plan", source)
@@ -149,16 +149,16 @@ class HdriWiringTests(unittest.TestCase):
         self.assertIn("setup_solid_world", source)
         self.assertIn("path_problem_message", source)
         self.assertIn("classify_hdri_filepath", source)
-        self.assertIn("Is Camera Ray", _read("behold/studio/world.py"))
+        self.assertIn("Is Camera Ray", _read("behold_studio/world.py"))
 
     def test_setup_preserves_hdri_after_build(self) -> None:
-        setup = _read("behold/studio/setup.py")
+        setup = _read("behold_studio/setup.py")
         self.assertIn("reapply_hdri_if_loaded", setup)
         self.assertIn("setup_solid_world", setup)
 
     def test_operators_and_properties(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_studio/operators.py")
+        props = _read("behold_studio/properties.py")
         self.assertIn('bl_idname = "behold.load_hdri"', ops)
         self.assertIn('bl_idname = "behold.reset_world"', ops)
         self.assertIn("ImportHelper", ops)
@@ -173,7 +173,7 @@ class HdriWiringTests(unittest.TestCase):
         self.assertIn("on_hdri_values_update", props)
 
     def test_studio_hdri_card_stays_compact(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_studio/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_studio_first_ship")
         hdri = _func_source(source, tree, "draw_studio_hdri")

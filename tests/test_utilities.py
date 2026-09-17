@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Utilities track: wall math, mount kits, eave sections, feature-flag gating (no bpy)."""
+"""Utilities track: wall math, mount kits, eave sections (no bpy)."""
 
 from __future__ import annotations
 
@@ -8,17 +8,21 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-flag = load_module("behold/utilities/flag.py", "behold_utilities_flag")
-ids = load_module("behold/utilities/ids.py", "behold_utilities_ids")
-messages = load_module("behold/utilities/messages.py", "behold_utilities_messages")
-wall = load_addon_module("behold/utilities/wall.py", "behold.utilities.wall")
-mounts = load_module("behold/utilities/mounts.py", "behold_utilities_mounts")
-eaves = load_module("behold/utilities/eaves.py", "behold_utilities_eaves")
-openscad = load_addon_module(
-    "behold/utilities/openscad/__init__.py", "behold.utilities.openscad"
+ids = load_module("behold_utilities/ids.py", "behold_utilities_ids")
+operator_ids = load_module(
+    "behold_utilities/operator_ids.py", "behold_utilities_operator_ids"
 )
-presets = load_module("behold/materials/presets.py", "behold_presets_utilities")
-flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+messages = load_module("behold_utilities/messages.py", "behold_utilities_messages")
+wall = load_addon_module("behold_utilities/wall.py", "behold_utilities.wall")
+mounts = load_module("behold_utilities/mounts.py", "behold_utilities_mounts")
+eaves = load_module("behold_utilities/eaves.py", "behold_utilities_eaves")
+openscad = load_addon_module(
+    "behold_utilities/openscad/__init__.py", "behold_utilities.openscad"
+)
+presets = load_addon_module(
+    "behold_product/materials/presets.py", "behold_product.materials.presets"
+)
+flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
 
 
 def _read(relpath: str) -> str:
@@ -52,93 +56,76 @@ def _panel_class_names(source: str, tree: ast.Module) -> list[str]:
     ]
 
 
-class FeatureFlagTests(unittest.TestCase):
-    def test_flag_defaults_off(self) -> None:
-        self.assertFalse(flag.DEFAULT_ENABLE_UTILITIES)
-        self.assertEqual(flag.PREF_ID, "enable_utilities")
-        self.assertFalse(flag.show_utilities_panel(None))
-        self.assertFalse(flag.show_utilities_panel(type("P", (), {})()))
-        self.assertFalse(
-            flag.show_utilities_panel(type("P", (), {"enable_utilities": False})())
-        )
-        self.assertTrue(
-            flag.show_utilities_panel(type("P", (), {"enable_utilities": True})())
-        )
+class RegistrationTests(unittest.TestCase):
+    def test_operator_ids_are_stable(self) -> None:
+        self.assertEqual(operator_ids.PANEL_ID, "BEHOLD_PT_utilities")
+        self.assertIn(operator_ids.OPERATOR_BUILD_WALL, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_BUILD_LEGS, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_BUILD_BRACKET, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_BUILD_EAVE, operator_ids.OPERATOR_IDS)
+        self.assertIn(operator_ids.OPERATOR_EXPORT_SCAD, operator_ids.OPERATOR_IDS)
 
-    def test_gated_registration_ids(self) -> None:
-        self.assertEqual(flag.gated_ui_ids(enabled=False), ())
-        enabled = flag.gated_ui_ids(enabled=True)
-        self.assertEqual(enabled[0], flag.PANEL_ID)
-        self.assertIn(flag.OPERATOR_BUILD_WALL, enabled)
-        self.assertIn(flag.OPERATOR_BUILD_LEGS, enabled)
-        self.assertIn(flag.OPERATOR_BUILD_BRACKET, enabled)
-        self.assertIn(flag.OPERATOR_BUILD_EAVE, enabled)
-        self.assertIn(flag.OPERATOR_EXPORT_SCAD, enabled)
-        self.assertNotIn(flag.PANEL_ID, flag.gated_ui_ids(enabled=False))
-
-    def test_preference_rna_defaults_false(self) -> None:
-        prefs = _read("behold/preferences.py")
-        self.assertIn("enable_utilities", prefs)
-        self.assertIn("default=False", prefs)
-        self.assertIn("_on_enable_utilities", prefs)
-        self.assertIn("utilities.sync_registration", prefs)
-        chrome = _func_source(
-            prefs, ast.parse(prefs), "_draw_chrome_toggles"
-        )
-        self.assertIn("enable_utilities", chrome)
+    def test_product_preferences_do_not_gate_utilities(self) -> None:
+        prefs = _read("behold_product/preferences.py")
+        self.assertNotIn("enable_utilities", prefs)
+        self.assertNotIn("_on_enable_utilities", prefs)
 
     def test_first_ship_classes_exclude_utilities_panel(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         names = _panel_class_names(source, tree)
-        self.assertNotIn(flag.PANEL_ID, names)
+        self.assertNotIn(operator_ids.PANEL_ID, names)
         self.assertEqual(
             names,
             [
                 "BEHOLD_PT_main",
                 "BEHOLD_PT_import",
-                "BEHOLD_PT_studio",
-                "BEHOLD_PT_lights",
                 "BEHOLD_PT_materials",
                 "BEHOLD_PT_cameras",
                 "BEHOLD_PT_shoot",
                 "BEHOLD_PT_advanced",
             ],
         )
-        self.assertEqual(list(flow.N_PANEL_CLASS_ORDER), names)
-        self.assertNotIn(flag.PANEL_ID, flow.PANEL_BL_IDNAMES)
-        self.assertNotIn(flag.PANEL_ID, source)
+        self.assertIn(operator_ids.PANEL_ID, flow.N_PANEL_CLASS_ORDER)
+        self.assertIn(operator_ids.PANEL_ID, flow.PANEL_BL_IDNAMES)
+        self.assertNotIn(operator_ids.PANEL_ID, source)
 
     def test_first_ship_draws_do_not_register_utility_operators(self) -> None:
-        source = _read("behold/ui/panels.py")
-        tree = ast.parse(source, filename="panels.py")
-        for name in (
-            "draw_import_first_ship",
-            "draw_studio_first_ship",
-            "draw_lights_section",
-            "draw_materials_section",
-            "draw_cameras_section",
-            "draw_shoot_first_ship",
-            "draw_import_parked",
-            "draw_studio_parked",
-            "draw_materials_parked",
-            "draw_light_draw_parked",
-            "draw_shoot_parked",
+        product = _read("behold_product/ui/panels.py")
+        studio = _read("behold_studio/ui/panels.py")
+        lighting = _read("behold_lighting/ui/panels.py")
+        for source, names in (
+            (
+                product,
+                (
+                    "draw_import_first_ship",
+                    "draw_materials_section",
+                    "draw_cameras_section",
+                    "draw_shoot_first_ship",
+                    "draw_import_parked",
+                    "draw_materials_parked",
+                    "draw_shoot_parked",
+                ),
+            ),
+            (studio, ("draw_studio_first_ship", "draw_studio_parked")),
+            (lighting, ("draw_lights_section", "draw_light_draw_parked")),
         ):
-            body = _func_source(source, tree, name)
-            for operator_id in flag.OPERATOR_IDS:
-                self.assertNotIn(operator_id, body, msg=f"{name} leaked {operator_id}")
-        pie = _read("behold/ui/pie.py")
-        for operator_id in flag.OPERATOR_IDS:
+            tree = ast.parse(source)
+            for name in names:
+                body = _func_source(source, tree, name)
+                for operator_id in operator_ids.OPERATOR_IDS:
+                    self.assertNotIn(operator_id, body, msg=f"{name} leaked {operator_id}")
+        pie = _read("behold_product/ui/pie.py")
+        for operator_id in operator_ids.OPERATOR_IDS:
             self.assertNotIn(operator_id, pie)
 
-    def test_utilities_panel_polls_flag_and_sorts_after_advanced(self) -> None:
-        source = _read("behold/utilities/panel.py")
+    def test_utilities_panel_is_always_on_and_sorts_after_advanced(self) -> None:
+        source = _read("behold_utilities/panel.py")
         tree = ast.parse(source, filename="panel.py")
         body = _class_source(source, tree, "BEHOLD_PT_utilities")
-        self.assertIn("show_utilities_panel", body)
+        self.assertNotIn("poll", body)
         self.assertIn("bl_order = 80", body)
-        self.assertIn("BEHOLD_PT_main", body)
+        self.assertNotIn("BEHOLD_PT_main", body)
         self.assertIn("DEFAULT_CLOSED", body)
         self.assertGreater(80, flow.CHILD_PANEL_BL_ORDER["BEHOLD_PT_advanced"])
         self.assertIn("behold.build_danish_wall", body)
@@ -147,19 +134,20 @@ class FeatureFlagTests(unittest.TestCase):
         self.assertIn("behold.build_eave_section", body)
         self.assertIn("eave_section", body)
 
-    def test_addon_registers_utilities_after_ui(self) -> None:
-        init = _read("behold/__init__.py")
-        self.assertIn('"version": (1, 6, 0)', init)
-        brand = _read("behold/brand.py")
-        self.assertIn("VERSION = (1, 6, 0)", brand)
+    def test_suite_versions_are_2_0_0(self) -> None:
+        init = _read("behold_utilities/__init__.py")
+        self.assertIn('"version": (2, 0, 0)', init)
+        brand = _read("behold_common/brand.py")
+        self.assertIn("VERSION = (2, 0, 0)", brand)
 
-    def test_utilities_operators_stay_lazy(self) -> None:
-        init = _read("behold/__init__.py")
+    def test_utilities_operators_register_from_the_utilities_addon(self) -> None:
+        init = _read("behold_product/__init__.py")
         self.assertNotIn("utilities,", init.split("_MODULES", 1)[1].split(")", 1)[0])
-        registration = _read("behold/utilities/registration.py")
-        header = registration.split("def ", 1)[0]
-        self.assertNotIn("from .operators import CLASSES", header)
-        self.assertNotIn("from .panel import CLASSES", header)
+        util_init = _read("behold_utilities/__init__.py")
+        self.assertIn("from . import operators", util_init)
+        self.assertIn("from . import panel", util_init)
+        self.assertFalse((ROOT / "behold_utilities" / "flag.py").is_file())
+        self.assertFalse((ROOT / "behold_utilities" / "registration.py").is_file())
 
 
 class WallMathTests(unittest.TestCase):
@@ -354,13 +342,13 @@ class OpenScadAndCopyTests(unittest.TestCase):
                 "behold_danish_wall.scad"
             )
         )
-        template = _read("behold/utilities/openscad/wall_stack.scad")
+        template = _read("behold_utilities/openscad/wall_stack.scad")
         self.assertIn("module danish_wall", template)
 
     def test_actionable_errors(self) -> None:
         self.assertIn("Build Wall", messages.NO_WALL)
         self.assertIn("import", messages.NO_PRODUCT.lower())
-        self.assertIn("preferences", messages.NO_UTILITIES.lower())
+        self.assertFalse(hasattr(messages, "NO_UTILITIES"))
         self.assertEqual(messages.report_type(messages.NO_WALL), "WARNING")
         self.assertIn("Legs", messages.mount_built_message("Legs"))
         self.assertIn("Under eaves", messages.eave_built_message("Under eaves"))

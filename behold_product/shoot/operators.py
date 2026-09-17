@@ -1,0 +1,447 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+"""Still and turntable shoot operators (Photographer-depth slice)."""
+
+from __future__ import annotations
+
+import os
+import tempfile
+
+import bpy
+from bpy.props import IntProperty, StringProperty
+from bpy.types import Context, Operator
+
+from .. import cameras as camera_lib
+from ..common.messages import (
+    NO_CAMERA,
+    TURNTABLE_NO_SETUP,
+    TURNTABLE_READY_PLAY,
+    report_set,
+    shot_applied_message,
+    shot_removed_message,
+    shot_renamed_message,
+    shot_saved_message,
+)
+from . import batch as batch_lib
+from . import quality as quality_lib
+from . import resolution as resolution_lib
+from . import shots_apply
+from . import turntable as turntable_lib
+from . import turntable_rig
+from .batch_apply import run_batch_export
+from .exposure_apply import apply_exposure
+from .looks_apply import apply_look
+from .quality_apply import apply_render_quality
+from .resolution_apply import apply_resolution
+
+
+QUALITY_SAMPLES = quality_lib.QUALITY_SAMPLES
+
+
+def _ensure_camera(context: Context) -> bpy.types.Object | None:
+    cam = camera_lib.resolve_shoot_camera(context)
+    if cam is not None:
+        context.scene.camera = cam
+    return cam
+
+
+def _quality_samples(result: dict) -> int:
+    samples = result.get("samples")
+    if isinstance(samples, int):
+        return samples
+    plan = result.get("plan")
+    if plan is not None:
+        return int(getattr(plan, "samples", 128))
+    return 128
+
+
+def resolve_output_dir(context: Context, *, angle: str = "") -> str:
+    """Resolve output folder with {angle} {camera} {quality} tokens."""
+    settings = context.scene.behold_product
+    cam = context.scene.camera
+    camera_name = cam.name if cam is not None else "camera"
+    filled = batch_lib.fill_output_tokens(
+        settings.output_directory,
+        angle=angle,
+        camera=camera_name,
+        quality=settings.render_quality,
+    )
+    path = bpy.path.abspath(filled)
+    if not path or path.startswith("//"):
+        path = os.path.join(
+            tempfile_fallback(),
+            "behold_out",
+            angle or batch_lib.DEFAULT_ANGLE,
+        )
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+def tempfile_fallback() -> str:
+    return tempfile.gettempdir()
+
+
+class BEHOLD_OT_apply_exposure(Operator):
+    bl_idname = "behold.apply_exposure"
+    bl_label = "Apply Exposure"
+    bl_description = "Push EV, white balance, and false color to Color Management"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = apply_exposure(context)
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+        else:
+            self.report(report_set(message), message)
+        return {"FINISHED"} if result["ok"] else {"CANCELLED"}
+
+
+class BEHOLD_OT_apply_look(Operator):
+    bl_idname = "behold.apply_look"
+    bl_label = "Apply Look"
+    bl_description = "Build or tear down compositor look nodes (Clean / Catalog / Dramatic)"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = apply_look(context)
+        message = result["message"]
+        if result["ok"]:
+            self.report({"INFO"}, message)
+        else:
+            self.report(report_set(message), message)
+        return {"FINISHED"} if result["ok"] else {"CANCELLED"}
+
+
+class BEHOLD_OT_apply_quality(Operator):
+    bl_idname = "behold.apply_quality"
+    bl_label = "Apply Quality Preset"
+    bl_description = (
+        "Draft uses EEVEE Next when available; Final / Product / Hero use Cycles"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = apply_render_quality(context)
+        message = str(result.get("message") or quality_lib.QUALITY_FAILED)
+        if not result.get("ok"):
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        if result.get("fallback"):
+            self.report(report_set(message), message)
+            return {"FINISHED"}
+        self.report({"INFO"}, message)
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_resolution(Operator):
+    bl_idname = "behold.apply_resolution"
+    bl_label = "Apply Size"
+    bl_description = (
+        "Write Square 1:1 / Portrait 4:5 / Landscape 16:9 and 2048² / 1080p / 4K "
+        "to render resolution (square pixels)"
+    )
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = apply_resolution(context)
+        message = str(result.get("message") or resolution_lib.RESOLUTION_FAILED)
+        if not result.get("ok"):
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report({"INFO"}, message)
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_render_still(Operator):
+    bl_idname = "behold.render_still"
+    bl_label = "Render Still"
+    bl_description = "Render a still with the active quality preset"
+
+    def execute(self, context: Context):
+        cam = _ensure_camera(context)
+        if cam is None:
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
+            return {"CANCELLED"}
+
+        apply_exposure(context)
+        apply_look(context)
+        apply_resolution(context)
+        result = apply_render_quality(context)
+        if not result.get("ok"):
+            message = str(result.get("message") or quality_lib.QUALITY_FAILED)
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        samples = _quality_samples(result)
+        engine_label = str(result.get("engine_label") or "Cycles")
+        scene = context.scene
+        scene.render.image_settings.file_format = "PNG"
+        out_dir = resolve_output_dir(context, angle="still")
+        scene.render.filepath = os.path.join(out_dir, "still.png")
+        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+        if result.get("fallback"):
+            self.report(report_set(str(result["message"])), str(result["message"]))
+        self.report(
+            {"INFO"},
+            f"Still started ({engine_label}, {samples} samples) → {out_dir}",
+        )
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_add_shot(Operator):
+    bl_idname = "behold.add_shot"
+    bl_label = "Add Shot"
+    bl_description = "Save the current camera, quality, HDRI, backdrop, and output as a named shot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        result = shots_apply.add_shot_from_scene(context)
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report({"INFO"}, shot_saved_message(str(result["name"])))
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_apply_shot(Operator):
+    bl_idname = "behold.apply_shot"
+    bl_label = "Apply Shot"
+    bl_description = "Restore this shot's camera, quality, HDRI, and backdrop without changing the product mesh"
+    bl_options = {"REGISTER", "UNDO"}
+
+    shot_name: StringProperty(name="Shot", default="")
+    shot_index: IntProperty(name="Index", default=-1, min=-1)
+
+    def execute(self, context: Context):
+        result = shots_apply.apply_shot_to_scene(
+            context,
+            shot_name=self.shot_name,
+            shot_index=self.shot_index,
+        )
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        warning = str(result.get("warning") or "")
+        if warning:
+            self.report(report_set(warning), warning)
+            return {"FINISHED"}
+        self.report({"INFO"}, shot_applied_message(str(result["name"])))
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_remove_shot(Operator):
+    bl_idname = "behold.remove_shot"
+    bl_label = "Remove Shot"
+    bl_description = "Delete a saved shot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    shot_name: StringProperty(name="Shot", default="")
+    shot_index: IntProperty(name="Index", default=-1, min=-1)
+
+    def execute(self, context: Context):
+        result = shots_apply.remove_shot_from_scene(
+            context,
+            shot_name=self.shot_name,
+            shot_index=self.shot_index,
+        )
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report({"INFO"}, shot_removed_message(str(result["name"])))
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_rename_shot(Operator):
+    bl_idname = "behold.rename_shot"
+    bl_label = "Rename Shot"
+    bl_description = "Rename a saved shot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    shot_name: StringProperty(name="Shot", default="")
+    shot_index: IntProperty(name="Index", default=-1, min=-1)
+    new_name: StringProperty(name="New Name", default="", maxlen=128)
+
+    def execute(self, context: Context):
+        result = shots_apply.rename_shot_on_scene(
+            context,
+            shot_name=self.shot_name,
+            shot_index=self.shot_index,
+            new_name=self.new_name,
+        )
+        if not result["ok"]:
+            message = str(result["message"])
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        self.report(
+            {"INFO"},
+            shot_renamed_message(str(result["old_name"]), str(result["name"])),
+        )
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_setup_turntable(Operator):
+    bl_idname = "behold.setup_turntable"
+    bl_label = "Setup Turntable"
+    bl_description = "360° orbit of the active BEHOLD camera around the product"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        error, plan = turntable_rig.setup_turntable(context)
+        if error or plan is None:
+            message = error or TURNTABLE_NO_SETUP
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        spin = "linear loop" if plan.loop_friendly else "ease"
+        self.report(
+            {"INFO"},
+            f"Turntable {plan.seconds:.1f}s ({plan.frames} frames, {spin})",
+        )
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_play_turntable(Operator):
+    bl_idname = "behold.play_turntable"
+    bl_label = "Play Turntable"
+    bl_description = "Apply current seconds / spin, then preview the 360° orbit"
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: Context):
+        error, _plan = turntable_rig.setup_turntable(context)
+        if error:
+            self.report(report_set(error), error)
+            return {"CANCELLED"}
+        context.scene.frame_set(context.scene.frame_start)
+        try:
+            bpy.ops.screen.animation_play()
+        except RuntimeError:
+            self.report({"INFO"}, TURNTABLE_READY_PLAY)
+            return {"FINISHED"}
+        self.report({"INFO"}, "Playing turntable")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_clear_turntable(Operator):
+    bl_idname = "behold.clear_turntable"
+    bl_label = "Clear Turntable"
+    bl_description = "Remove the turntable pivot or baked camera spin; leave the rest of the scene"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        error = turntable_rig.clear_turntable(context)
+        if error:
+            self.report(report_set(error), error)
+            return {"CANCELLED"}
+        self.report({"INFO"}, "Turntable cleared")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_bake_turntable(Operator):
+    bl_idname = "behold.bake_turntable"
+    bl_label = "Bake Turntable"
+    bl_description = "Bake the camera orbit onto the camera, then delete the pivot"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context: Context):
+        error = turntable_rig.bake_turntable(context)
+        if error:
+            self.report(report_set(error), error)
+            return {"CANCELLED"}
+        self.report({"INFO"}, "Turntable baked onto the camera")
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_render_turntable(Operator):
+    bl_idname = "behold.render_turntable"
+    bl_label = "Render Turntable"
+    bl_description = "Render the turntable animation with the active quality preset"
+
+    def execute(self, context: Context):
+        if not turntable_rig.has_turntable() and not (
+            context.scene.camera is not None
+            and context.scene.camera.get(turntable_lib.PROP_BAKED)
+        ):
+            self.report(report_set(TURNTABLE_NO_SETUP), TURNTABLE_NO_SETUP)
+            return {"CANCELLED"}
+        if _ensure_camera(context) is None:
+            self.report(report_set(NO_CAMERA), NO_CAMERA)
+            return {"CANCELLED"}
+
+        apply_exposure(context)
+        apply_look(context)
+        apply_resolution(context)
+        result = apply_render_quality(context)
+        if not result.get("ok"):
+            message = str(result.get("message") or quality_lib.QUALITY_FAILED)
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        samples = _quality_samples(result)
+        engine_label = str(result.get("engine_label") or "Cycles")
+        scene = context.scene
+        scene.render.image_settings.file_format = "FFMPEG"
+        scene.render.ffmpeg.format = "MPEG4"
+        scene.render.ffmpeg.codec = "H264"
+        out_dir = resolve_output_dir(context, angle="turntable")
+        scene.render.filepath = os.path.join(out_dir, "turntable")
+        bpy.ops.render.render("INVOKE_DEFAULT", animation=True)
+        if result.get("fallback"):
+            self.report(report_set(str(result["message"])), str(result["message"]))
+        self.report(
+            {"INFO"},
+            f"Turntable started ({engine_label}, {samples} samples) → {out_dir}",
+        )
+        return {"FINISHED"}
+
+
+class BEHOLD_OT_batch_angles(Operator):
+    bl_idname = "behold.batch_angles"
+    bl_label = "Batch export"
+    bl_description = (
+        "Render front / ¾ / top stills and optional saved shots in one click"
+    )
+    bl_options = {"REGISTER"}
+
+    def execute(self, context: Context):
+        def report(level: str, message: str) -> None:
+            self.report({level}, message)
+
+        result = run_batch_export(context, report=report)
+        message = str(result.get("message") or batch_lib.BATCH_RENDER_FAILED)
+        if not result.get("ok"):
+            self.report(report_set(message), message)
+            return {"CANCELLED"}
+        if result.get("errors"):
+            self.report({"WARNING"}, message)
+            return {"FINISHED"}
+        self.report({"INFO"}, message)
+        return {"FINISHED"}
+
+
+CLASSES = (
+    BEHOLD_OT_apply_exposure,
+    BEHOLD_OT_apply_look,
+    BEHOLD_OT_apply_quality,
+    BEHOLD_OT_apply_resolution,
+    BEHOLD_OT_add_shot,
+    BEHOLD_OT_apply_shot,
+    BEHOLD_OT_remove_shot,
+    BEHOLD_OT_rename_shot,
+    BEHOLD_OT_render_still,
+    BEHOLD_OT_setup_turntable,
+    BEHOLD_OT_play_turntable,
+    BEHOLD_OT_clear_turntable,
+    BEHOLD_OT_bake_turntable,
+    BEHOLD_OT_render_turntable,
+    BEHOLD_OT_batch_angles,
+)
+
+
+def register() -> None:
+    for cls in CLASSES:
+        bpy.utils.register_class(cls)
+
+
+def unregister() -> None:
+    for cls in reversed(CLASSES):
+        bpy.utils.unregister_class(cls)

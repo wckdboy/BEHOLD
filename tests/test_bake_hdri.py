@@ -11,8 +11,8 @@ from pathlib import Path
 
 from tests.support import ROOT, load_addon_module, load_module
 
-bake = load_addon_module("behold/studio/bake.py", "behold.studio.bake")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+bake = load_addon_module("behold_studio/bake.py", "behold_studio.bake")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -173,7 +173,7 @@ def os_join(*parts: str) -> str:
 
 class BakeWiringTests(unittest.TestCase):
     def test_apply_module_renders_equirect_and_restores(self) -> None:
-        apply = _read("behold/studio/bake_apply.py")
+        apply = _read("behold_studio/bake_apply.py")
         self.assertIn("plan_bake", apply)
         self.assertIn("CYCLES", apply)
         self.assertIn("EQUIRECTANGULAR", apply)
@@ -190,8 +190,8 @@ class BakeWiringTests(unittest.TestCase):
         self.assertIn("scene.world = None", apply)
 
     def test_operator_and_properties(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_studio/operators.py")
+        props = _read("behold_studio/properties.py")
         self.assertIn('bl_idname = "behold.bake_hdri"', ops)
         self.assertIn("bake_apply.bake_studio_hdri", ops)
         self.assertIn("report_set", ops)
@@ -202,7 +202,7 @@ class BakeWiringTests(unittest.TestCase):
         self.assertIn("bake_resolution_enum_items", props)
 
     def test_studio_bake_card_stays_compact(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_studio/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_studio_first_ship")
         hdri = _func_source(source, tree, "draw_studio_hdri")

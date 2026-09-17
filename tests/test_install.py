@@ -10,12 +10,16 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from tests.support import ROOT
+from tests.support import ADDONS, LIGHTING, PRODUCT, ROOT, STUDIO, UTILITIES
 
-ADDON = ROOT / "behold"
 BUILD_SCRIPT = ROOT / "scripts" / "build_addon.sh"
+SUITE = (
+    (STUDIO, "behold_studio", "behold-studio"),
+    (LIGHTING, "behold_lighting", "behold-lighting"),
+    (PRODUCT, "behold_product", "behold-product"),
+    (UTILITIES, "behold_utilities", "behold-utilities"),
+)
 
-# Blender 5.2 blender_ext.py: tagline / permission reasons.
 TERSE_DESCRIPTION_MAX_LENGTH = 64
 PERMISSION_KEYS = frozenset({"files", "network", "clipboard", "camera", "microphone"})
 ADDON_TAGS = frozenset(
@@ -141,12 +145,12 @@ def _class_bl_idnames(class_node: ast.ClassDef) -> list[str]:
     return found
 
 
-def _resolve_relative_import(addon_file: Path, node: ast.ImportFrom) -> list[Path]:
-    package_parts = addon_file.parent.relative_to(ADDON).parts
+def _resolve_relative_import(addon: Path, addon_file: Path, node: ast.ImportFrom) -> list[Path]:
+    package_parts = addon_file.parent.relative_to(addon).parts
     climb = node.level - 1
     if climb:
         package_parts = package_parts[:-climb]
-    base = ADDON.joinpath(*package_parts) if package_parts else ADDON
+    base = addon.joinpath(*package_parts) if package_parts else addon
     module = node.module or ""
     targets: list[Path] = []
     if module:
@@ -177,9 +181,9 @@ def _resolve_relative_import(addon_file: Path, node: ast.ImportFrom) -> list[Pat
     return targets
 
 
-def _zip_source_files() -> list[Path]:
+def _zip_source_files(addon: Path) -> list[Path]:
     files: list[Path] = []
-    for path in ADDON.rglob("*"):
+    for path in addon.rglob("*"):
         if not path.is_file():
             continue
         if any(part in SKIP_DIRS for part in path.parts):
@@ -191,117 +195,132 @@ def _zip_source_files() -> list[Path]:
 
 
 class ManifestTests(unittest.TestCase):
-    def test_manifest_passes_blender_52_strict_rules(self) -> None:
-        data = tomllib.loads(_read(ADDON / "blender_manifest.toml"))
-        self.assertEqual(data["schema_version"], "1.0.0")
-        self.assertEqual(data["id"], "behold")
-        self.assertEqual(data["version"], "1.6.0")
-        self.assertEqual(data["type"], "add-on")
-        self.assertTrue(data["id"].isidentifier())
-        self.assertNotIn("__", data["id"])
-        self.assertFalse(data["id"].startswith("_"))
-        self.assertFalse(data["id"].endswith("_"))
-        tagline_error = _terse_description_error(data["tagline"])
-        self.assertIsNone(tagline_error, tagline_error)
-        self.assertEqual(data["blender_version_min"].count("."), 2)
-        self.assertTrue(data["license"])
-        for tag in data.get("tags", []):
-            self.assertIn(tag, ADDON_TAGS)
-        permissions = data.get("permissions", {})
-        self.assertIsInstance(permissions, dict)
-        for key, reason in permissions.items():
-            self.assertIn(key, PERMISSION_KEYS)
-            perm_error = _terse_description_error(reason)
-            self.assertIsNone(perm_error, f"{key}: {perm_error}")
+    def test_each_suite_manifest_passes_blender_52_strict_rules(self) -> None:
+        for addon, addon_id, _stem in SUITE:
+            with self.subTest(addon=addon_id):
+                data = tomllib.loads(_read(addon / "blender_manifest.toml"))
+                self.assertEqual(data["schema_version"], "1.0.0")
+                self.assertEqual(data["id"], addon_id)
+                self.assertEqual(data["version"], "2.0.0")
+                self.assertEqual(data["type"], "add-on")
+                self.assertTrue(data["id"].isidentifier())
+                self.assertNotIn("__", data["id"])
+                self.assertFalse(data["id"].startswith("_"))
+                self.assertFalse(data["id"].endswith("_"))
+                tagline_error = _terse_description_error(data["tagline"])
+                self.assertIsNone(tagline_error, tagline_error)
+                self.assertEqual(data["blender_version_min"].count("."), 2)
+                self.assertTrue(data["license"])
+                for tag in data.get("tags", []):
+                    self.assertIn(tag, ADDON_TAGS)
+                permissions = data.get("permissions", {})
+                self.assertIsInstance(permissions, dict)
+                for key, reason in permissions.items():
+                    self.assertIn(key, PERMISSION_KEYS)
+                    perm_error = _terse_description_error(reason)
+                    self.assertIsNone(perm_error, f"{key}: {perm_error}")
 
 
 class ZipLayoutTests(unittest.TestCase):
-    def test_build_script_zips_behold_folder(self) -> None:
+    def test_build_script_zips_each_suite_folder(self) -> None:
         script = _read(BUILD_SCRIPT)
-        self.assertIn('zip -r -q "${OUT}" behold', script)
+        self.assertIn('zip -r -q "${OUT}" "${addon}"', script)
         self.assertIn("blender_manifest.toml", script)
-        self.assertIn('OUT="${DIST}/behold-${VERSION}.zip"', script)
+        self.assertIn("behold-${slug}-${VERSION}.zip", script)
         self.assertIn("Install from Disk", script)
         self.assertIn("extension build", script)
+        self.assertIn("behold_studio", script)
+        self.assertIn("behold_lighting", script)
+        self.assertIn("behold_product", script)
+        self.assertIn("behold_utilities", script)
 
     def test_zip_payload_has_manifest_and_init(self) -> None:
-        files = {path.relative_to(ADDON).as_posix() for path in _zip_source_files()}
-        self.assertIn("blender_manifest.toml", files)
-        self.assertIn("__init__.py", files)
-        self.assertIn("cad/operators.py", files)
-        self.assertIn("utilities/settings.py", files)
-        self.assertIn("utilities/eaves.py", files)
-        self.assertTrue((ADDON / "icons" / "behold_icon.png").is_file())
+        expected = {
+            STUDIO: {"blender_manifest.toml", "__init__.py", "setup.py", "operators.py"},
+            LIGHTING: {"blender_manifest.toml", "__init__.py", "lights.py", "shape_ops.py", "gobo_ops.py", "ies_ops.py", "linking_ops.py", "ies/sample_spot.ies"},
+            PRODUCT: {"blender_manifest.toml", "__init__.py", "cad/operators.py", "cameras_ops.py", "shoot/operators.py"},
+            UTILITIES: {"blender_manifest.toml", "__init__.py", "eaves.py", "settings.py"},
+        }
+        for addon, files in expected.items():
+            payload = {path.relative_to(addon).as_posix() for path in _zip_source_files(addon)}
+            for name in files:
+                self.assertIn(name, payload, msg=addon.name)
+            self.assertTrue((addon / "icons" / "behold_icon.png").is_file(), addon.name)
+            self.assertTrue((addon / "common" / "brand.py").is_file(), addon.name)
 
-    def test_staged_zip_is_single_behold_root(self) -> None:
+    def test_staged_zip_is_single_addon_root(self) -> None:
         """Blender 5.2 Install from Disk accepts one folder with blender_manifest.toml."""
-        buffer = io.BytesIO()
-        with zipfile.ZipFile(buffer, "w") as archive:
-            for path in _zip_source_files():
-                archive.write(path, arcname="behold/" + path.relative_to(ADDON).as_posix())
-        with zipfile.ZipFile(buffer) as archive:
-            names = archive.namelist()
-        roots = {name.split("/", 1)[0] for name in names if name}
-        self.assertEqual(roots, {"behold"})
-        self.assertIn("behold/blender_manifest.toml", names)
-        self.assertIn("behold/__init__.py", names)
-        self.assertIn("behold/cad/operators.py", names)
-        self.assertTrue(any(name.endswith("behold/utilities/eaves.py") for name in names))
+        for addon, addon_id, _stem in SUITE:
+            with self.subTest(addon=addon_id):
+                buffer = io.BytesIO()
+                with zipfile.ZipFile(buffer, "w") as archive:
+                    for path in _zip_source_files(addon):
+                        archive.write(path, arcname=f"{addon_id}/" + path.relative_to(addon).as_posix())
+                with zipfile.ZipFile(buffer) as archive:
+                    names = archive.namelist()
+                roots = {name.split("/", 1)[0] for name in names if name}
+                self.assertEqual(roots, {addon_id})
+                self.assertIn(f"{addon_id}/blender_manifest.toml", names)
+                self.assertIn(f"{addon_id}/__init__.py", names)
 
 
 class RegisterImportGraphTests(unittest.TestCase):
     def test_init_relative_imports_resolve(self) -> None:
-        init_path = ADDON / "__init__.py"
-        tree = ast.parse(_read(init_path), filename=str(init_path))
-        missing: list[str] = []
-        for node in tree.body:
-            if not isinstance(node, ast.ImportFrom) or node.level < 1:
-                continue
-            resolved = _resolve_relative_import(init_path, node)
-            if not resolved:
-                missing.append(ast.dump(node))
-        self.assertEqual(missing, [])
+        for addon, addon_id, _stem in SUITE:
+            with self.subTest(addon=addon_id):
+                init_path = addon / "__init__.py"
+                tree = ast.parse(_read(init_path), filename=str(init_path))
+                missing: list[str] = []
+                for node in tree.body:
+                    if not isinstance(node, ast.ImportFrom) or node.level < 1:
+                        continue
+                    resolved = _resolve_relative_import(addon, init_path, node)
+                    if not resolved:
+                        missing.append(ast.dump(node))
+                self.assertEqual(missing, [])
 
     def test_classes_tuples_bind_to_names_in_the_same_module(self) -> None:
         failures: list[str] = []
-        for path in ADDON.rglob("*.py"):
-            tree = ast.parse(_read(path), filename=str(path))
-            names = _classes_tuple_names(tree)
-            if not names:
-                continue
-            bound = _module_bound_names(tree)
-            if len(names) != len(set(names)):
-                failures.append(
-                    f"{path.relative_to(ROOT)}: CLASSES has duplicate names"
-                )
-            for name in names:
-                if name not in bound:
-                    failures.append(f"{path.relative_to(ROOT)}: CLASSES name {name} is not defined")
+        for addon in ADDONS:
+            for path in addon.rglob("*.py"):
+                tree = ast.parse(_read(path), filename=str(path))
+                names = _classes_tuple_names(tree)
+                if not names:
+                    continue
+                bound = _module_bound_names(tree)
+                if len(names) != len(set(names)):
+                    failures.append(f"{path.relative_to(ROOT)}: CLASSES has duplicate names")
+                for name in names:
+                    if name not in bound:
+                        failures.append(f"{path.relative_to(ROOT)}: CLASSES name {name} is not defined")
         self.assertEqual(failures, [])
 
     def test_operator_classes_have_one_bl_idname(self) -> None:
         failures: list[str] = []
         seen: dict[str, str] = {}
-        for path in ADDON.rglob("*.py"):
-            tree = ast.parse(_read(path), filename=str(path))
-            for node in tree.body:
-                if not isinstance(node, ast.ClassDef):
-                    continue
-                ids = _class_bl_idnames(node)
-                if not ids:
-                    continue
-                rel = str(path.relative_to(ROOT))
-                if len(ids) != 1:
-                    failures.append(f"{rel}:{node.name} has bl_idname {ids}")
-                    continue
-                previous = seen.get(ids[0])
-                if previous:
-                    failures.append(f"duplicate bl_idname {ids[0]} in {previous} and {rel}:{node.name}")
-                seen[ids[0]] = f"{rel}:{node.name}"
+        for addon in ADDONS:
+            for path in addon.rglob("*.py"):
+                tree = ast.parse(_read(path), filename=str(path))
+                for node in tree.body:
+                    if not isinstance(node, ast.ClassDef):
+                        continue
+                    ids = _class_bl_idnames(node)
+                    if not ids:
+                        continue
+                    rel = str(path.relative_to(ROOT))
+                    if len(ids) != 1:
+                        failures.append(f"{rel}:{node.name} has bl_idname {ids}")
+                        continue
+                    previous = seen.get(ids[0])
+                    if previous:
+                        failures.append(
+                            f"duplicate bl_idname {ids[0]} in {previous} and {rel}:{node.name}"
+                        )
+                    seen[ids[0]] = f"{rel}:{node.name}"
         self.assertEqual(failures, [])
 
     def test_cad_auto_dress_did_not_swallow_build_studio(self) -> None:
-        source = _read(ADDON / "cad" / "operators.py")
+        source = _read(PRODUCT / "cad" / "operators.py")
         tree = ast.parse(source, filename="operators.py")
         by_name = {
             node.name: node
@@ -332,11 +351,11 @@ class RegisterImportGraphTests(unittest.TestCase):
         self.assertEqual(len(names), len(set(names)))
 
 
-class UtilitiesEnablePathTests(unittest.TestCase):
-    """Flag off: operators/panel stay off the enable import graph."""
+class SuitePackageTests(unittest.TestCase):
+    """Each zip is its own add-on. Product does not import utilities."""
 
-    def test_utilities_operators_are_not_on_the_core_modules_tuple(self) -> None:
-        init = _read(ADDON / "__init__.py")
+    def test_product_modules_do_not_include_utilities(self) -> None:
+        init = _read(PRODUCT / "__init__.py")
         tree = ast.parse(init, filename="__init__.py")
         modules: list[str] = []
         for node in tree.body:
@@ -357,53 +376,30 @@ class UtilitiesEnablePathTests(unittest.TestCase):
         self.assertNotIn("utilities", modules)
         self.assertEqual(len(modules), len(set(modules)))
 
-    def test_utilities_package_is_lazy_after_core_register(self) -> None:
-        init = _read(ADDON / "__init__.py")
-        tree = ast.parse(init, filename="__init__.py")
-        top_imports = [
-            ast.unparse(node)
-            for node in tree.body
-            if isinstance(node, ast.ImportFrom)
-        ]
-        self.assertFalse(
-            any("utilities" in item and "import utilities" in item for item in top_imports)
-        )
-        self.assertIn("def _sync_utilities", init)
-        self.assertIn("from . import utilities", init)
-        register_src = None
-        for node in tree.body:
-            if isinstance(node, ast.FunctionDef) and node.name == "register":
-                register_src = ast.get_source_segment(init, node) or ""
-        self.assertIsNotNone(register_src)
-        assert register_src is not None
-        self.assertIn("_sync_utilities()", register_src)
-        self.assertIn("try:", register_src)
+    def test_product_does_not_import_sibling_addons(self) -> None:
+        init = _read(PRODUCT / "__init__.py")
+        self.assertNotIn("behold_studio", init)
+        self.assertNotIn("behold_lighting", init)
+        self.assertNotIn("behold_utilities", init)
+        self.assertNotIn("def _sync_utilities", init)
 
-    def test_registration_does_not_import_operators_at_module_level(self) -> None:
-        registration = _read(ADDON / "utilities" / "registration.py")
-        tree = ast.parse(registration, filename="registration.py")
-        for node in tree.body:
-            if isinstance(node, ast.ImportFrom) and node.module in {"operators", "panel"}:
-                self.fail(f"module-level import of utilities.{node.module}")
-        self.assertIn("def _classes", registration)
-        self.assertIn("from .operators import CLASSES", registration)
-        self.assertIn("from .panel import CLASSES", registration)
-        classes_fn = None
-        for node in tree.body:
-            if isinstance(node, ast.FunctionDef) and node.name == "_classes":
-                classes_fn = ast.get_source_segment(registration, node) or ""
-        self.assertIsNotNone(classes_fn)
-        assert classes_fn is not None
-        self.assertIn("from .operators import CLASSES", classes_fn)
-        self.assertIn("from .panel import CLASSES", classes_fn)
-
-    def test_properties_imports_settings_rna_not_operators(self) -> None:
-        props = _read(ADDON / "properties.py")
-        self.assertIn("from .utilities.settings import BEHOLDUtilitiesSettings", props)
+    def test_utilities_is_its_own_enable_path(self) -> None:
+        init = _read(UTILITIES / "__init__.py")
+        self.assertIn("from . import operators", init)
+        self.assertIn("from . import panel", init)
+        self.assertIn('"version": (2, 0, 0)', init)
+        props = _read(UTILITIES / "properties.py")
+        self.assertIn("BEHOLDUtilitiesSettings", props)
         self.assertNotIn("utilities.operators", props)
-        self.assertNotIn("utilities.panel", props)
-        self.assertNotIn("from .utilities.operators", props)
-        self.assertNotIn("from .utilities.panel", props)
+        self.assertNotIn("from .operators", props)
+
+    def test_studio_and_lighting_seed_ops_are_split(self) -> None:
+        studio_ops = _read(STUDIO / "operators.py")
+        lighting_ops = _read(LIGHTING / "operators.py")
+        product_ops = _read(PRODUCT / "cameras_ops.py")
+        self.assertIn('bl_idname = "behold.build_studio"', studio_ops)
+        self.assertIn('bl_idname = "behold.seed_studio_lights"', lighting_ops)
+        self.assertIn('bl_idname = "behold.seed_studio_camera"', product_ops)
 
 
 if __name__ == "__main__":

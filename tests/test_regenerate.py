@@ -10,11 +10,11 @@ import unittest
 
 from tests.support import ROOT, UNIT_CUBE_STEP, load_addon_module, load_module
 
-regenerate = load_addon_module("behold/cad/regenerate.py", "behold.cad.regenerate")
-stepper_api = load_module("behold/cad/stepper_api.py", "behold_stepper_api_regen")
-formats = load_module("behold/product_import/formats.py", "behold_formats_regen")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
-ocp_core = load_module("behold/cad/ocp_core.py", "behold_ocp_core_regen")
+regenerate = load_addon_module("behold_product/cad/regenerate.py", "behold_product.cad.regenerate")
+stepper_api = load_module("behold_product/cad/stepper_api.py", "behold_stepper_api_regen")
+formats = load_module("behold_product/product_import/formats.py", "behold_formats_regen")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
+ocp_core = load_module("behold_product/cad/ocp_core.py", "behold_ocp_core_regen")
 
 
 def _read(relpath: str) -> str:
@@ -258,7 +258,7 @@ class StepperKwargsPlanTests(unittest.TestCase):
 
 class OcpTessellationTests(unittest.TestCase):
     def test_angular_argument_is_wired(self) -> None:
-        source = _read("behold/cad/ocp_core.py")
+        source = _read("behold_product/cad/ocp_core.py")
         self.assertIn("angular_deflection", source)
         self.assertIn("BRepMesh_IncrementalMesh", source)
 
@@ -274,9 +274,9 @@ class OcpTessellationTests(unittest.TestCase):
 
 class WiringTests(unittest.TestCase):
     def test_operator_and_properties(self) -> None:
-        ops = _read("behold/cad/operators.py")
-        props = _read("behold/properties.py")
-        apply_src = _read("behold/cad/regenerate_apply.py")
+        ops = _read("behold_product/cad/operators.py")
+        props = _read("behold_product/properties.py")
+        apply_src = _read("behold_product/cad/regenerate_apply.py")
         self.assertIn('bl_idname = "behold.regenerate_cad"', ops)
         self.assertIn('bl_idname = "behold.cleanup_cad"', ops)
         self.assertIn("def regenerate_cad_file", ops)
@@ -298,7 +298,7 @@ class WiringTests(unittest.TestCase):
         self.assertNotIn("stepper.background_import", ops)
 
     def test_import_writes_cache(self) -> None:
-        ops = _read("behold/cad/operators.py")
+        ops = _read("behold_product/cad/operators.py")
         self.assertIn("_remember_import", ops)
         self.assertIn("write_scene_cache", ops)
         self.assertIn("tag_cad_meshes", ops)
@@ -308,7 +308,7 @@ class WiringTests(unittest.TestCase):
         self.assertIn("import_cad_file", names)
 
     def test_panel_tessellation_card_stays_on_import(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_import_first_ship")
         self.assertIn("behold.import_product", body)
@@ -331,8 +331,10 @@ class WiringTests(unittest.TestCase):
         self.assertIn("Apply cleanup", parked)
         self.assertIn("cad_quality", parked)
         self.assertIn("cad_cleanup_fillets", parked)
-        self.assertIn("light_ies_filepath", _func_source(source, tree, "draw_lights_ies"))
-        self.assertNotIn("behold.regenerate_cad", _func_source(source, tree, "draw_lights_section"))
+        lighting = _read("behold_lighting/ui/panels.py")
+        lighting_tree = ast.parse(lighting, filename="lighting_panels.py")
+        self.assertIn("light_ies_filepath", _func_source(lighting, lighting_tree, "draw_lights_ies"))
+        self.assertNotIn("behold.regenerate_cad", _func_source(lighting, lighting_tree, "draw_lights_section"))
 
 
 class TempCadSourceTests(unittest.TestCase):

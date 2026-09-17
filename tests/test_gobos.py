@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module, load_module
 
-gobos = load_module("behold/studio/gobos.py", "behold_studio_gobos")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+gobos = load_module("behold_lighting/gobos.py", "behold_studio_gobos")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -148,7 +148,7 @@ class GoboNodeGraphTests(unittest.TestCase):
 
 class GoboWiringTests(unittest.TestCase):
     def test_apply_module_wires_the_spec(self) -> None:
-        source = _read("behold/studio/gobo_apply.py")
+        source = _read("behold_lighting/gobo_apply.py")
         self.assertIn("node_graph_for", source)
         self.assertIn("nodes.clear()", source)
         self.assertIn("tree.nodes.new", source)
@@ -166,8 +166,8 @@ class GoboWiringTests(unittest.TestCase):
         self.assertIn("ShaderNodeMix", source)
 
     def test_operator_and_property(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        props = _read("behold/properties.py")
+        ops = _read("behold_lighting/gobo_ops.py")
+        props = _read("behold_lighting/properties.py")
         self.assertIn('bl_idname = "behold.apply_gobo"', ops)
         self.assertIn("apply_gobo_in_scene", ops)
         self.assertIn("light_gobo_preset", props)
@@ -179,8 +179,8 @@ class GoboWiringTests(unittest.TestCase):
         self.assertIn("gobo_apply.apply_gobo_in_scene", ops)
 
     def test_shape_apply_does_not_reapply_gobo(self) -> None:
-        ops = _read("behold/studio/operators.py")
-        tree = ast.parse(ops, filename="operators.py")
+        ops = _read("behold_lighting/shape_ops.py")
+        tree = ast.parse(ops, filename="shape_ops.py")
         shape_cls = None
         for node in tree.body:
             if isinstance(node, ast.ClassDef) and node.name == "BEHOLD_OT_apply_light_preset":
@@ -199,7 +199,7 @@ class GoboWiringTests(unittest.TestCase):
         self.assertNotIn("light_gobo_preset", src)
 
     def test_panel_gobo_row_stays_off_empty_state(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_lighting/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         body = _func_source(source, tree, "draw_lights_section")
         gobo = _func_source(source, tree, "draw_lights_gobo")
@@ -210,7 +210,7 @@ class GoboWiringTests(unittest.TestCase):
         self.assertIn("light_gobo_scale", gobo)
         self.assertIn("light_gobo_strength", gobo)
         self.assertIn('text="Gobo"', gobo)
-        self.assertIn("Blinds", _read("behold/studio/gobos.py"))
+        self.assertIn("Blinds", _read("behold_lighting/gobos.py"))
         empty_idx = body.index("draw_empty_card")
         self.assertLess(empty_idx, body.index("draw_lights_gobo"))
         self.assertLess(body.index("draw_lights_shape"), body.index("draw_lights_gobo"))

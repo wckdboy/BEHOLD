@@ -8,7 +8,7 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-fit = load_module("behold/studio/fit.py", "behold_studio_fit")
+fit = load_module("behold_common/fit.py", "behold_studio_fit")
 
 
 def _read(relpath: str) -> str:
@@ -165,13 +165,13 @@ class FitMathTests(unittest.TestCase):
 
 class FitWiringTests(unittest.TestCase):
     def test_setup_uses_fit_helpers_and_rebuilds_backdrop(self) -> None:
-        source = _read("behold/studio/setup.py")
-        self.assertIn("from .fit import", source)
+        source = _read("behold_studio/setup.py")
+        self.assertIn("from .common.fit import", source)
         self.assertIn("fit_from_aabb", source)
         self.assertIn("BUILD_NEEDS_MESH", source)
         self.assertIn("EMPTY_NO_MESH", source)
         self.assertIn("BUILD_NEEDS_MESH = EMPTY_NO_MESH", source)
-        ops = _read("behold/studio/operators.py")
+        ops = _read("behold_studio/operators.py")
         self.assertIn("BUILD_NEEDS_MESH", ops)
         self.assertIn("NO_MESH_SELECTED", ops)
         self.assertIn("remove_studio_backdrops", source)
@@ -179,11 +179,12 @@ class FitWiringTests(unittest.TestCase):
         self.assertIn("studio_margin", source)
         self.assertIn("fit.floor_size", source)
         self.assertIn("fit.wall_height", source)
-        self.assertIn("fit.rig_size", source)
+        lights = _read("behold_lighting/setup_lights.py")
+        self.assertIn("fit.rig_size", lights)
         self.assertNotIn("size = max(extents.x, extents.y, extents.z, 0.1)", source)
 
     def test_properties_expose_studio_margin(self) -> None:
-        source = _read("behold/properties.py")
+        source = _read("behold_studio/properties.py")
         self.assertIn("studio_margin", source)
         self.assertIn("Studio Margin", source)
 
@@ -196,7 +197,7 @@ class FitWiringTests(unittest.TestCase):
         self.assertIn("test_studio_fit.py", checkpoint)
 
     def test_margin_stays_off_first_ship_studio(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_studio/ui/panels.py")
         first = source.split("def draw_studio_first_ship", 1)[1].split("def ", 1)[0]
         parked = source.split("def draw_studio_parked", 1)[1].split("def ", 1)[0]
         self.assertNotIn("studio_margin", first)

@@ -8,7 +8,7 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-camera_ids = load_module("behold/studio/camera_ids.py", "behold_camera_ids")
+camera_ids = load_module("behold_common/camera_ids.py", "behold_camera_ids")
 
 
 def _read(relpath: str) -> str:
@@ -105,7 +105,8 @@ class FramingMathTests(unittest.TestCase):
 
 class CameraWiringTests(unittest.TestCase):
     def test_operators_register_crud(self) -> None:
-        source = _read("behold/shoot/operators.py")
+        cameras = _read("behold_product/cameras_ops.py")
+        shoot = _read("behold_product/shoot/operators.py")
         for bl_id in (
             "behold.add_camera",
             "behold.remove_camera",
@@ -114,17 +115,17 @@ class CameraWiringTests(unittest.TestCase):
             "behold.clear_cameras",
             "behold.bookmark_camera",
             "behold.use_main_camera",
-            "behold.render_still",
             "behold.apply_camera_dof",
             "behold.focus_product",
             "behold.focus_selected",
         ):
-            self.assertIn(f'bl_idname = "{bl_id}"', source)
-        self.assertIn("resolve_shoot_camera", source)
-        self.assertIn("set_active_behold_camera", source)
+            self.assertIn(f'bl_idname = "{bl_id}"', cameras)
+        self.assertIn('bl_idname = "behold.render_still"', shoot)
+        self.assertIn("resolve_shoot_camera", shoot)
+        self.assertIn("set_active_behold_camera", cameras)
 
     def test_properties_expose_active_and_lens(self) -> None:
-        source = _read("behold/properties.py")
+        source = _read("behold_product/properties.py")
         self.assertIn("active_camera_name", source)
         self.assertIn("new_camera_lens", source)
         self.assertIn("main_camera_name", source)
@@ -132,7 +133,7 @@ class CameraWiringTests(unittest.TestCase):
         self.assertIn("dof_fstop", source)
 
     def test_helpers_create_frame_and_resolve(self) -> None:
-        source = _read("behold/studio/cameras.py")
+        source = _read("behold_product/cameras.py")
         for name in (
             "def is_behold_camera",
             "def iter_behold_cameras",
@@ -151,13 +152,17 @@ class CameraWiringTests(unittest.TestCase):
             self.assertIn(name, source)
 
     def test_build_studio_uses_camera_kit(self) -> None:
-        source = _read("behold/studio/setup.py")
-        self.assertIn("create_product_camera", source)
-        self.assertIn("set_active_behold_camera", source)
-        self.assertIn("STUDIO_CAMERA_NAME", source)
+        source = _read("behold_studio/setup.py")
+        self.assertIn("SEED_CAMERA_OP", source)
+        self.assertIn("try_operator(SEED_CAMERA_OP)", source)
+        cameras = _read("behold_product/cameras.py")
+        self.assertIn("create_product_camera", cameras)
+        self.assertIn("set_active_behold_camera", cameras)
+        self.assertIn("STUDIO_CAMERA_NAME", cameras)
+        self.assertIn("def seed_studio_camera", cameras)
 
     def test_panel_registers_cameras_section(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         self.assertIn("BEHOLD_PT_cameras", source)
         self.assertIn("draw_cameras_section", source)
         self.assertIn("behold.add_camera", source)

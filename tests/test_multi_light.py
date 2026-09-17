@@ -7,8 +7,8 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-light_ids = load_module("behold/studio/light_ids.py", "behold_light_ids")
-tones = load_module("behold/studio/tones.py", "behold_studio_tones")
+light_ids = load_module("behold_common/light_ids.py", "behold_light_ids")
+tones = load_module("behold_common/tones.py", "behold_studio_tones")
 
 
 def _read(relpath: str) -> str:
@@ -71,9 +71,18 @@ class KelvinTests(unittest.TestCase):
 
 class MultiLightWiringTests(unittest.TestCase):
     def test_operators_register_crud(self) -> None:
-        source = _read("behold/studio/operators.py")
+        source = "".join(
+            _read(f"behold_lighting/{name}")
+            for name in (
+                "operators.py",
+                "shape_ops.py",
+                "gobo_ops.py",
+                "ies_ops.py",
+                "linking_ops.py",
+            )
+        )
         for bl_id in (
-            "behold.build_studio",
+            "behold.seed_studio_lights",
             "behold.refresh_lights",
             "behold.add_light",
             "behold.remove_light",
@@ -91,7 +100,7 @@ class MultiLightWiringTests(unittest.TestCase):
             self.assertIn(f'bl_idname = "{bl_id}"', source)
 
     def test_properties_expose_active_new_and_target(self) -> None:
-        source = _read("behold/properties.py")
+        source = _read("behold_lighting/properties.py")
         self.assertIn("active_light_name", source)
         self.assertIn("new_light_energy", source)
         self.assertIn("light_draw_target", source)
@@ -103,7 +112,7 @@ class MultiLightWiringTests(unittest.TestCase):
         self.assertIn('("NEW", "New"', source)
 
     def test_light_draw_resolves_active_vs_new(self) -> None:
-        source = _read("behold/light_draw/draw_core.py")
+        source = _read("behold_lighting/light_draw/draw_core.py")
         self.assertIn("def ensure_draw_light", source)
         self.assertIn('target == "NEW"', source)
         self.assertIn('target != "ACTIVE"', source)
@@ -111,14 +120,18 @@ class MultiLightWiringTests(unittest.TestCase):
         self.assertIn("get_active_behold_light", source)
 
     def test_build_studio_sets_active_key(self) -> None:
-        source = _read("behold/studio/setup.py")
-        self.assertIn("backdrop_tone_rgba", source)
-        self.assertIn("set_active_behold_light", source)
-        self.assertIn("apply_temperature_to_extras", source)
-        self.assertIn("set_active_behold_camera", source)
+        studio = _read("behold_studio/setup.py")
+        lights = _read("behold_lighting/setup_lights.py")
+        cameras = _read("behold_product/cameras.py")
+        self.assertIn("backdrop_tone_rgba", studio)
+        self.assertIn("SEED_LIGHTS_OP", studio)
+        self.assertIn("SEED_CAMERA_OP", studio)
+        self.assertIn("set_active_behold_light", lights)
+        self.assertIn("apply_temperature_to_extras", lights)
+        self.assertIn("set_active_behold_camera", cameras)
 
     def test_mixer_empty_state_cancels(self) -> None:
-        source = _read("behold/studio/operators.py")
+        source = _read("behold_lighting/operators.py")
         self.assertIn("NO_LIGHTS", source)
         self.assertIn("iter_behold_lights", source)
 

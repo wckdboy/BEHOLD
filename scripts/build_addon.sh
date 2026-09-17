@@ -1,43 +1,22 @@
 #!/usr/bin/env bash
-# Build an installable Blender add-on zip for BEHOLD.
+# Build installable Blender extension zips for the BEHOLD 2.0 suite.
 #
-# Install in Blender 5.2 LTS:
-#   Edit → Preferences → Get Extensions → Install from Disk → behold-x.y.z.zip
-# Do not use GitHub's "Source code (zip)". The payload is one `behold/` folder
-# with blender_manifest.toml inside.
+# Install in Blender 5.2 LTS (Install from Disk, each zip independently):
+#   1. behold-studio-2.0.0.zip
+#   2. behold-lighting-2.0.0.zip
+#   3. behold-product-2.0.0.zip
+#   4. behold-utilities-2.0.0.zip  (optional)
+# Do not use GitHub's "Source code (zip)".
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC="${ROOT}/behold"
 DIST="${ROOT}/dist"
-MANIFEST="${SRC}/blender_manifest.toml"
+python3 "${ROOT}/scripts/vendor_common.py"
 
-if [[ ! -f "${MANIFEST}" ]]; then
-  echo "error: missing ${MANIFEST}" >&2
-  exit 1
-fi
+ADDONS=(behold_studio behold_lighting behold_product behold_utilities)
 
-VERSION="$(
-  python3 - "${MANIFEST}" <<'PY'
-import re, sys
-text = open(sys.argv[1], encoding="utf-8").read()
-match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.M)
-if not match:
-    raise SystemExit("version not found in blender_manifest.toml")
-print(match.group(1))
-PY
-)"
-
-mkdir -p "${DIST}"
-OUT="${DIST}/behold-${VERSION}.zip"
-TMP="$(mktemp -d)"
-trap 'rm -rf "${TMP}"' EXIT
-
-STAGE="${TMP}/behold"
-mkdir -p "${STAGE}"
-
-# Copy add-on tree without rsync (not always installed).
-python3 - "${SRC}" "${STAGE}" <<'PY'
+stage_tree() {
+  python3 - "$1" "$2" <<'PY'
 import os, shutil, sys
 src, dst = sys.argv[1], sys.argv[2]
 skip_dirs = {"__pycache__"}
@@ -54,33 +33,60 @@ for root, dirs, files in os.walk(src):
             continue
         shutil.copy2(os.path.join(root, name), os.path.join(target_root, name))
 PY
+}
 
-mkdir -p "${STAGE}/assets"
-if [[ -z "$(find "${STAGE}/assets" -mindepth 1 -maxdepth 1 2>/dev/null || true)" ]]; then
-  printf '# Keeps the assets package in the install zip.\n' > "${STAGE}/assets/.gitkeep"
-fi
+read_version() {
+  python3 - "$1" <<'PY'
+import re, sys
+text = open(sys.argv[1], encoding="utf-8").read()
+match = re.search(r'^version\s*=\s*"([^"]+)"', text, re.M)
+if not match:
+    raise SystemExit("version not found in blender_manifest.toml")
+print(match.group(1))
+PY
+}
 
-rm -f "${OUT}"
+mkdir -p "${DIST}"
 
-# Prefer Blender's extension packager when the CLI exists (CI often has no Blender).
-built=0
-if command -v blender >/dev/null 2>&1; then
-  if blender --command extension build --help >/dev/null 2>&1; then
-    if blender --command extension build \
-      --source-dir "${STAGE}" \
-      --output-filepath "${OUT}" >/dev/null 2>&1; then
-      built=1
-      echo "Built ${OUT} with blender --command extension build"
+for addon in "${ADDONS[@]}"; do
+  SRC="${ROOT}/${addon}"
+  MANIFEST="${SRC}/blender_manifest.toml"
+  if [[ ! -f "${MANIFEST}" ]]; then
+    echo "error: missing ${MANIFEST}" >&2
+    exit 1
+  fi
+  VERSION="$(read_version "${MANIFEST}")"
+  slug="${addon#behold_}"
+  OUT="${DIST}/behold-${slug}-${VERSION}.zip"
+  TMP="$(mktemp -d)"
+  STAGE="${TMP}/${addon}"
+  mkdir -p "${STAGE}"
+  stage_tree "${SRC}" "${STAGE}"
+  mkdir -p "${STAGE}/assets"
+  if [[ -z "$(find "${STAGE}/assets" -mindepth 1 -maxdepth 1 2>/dev/null || true)" ]]; then
+    printf '# Keeps the assets package in the install zip.\n' > "${STAGE}/assets/.gitkeep"
+  fi
+  rm -f "${OUT}"
+  built=0
+  if command -v blender >/dev/null 2>&1; then
+    if blender --command extension build --help >/dev/null 2>&1; then
+      if blender --command extension build \
+        --source-dir "${STAGE}" \
+        --output-filepath "${OUT}" >/dev/null 2>&1; then
+        built=1
+        echo "Built ${OUT} with blender --command extension build"
+      fi
     fi
   fi
-fi
+  if [[ "${built}" -eq 0 ]]; then
+    (
+      cd "${TMP}"
+      zip -r -q "${OUT}" "${addon}"
+    )
+    echo "Built ${OUT}"
+  fi
+  rm -rf "${TMP}"
+done
 
-if [[ "${built}" -eq 0 ]]; then
-  (
-    cd "${TMP}"
-    zip -r -q "${OUT}" behold
-  )
-  echo "Built ${OUT}"
-fi
-
-echo "Install in Blender 5.2: Edit → Preferences → Get Extensions → Install from Disk → select this zip"
+echo "Install in Blender 5.2: Edit → Preferences → Get Extensions → Install from Disk"
+echo "Order: Studio, Lighting, Product, then optional Utilities."

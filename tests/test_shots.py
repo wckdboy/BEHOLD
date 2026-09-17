@@ -8,9 +8,9 @@ import unittest
 
 from tests.support import ROOT, load_addon_module
 
-shots = load_addon_module("behold/shoot/shots.py", "behold.shoot.shots")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
-flow = load_addon_module("behold/ui/flow.py", "behold.ui.flow")
+shots = load_addon_module("behold_product/shoot/shots.py", "behold_product.shoot.shots")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
+flow = load_addon_module("behold_product/ui/flow.py", "behold_product.ui.flow")
 
 
 def _read(relpath: str) -> str:
@@ -168,7 +168,7 @@ class ShotSerializeTests(unittest.TestCase):
 
 class ShotWiringTests(unittest.TestCase):
     def test_properties_persist_collection_on_scene(self) -> None:
-        props = _read("behold/properties.py")
+        props = _read("behold_product/properties.py")
         self.assertIn("class BEHOLDShotItem", props)
         self.assertIn("CollectionProperty", props)
         self.assertIn("type=BEHOLDShotItem", props)
@@ -182,10 +182,10 @@ class ShotWiringTests(unittest.TestCase):
         self.assertIn("hdri_rotation", props)
         self.assertIn("studio_backdrop_tone", props)
         self.assertIn("output_directory", props)
-        self.assertIn("CLASSES = (BEHOLDShotItem, BEHOLDUtilitiesSettings, BEHOLDSceneSettings)", props)
+        self.assertIn("CLASSES = (BEHOLDShotItem, BEHOLDProductSettings)", props)
 
     def test_operators_register_crud(self) -> None:
-        source = _read("behold/shoot/operators.py")
+        source = _read("behold_product/shoot/operators.py")
         for bl_id in (
             "behold.add_shot",
             "behold.apply_shot",
@@ -197,12 +197,12 @@ class ShotWiringTests(unittest.TestCase):
         self.assertIn("shots_apply.apply_shot_to_scene", source)
         self.assertIn("shots_apply.remove_shot_from_scene", source)
         self.assertIn("shots_apply.rename_shot_on_scene", source)
-        apply = _read("behold/shoot/shots_apply.py")
+        apply = _read("behold_product/shoot/shots_apply.py")
         self.assertIn("apply_shot_to_mapping", apply)
         self.assertIn("apply_payload_to_scene", apply)
         self.assertIn("set_active_behold_camera", apply)
-        self.assertIn("apply_hdri_from_settings", apply)
-        self.assertIn("setup_solid_world", apply)
+        self.assertIn("APPLY_STUDIO_LOOK_OP", apply)
+        self.assertIn("try_operator(APPLY_STUDIO_LOOK_OP)", apply)
         self.assertIn("backdrop_tone_rgba", apply)
         self.assertIn("BEHOLD_Sweep", apply)
         self.assertNotIn("bpy.data.meshes.remove", apply)
@@ -210,7 +210,7 @@ class ShotWiringTests(unittest.TestCase):
         self.assertNotIn("build_studio", apply)
 
     def test_shoot_panel_keeps_compact_shot_list(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         shoot = _func_source(source, tree, "draw_shoot_first_ship")
         compact = _func_source(source, tree, "draw_shots_compact")

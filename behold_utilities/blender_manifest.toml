@@ -1,0 +1,17 @@
+schema_version = "1.0.0"
+
+id = "behold_utilities"
+version = "2.0.0"
+name = "BEHOLD Utilities"
+tagline = "Danish wall, balcony mounts, and eave sections"
+maintainer = "AMIRITE.studio"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+website = "https://github.com/wckdboy/BEHOLD"
+tags = ["Add Mesh", "Object"]
+
+[permissions]
+network = "GitHub update check for BEHOLD Utilities"

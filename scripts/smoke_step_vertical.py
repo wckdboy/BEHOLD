@@ -55,17 +55,27 @@ def _behold_ops_ready() -> bool:
 def _register_behold() -> None:
     if _behold_ops_ready():
         return
-    try:
-        bpy.ops.preferences.addon_enable(module="behold")
-    except Exception:  # noqa: BLE001
-        pass
+    for module in (
+        "behold_studio",
+        "behold_lighting",
+        "behold_product",
+        "behold_utilities",
+    ):
+        try:
+            bpy.ops.preferences.addon_enable(module=module)
+        except Exception:  # noqa: BLE001
+            pass
     if _behold_ops_ready():
         return
-    import behold as behold_pkg
+    import behold_studio
+    import behold_lighting
+    import behold_product
 
-    behold_pkg.register()
+    behold_studio.register()
+    behold_lighting.register()
+    behold_product.register()
     if not _behold_ops_ready():
-        _die(1, "failed to register the BEHOLD add-on")
+        _die(1, "failed to register the BEHOLD suite add-ons")
 
 
 def _smoke_output_dir() -> Path:
@@ -84,11 +94,11 @@ def main() -> None:
 
     _register_behold()
 
-    from behold.cad import detect
-    from behold.cad.stepper_api import missing_cad_backend_message
-    from behold.product_import.formats import product_import_dispatch
-    from behold.product_import.operators import run_product_import
-    from behold.shoot import operators as shoot_ops
+    from behold_product.cad import detect
+    from behold_product.cad.stepper_api import missing_cad_backend_message
+    from behold_product.product_import.formats import product_import_dispatch
+    from behold_product.product_import.operators import run_product_import
+    from behold_product.shoot import operators as shoot_ops
 
     route = product_import_dispatch(str(FIXTURE))
     if route != "cad":
@@ -120,7 +130,7 @@ def main() -> None:
         if "FINISHED" not in studio:
             _die(4, f"Build Studio did not finish ({studio})")
 
-    settings = context.scene.behold
+    settings = context.scene.behold_product
     settings.render_quality = "DRAFT"
     shoot_ops.apply_render_quality(context)
 

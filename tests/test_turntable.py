@@ -8,7 +8,7 @@ import unittest
 
 from tests.support import ROOT, load_module
 
-turntable = load_module("behold/shoot/turntable.py", "behold_turntable")
+turntable = load_module("behold_product/shoot/turntable.py", "behold_turntable")
 
 
 def _read(relpath: str) -> str:
@@ -92,7 +92,7 @@ class TurntableEmptyStateTests(unittest.TestCase):
 
 class TurntableWiringTests(unittest.TestCase):
     def test_operators_register_setup_play_bake_clear(self) -> None:
-        source = _read("behold/shoot/operators.py")
+        source = _read("behold_product/shoot/operators.py")
         for bl_id in (
             "behold.setup_turntable",
             "behold.play_turntable",
@@ -107,7 +107,7 @@ class TurntableWiringTests(unittest.TestCase):
         self.assertIn("resolve_shoot_camera", source)
 
     def test_properties_expose_seconds_and_spin(self) -> None:
-        source = _read("behold/properties.py")
+        source = _read("behold_product/properties.py")
         self.assertIn("turntable_seconds", source)
         self.assertIn("turntable_interpolation", source)
         self.assertIn("turntable_frames", source)
@@ -117,7 +117,7 @@ class TurntableWiringTests(unittest.TestCase):
         self.assertIn('("EASE", "Ease"', source)
 
     def test_rig_uses_active_camera_and_product_bounds(self) -> None:
-        source = _read("behold/shoot/turntable_rig.py")
+        source = _read("behold_product/shoot/turntable_rig.py")
         for name in (
             "def setup_turntable",
             "def clear_turntable",
@@ -135,7 +135,7 @@ class TurntableWiringTests(unittest.TestCase):
         self.assertNotIn("apply_exposure", source)
 
     def test_compact_shoot_row_and_advanced_extras(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         self.assertIn("draw_turntable_compact", source)
         self.assertIn("behold.setup_turntable", source)
         self.assertIn("behold.play_turntable", source)

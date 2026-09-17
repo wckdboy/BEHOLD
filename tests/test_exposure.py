@@ -8,8 +8,8 @@ import unittest
 
 from tests.support import ROOT, load_addon_module
 
-exposure = load_addon_module("behold/shoot/exposure.py", "behold.shoot.exposure")
-messages = load_addon_module("behold/ui/messages.py", "behold.ui.messages")
+exposure = load_addon_module("behold_product/shoot/exposure.py", "behold_product.shoot.exposure")
+messages = load_addon_module("behold_common/messages.py", "behold_common.messages")
 
 
 def _read(relpath: str) -> str:
@@ -130,19 +130,19 @@ class ExposurePlanTests(unittest.TestCase):
 
 class ExposureWiringTests(unittest.TestCase):
     def test_apply_module_writes_view_settings(self) -> None:
-        apply = _read("behold/shoot/exposure_apply.py")
+        apply = _read("behold_product/shoot/exposure_apply.py")
         self.assertIn("view.exposure", apply)
         self.assertIn("white_balance_temperature", apply)
         self.assertIn("use_white_balance", apply)
         self.assertIn("view_transform", apply)
         self.assertIn("on_exposure_update", apply)
         self.assertIn("plan_exposure", apply)
-        ops = _read("behold/shoot/operators.py")
+        ops = _read("behold_product/shoot/operators.py")
         self.assertIn("from .exposure_apply import apply_exposure", ops)
         self.assertNotIn("view.temperature = (settings.white_balance_kelvin", ops)
 
     def test_properties_auto_apply(self) -> None:
-        props = _read("behold/properties.py")
+        props = _read("behold_product/properties.py")
         self.assertIn("on_exposure_update", props)
         self.assertIn("view_transform_restore", props)
         self.assertIn("white_balance_kelvin", props)
@@ -150,7 +150,7 @@ class ExposureWiringTests(unittest.TestCase):
         self.assertIn("false_color", props)
 
     def test_shoot_look_card_is_compact(self) -> None:
-        source = _read("behold/ui/panels.py")
+        source = _read("behold_product/ui/panels.py")
         tree = ast.parse(source, filename="panels.py")
         first = _func_source(source, tree, "draw_shoot_first_ship")
         look = _func_source(source, tree, "draw_look_compact")
